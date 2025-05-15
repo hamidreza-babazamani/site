@@ -1,12 +1,24 @@
 {
   "HomePage": {
-    "title": "Hello world!",
+    "meta": {
+      "title": "Kamyar Kamali | Front-end Developer",
+      "description": "Official website of Kamyar Kamali. A professional front-end developer focused on React, Next.js, and WordPress."
+    },
+    "title": "Hello world",
     "about": "Go to the about page",
-    "wellcome": "wellcome to my web",
+    "wellcome": "Welcome to my page",
     "dark": {
       "darks": "Dark",
       "light": "Light",
       "system": "System"
+    },
+    "worke": "Collaboration",
+    "links": {
+      "home": "Home",
+      "services": "Services",
+      "resume": "Resume",
+      "work": "Work",
+      "contact": "Contact"
     }
   }
 }

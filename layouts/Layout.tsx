@@ -6,11 +6,15 @@ import Footer from "./Footer";
 const Layout: FC<Props> = ({ children }) => {
   return (
     <>
-      <Header />
+      <header>
+        <Header />
+      </header>
 
-      <div className="h-[1000px]">{children}</div>
+      <main className="h-[1000px]">{children}</main>
 
-      <Footer />
+      <footer>
+        <Footer />
+      </footer>
     </>
   );
 };

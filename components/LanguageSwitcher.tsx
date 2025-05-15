@@ -43,18 +43,18 @@ export default function LanguageSwitcher() {
     <div ref={dropdownRef} className="relative inline-block text-left">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
         <Image
           src={current?.flag || ""}
           alt={locale}
           width={20}
           height={20}
-          className="w-5 h-5 object-cover rounded-full"
+          className="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-full"
         />
         {current?.label}
         <svg
-          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
           fill="none"
@@ -82,7 +82,7 @@ export default function LanguageSwitcher() {
             <li key={lang.code}>
               <button
                 onClick={() => handleChangeLocale(lang.code)}
-                className={`w-full px-4 py-2 flex items-center gap-3 text-sm text-left transition-colors ${
+                className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-left transition-colors ${
                   locale === lang.code
                     ? "bg-gray-100 dark:bg-gray-700 font-semibold text-blue-600 dark:text-blue-400"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -93,7 +93,7 @@ export default function LanguageSwitcher() {
                   alt={lang.code}
                   width={20}
                   height={20}
-                  className="w-5 h-5 object-cover rounded-full"
+                  className="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-full"
                 />
                 {lang.label}
                 {locale === lang.code && (

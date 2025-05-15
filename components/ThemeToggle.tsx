@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useDarkMode } from "@/hooks/DarkLightMod";
 import { Sun, Moon, Laptop } from "lucide-react";
-
 import { useTranslations } from "next-intl";
 
 const ThemeToggle = () => {
@@ -38,7 +37,7 @@ const ThemeToggle = () => {
                   changeMode(opt.value as "light" | "dark" | "system");
                   setOpen(false);
                 }}
-                className={`w-full px-4 py-2 flex items-center gap-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                className={`w-full  dark:text-white text-gray-800 px-4 py-2 flex items-center gap-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
                   mode === opt.value
                     ? "bg-gray-100 dark:bg-gray-700 font-semibold"
                     : ""

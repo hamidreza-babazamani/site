@@ -1,3 +1,4 @@
+// layout.tsx
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -6,7 +7,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 
-// تعریف فونت ها
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
   variable: "--font-iran",
@@ -19,18 +19,55 @@ const googleFont = localFont({
   display: "swap",
 });
 
+// ✅ generateMetadata برای SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const locale = params.locale;
+
+  return {
+    title:
+      locale === "fa"
+        ? "کامیار کمالی | توسعه‌دهنده فرانت‌اند و متخصص وردپرس"
+        : "Kamyar Kamali | Frontend Developer & WordPress Expert",
+    description:
+      locale === "fa"
+        ? "کامیار کمالی، متخصص فرانت‌اند و وردپرس. طراحی سایت شخصی، شرکتی، فروشگاهی و ریسپانسیو."
+        : "Kamyar Kamali, Frontend and WordPress specialist. Creating personal, corporate, and e-commerce websites.",
+    alternates: {
+      canonical: `https://yourdomain.com/${locale}`,
+    },
+    other: {
+      // ✅ Structured data
+      "ld+json": JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: locale === "fa" ? "کامیار کمالی" : "Kamyar Kamali",
+        jobTitle:
+          locale === "fa"
+            ? "توسعه‌دهنده فرانت‌اند و وردپرس"
+            : "Frontend Developer and WordPress Specialist",
+        url: `https://yourdomain.com/${locale}`,
+        sameAs: [
+          "https://github.com/Kamyarkamali",
+          "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
+        ],
+      }),
+    },
+  };
+}
+
 export default async function LocaleLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
-  // Ensure that the incoming `locale` is valid
-  const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
+  const locale = params.locale;
+  if (!hasLocale(routing.locales, locale)) notFound();
 
   return (
     <html
@@ -38,40 +75,6 @@ export default async function LocaleLayout({
       dir={locale === "fa" ? "rtl" : "ltr"}
       className={locale === "fa" ? iranYekan.className : googleFont.className}
     >
-      <head>
-        <title>
-          {locale === "fa"
-            ? "کامیار کمالی | توسعه‌دهنده فرانت‌اند و متخصص وردپرس"
-            : "Kamyar Kamali | Frontend Developer & WordPress Expert"}
-        </title>
-        <meta
-          name="description"
-          content={
-            locale === "fa"
-              ? "کامیار کمالی، متخصص فرانت‌اند و وردپرس. طراحی سایت شخصی، شرکتی، فروشگاهی و ریسپانسیو."
-              : "Kamyar Kamali, Frontend and WordPress specialist. Creating personal, corporate, and e-commerce websites."
-          }
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              name: locale === "fa" ? "کامیار کمالی" : "Kamyar Kamali",
-              jobTitle:
-                locale === "fa"
-                  ? "توسعه‌دهنده فرانت‌اند و وردپرس"
-                  : "Frontend Developer and WordPress Specialist",
-              url: `https://yourdomain.com/${locale}`,
-              sameAs: [
-                "https://github.com/Kamyarkamali",
-                "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
-              ],
-            }),
-          }}
-        />
-      </head>
       <body>
         <DarkModeProvider>
           <NextIntlClientProvider>
