@@ -19,6 +19,13 @@
       "resume": "Resume",
       "work": "Work",
       "contact": "Contact"
+    },
+    "me": {
+      "how": "Im FrontEnd Developer",
+      "me": "Hello i'm",
+      "name": "Kamyar Kamali",
+      "skill": "I am a front-end developer specializing in JavaScript, React ,NextJs, and WordPress, creating fast, responsive, and SEO-friendly websites.",
+      "download": "Download CV"
     }
   }
 }
