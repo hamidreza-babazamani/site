@@ -1,7 +1,11 @@
-import React from "react";
+import WorkePage from "@/components/WorkePage";
 
 function Work() {
-  return <div>Work</div>;
+  return (
+    <>
+      <WorkePage />
+    </>
+  );
 }
 
 export default Work;

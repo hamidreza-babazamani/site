@@ -6,6 +6,7 @@ import Layout from "@/layouts/Layout";
 import localFont from "next/font/local";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
+import { ThemeProvider } from "next-themes";
 
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
@@ -78,7 +79,9 @@ export default async function LocaleLayout({
       <body>
         <DarkModeProvider>
           <NextIntlClientProvider>
-            <Layout>{children}</Layout>
+            <ThemeProvider attribute="class">
+              <Layout>{children}</Layout>
+            </ThemeProvider>
           </NextIntlClientProvider>
         </DarkModeProvider>
       </body>

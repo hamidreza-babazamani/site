@@ -10,7 +10,7 @@ const Layout: FC<Props> = ({ children }) => {
         <Header />
       </header>
 
-      <main className="h-[1000px]">{children}</main>
+      <main className="h-fit">{children}</main>
 
       <footer>
         <Footer />

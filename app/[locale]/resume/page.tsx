@@ -1,7 +1,12 @@
+import ResumehComponents from "@/components/ResumehComponents";
 import React from "react";
 
 function Resume() {
-  return <div>Resume</div>;
+  return (
+    <>
+      <ResumehComponents />
+    </>
+  );
 }
 
 export default Resume;
