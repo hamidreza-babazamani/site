@@ -53,7 +53,7 @@ export default function ContactButton() {
         }}
       >
         <a
-          href="tel:+989123456789"
+          href="tel:+989354378110"
           className="flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
         >
           <Phone className="w-5 h-5" />
