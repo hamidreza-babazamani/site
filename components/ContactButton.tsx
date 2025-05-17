@@ -1,13 +1,28 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Phone, MessageCircle, Send } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useTranslations } from "use-intl";
+import { set } from "react-hook-form";
 
 export default function ContactButton() {
   const [open, setOpen] = useState(false);
   const locale = useLocale();
   const t = useTranslations("HomePage");
+
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const clickOut = (e: MouseEvent) => {
+      if (open && ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", clickOut);
+    return () => {
+      document.removeEventListener("click", clickOut);
+    };
+  }, [open]);
 
   // مقادیر استایل منو با توجه به زبان
   const menuPositionStyle =
@@ -33,6 +48,7 @@ export default function ContactButton() {
     >
       {/* منوی بازشونده */}
       <div
+        ref={ref}
         className={`flex flex-col gap-3 transition-all duration-300 transform ${
           open
             ? "opacity-100 scale-100 pointer-events-auto"
