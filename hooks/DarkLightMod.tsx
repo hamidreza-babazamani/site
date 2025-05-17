@@ -1,24 +1,49 @@
 "use client";
+
 import { Mode } from "@/types/type";
 import { useCallback, useEffect, useState } from "react";
 
 function useDarkMode() {
-  const [mode, setMode] = useState<Mode>("system");
+  const [mode, setMode] = useState<Mode>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("theme") as Mode) || "system";
+    }
+    return "system";
+  });
 
   const applyTheme = useCallback((isDark: boolean) => {
-    document.documentElement.classList.toggle("dark", isDark);
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, []);
 
-  const changeMode = useCallback((newMode: Mode) => {
-    setMode(newMode);
-    localStorage.setItem("theme", newMode);
-  }, []);
+  const changeMode = useCallback(
+    (newMode: Mode) => {
+      setMode(newMode);
+      localStorage.setItem("theme", newMode);
+      if (newMode === "system") {
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        applyTheme(systemPrefersDark);
+      } else {
+        applyTheme(newMode === "dark");
+      }
+    },
+    [applyTheme]
+  );
 
   useEffect(() => {
-    const saveTheme = localStorage.getItem("theme") as Mode | null;
-
-    if (saveTheme) {
-      setMode(saveTheme);
+    // وقتی کامپوننت mount میشه تم رو اعمال کن
+    if (mode === "system") {
+      const systemPrefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      applyTheme(systemPrefersDark);
+    } else {
+      applyTheme(mode === "dark");
     }
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -28,16 +53,6 @@ function useDarkMode() {
         applyTheme(event.matches);
       }
     };
-
-    const applyCurrentTheme = () => {
-      if (mode === "system") {
-        applyTheme(mediaQuery.matches);
-      } else {
-        applyTheme(mode === "dark");
-      }
-    };
-
-    applyCurrentTheme();
 
     mediaQuery.addEventListener("change", handleSystemThemeChange);
 

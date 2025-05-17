@@ -2,6 +2,7 @@ import { Props } from "@/types/type";
 import { FC } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
+import ContactButton from "@/components/ContactButton";
 
 const Layout: FC<Props> = ({ children }) => {
   return (
@@ -15,6 +16,9 @@ const Layout: FC<Props> = ({ children }) => {
       <footer>
         <Footer />
       </footer>
+      <div>
+        <ContactButton />
+      </div>
     </>
   );
 };

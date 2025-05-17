@@ -11,14 +11,54 @@
   background-color: var(--backgroundColor);
 }
 
+html,
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100%;
+  font-family: var(--font-iran), var(--font-en), sans-serif;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+/* فقط box-sizing برای همه، نه margin/padding */
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html.dark {
+  background-color: #171717;
+  color: #fff;
+}
+
+/* لایت مود با افکت موج */
+html:not(.dark) {
+  background-color: #171717;
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(255, 255, 255, 0.05),
+    transparent 70%
+  );
+  background-size: 100% 200%;
+  animation: wave 8s ease-in-out infinite;
+  color: #fff;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    background-position: center 0%;
+  }
+  50% {
+    background-position: center 100%;
+  }
+}
+
+/* بدنه */
+body {
+  line-height: 1.6;
 }
 
 @keyframes gradient-wave {
@@ -72,7 +112,7 @@ body {
   animation: gradient-move 5s ease infinite;
 }
 
-@keyframes scrollLeft {
+@keyframes scroll {
   0% {
     transform: translateX(0);
   }
@@ -82,7 +122,8 @@ body {
 }
 
 .animate-scroll {
-  animation: scrollLeft 30s linear infinite;
+  animation: scroll 40s linear infinite;
+  display: flex;
 }
 
 .text-outline {

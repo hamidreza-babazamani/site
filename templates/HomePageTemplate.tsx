@@ -55,14 +55,16 @@ function HomePageTemplate() {
             </p>
 
             <div className="flex flex-col mt-8 xl:flex-row items-center gap-8">
-              <Button
-                variant={"default"}
-                size="lg"
-                className="uppercase flex items-center gap-2"
-              >
-                <span>{t("me.download")}</span>
-                <TfiDownload className="text-xl" />
-              </Button>
+              <a href="files/kamyar-kamali.pdf" download>
+                <Button
+                  variant={"default"}
+                  size="lg"
+                  className="uppercase flex items-center gap-2"
+                >
+                  <span>{t("me.download")}</span>
+                  <TfiDownload className="text-xl" />
+                </Button>
+              </a>
 
               {/* sochial */}
               <div className="mb-8 xl:mb-0 flex">

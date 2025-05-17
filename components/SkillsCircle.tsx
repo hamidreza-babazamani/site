@@ -26,7 +26,7 @@ const skills = [
 
 function SkillsCircle() {
   return (
-    <div className="relative mt-[4rem] overflow-hidden bg-gradient-to-r from-[#0f172a] to-[#0b1120] py-4">
+    <div className="relative mt-[4rem] overflow-hidden bg-gradient-to-r from-[#0f172a] to-[#0b1120] py-4 ltr">
       {/* نوار اول */}
       <div className="animate-scroll pt-5 flex items-center gap-10 w-max">
         {skills.map((skill, idx) => (

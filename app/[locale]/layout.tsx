@@ -7,6 +7,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import { ThemeProvider } from "next-themes";
+import Script from "next/script";
 
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
@@ -39,6 +40,12 @@ export async function generateMetadata({
         : "Kamyar Kamali, Frontend and WordPress specialist. Creating personal, corporate, and e-commerce websites.",
     alternates: {
       canonical: `https://yourdomain.com/${locale}`,
+    },
+
+    icons: {
+      icon: "/logo.png",
+      shortcut: "/logo.png",
+      apple: "/logo.png",
     },
     other: {
       // ✅ Structured data
@@ -78,6 +85,7 @@ export default async function LocaleLayout({
     >
       <body>
         <DarkModeProvider>
+          <Script src="https://js.hcaptcha.com/1/api.js" async defer />
           <NextIntlClientProvider>
             <ThemeProvider attribute="class">
               <Layout>{children}</Layout>

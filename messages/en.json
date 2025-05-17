@@ -116,7 +116,65 @@
       "description1": "The client owned a WordPress-based online store and, due to performance and security concerns, requested a custom-coded version of the website. I was responsible for the front-end development, which was implemented using Next.js, TypeScript, and Tailwind CSS.",
       "title2": "Online Store  Atrin Kala",
       "category2": "WordPress Theme Development",
-      "description2": "Due to the client's specific design preferences, the store theme was fully custom-designed and developed using HTML, Tailwind CSS, and JavaScript. The final template was then integrated into WordPress"
+      "description2": "Due to the client's specific design preferences, the store theme was fully custom-designed and developed using HTML, Tailwind CSS, and JavaScript. The final template was then integrated into WordPress",
+      "title3": "Online Store Smarkets",
+      "description3": "The website has been custom-built for a client based in Australia using the Next.js framework",
+      "title4": "The cooking tutorial website template is designed and developed using React",
+      "category4": "Front-End",
+      "description4": "I designed and developed a website template for a client using React. The template is fully responsive and modern, allowing easy customization to meet the client’s specific needs",
+      "title5": "Coding of the psychology website using Next.js",
+      "category5": "Front-End",
+      "description5": "A psychology website was designed and developed for a client based in the UK using the Next.js framework. The site is built to deliver psychology-related content in a user-friendly manner, optimized for fast performance and seamless user experience.",
+      "title6": "German Car Repair Website",
+      "category6": "Front-End",
+      "description6": "The German car repair website has been fully designed and coded, including all pages, as requested by the client."
+    },
+    "contact": {
+      "title1": "Phone",
+      "email": "Email",
+      "telegram": "Telegram",
+      "WhatsApp": "WhatsApp",
+      "work": "Let's work together",
+      "name": "FristName",
+      "last": "LastName",
+      "service": "My Services",
+      "front": "Front-end development (HTML, CSS, JavaScript, React)",
+      "shoping": "Design and implementation of e-commerce websites (front-end)",
+      "wordprees": "Development of e-commerce or corporate websites using WordPress",
+      "landing": "Custom landing page design using code or WordPress",
+      "messege": "Type Your message Here",
+      "send": "Send",
+      "moshaver": "Free Consultation, Your Key to Success",
+      "sucsend": "successMessage",
+      "errorMessage": "errorMessage",
+      "sending": "sending...",
+      "validname": "Please enter the name."
+    },
+    "validations": {
+      "firstnameError": "Please enter your first name",
+      "lastnameError": "Please enter your last name",
+      "emailError": "Invalid email address",
+      "phoneError": "Invalid phone number",
+      "messageError": "Message is too short",
+      "serviceError": "Please select a service",
+      "sending": "Sending...",
+      "sucsend": "Message sent successfully!",
+      "errorMessage": "An error occurred"
+    },
+    "call": {
+      "wats": "WhatsApp",
+      "tel": "Telegram",
+      "call": "Call"
+    },
+    "footer": {
+      "medi": "Social networks",
+      "link": "Useful links",
+      "aboutme": "About Me",
+      "contact": "Contact Me",
+      "project": "Projects",
+      "name": "Kamyar Kamali",
+      "desc": "Front-End Developer and wordpress",
+      "end": "Written with ❤️ by Kamyar Kamali"
     }
   }
 }

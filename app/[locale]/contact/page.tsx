@@ -1,7 +1,13 @@
-import React from "react";
+"use client";
+
+import WorkComponent from "@/components/Contact";
 
 function Contact() {
-  return <div>Contact</div>;
+  return (
+    <>
+      <WorkComponent />
+    </>
+  );
 }
 
 export default Contact;

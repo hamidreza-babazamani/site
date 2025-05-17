@@ -58,6 +58,70 @@ function WorkePage() {
       live: "https://atrinkala.com/",
       github: "/",
     },
+    {
+      num: "03",
+      category: t("category3"),
+      title: t("title3"),
+      description: t("description3"),
+      stack: [
+        { name: "HTML5" },
+        { name: "CSS3" },
+        { name: "Tailwind CSS" },
+        { name: "JavaScript" },
+        { name: "Next.js" },
+      ],
+      image: "/projects/1.png",
+      live: "https://project-front-render.vercel.app/",
+      github: "/",
+    },
+    {
+      num: "04",
+      category: t("category4"),
+      title: t("title4"),
+      description: t("description4"),
+      stack: [
+        { name: "HTML5" },
+        { name: "CSS3" },
+        { name: "Tailwind CSS" },
+        { name: "JavaScript" },
+        { name: "React.js" },
+      ],
+      image: "/projects/2.png",
+      live: "https://cooking-tutorial-website-tw2t.vercel.app/",
+      github: "/",
+    },
+    {
+      num: "04",
+      category: t("category5"),
+      title: t("title5"),
+      description: t("description5"),
+      stack: [
+        { name: "HTML5" },
+        { name: "CSS3" },
+        { name: "Tailwind CSS" },
+        { name: "JavaScript" },
+        { name: "Next.js" },
+      ],
+      image: "/projects/3.png",
+      live: "https://psychiatry-project.vercel.app/",
+      github: "/",
+    },
+    {
+      num: "05",
+      category: t("category6"),
+      title: t("title6"),
+      description: t("description6"),
+      stack: [
+        { name: "HTML5" },
+        { name: "CSS3" },
+        { name: "Tailwind CSS" },
+        { name: "JavaScript" },
+        { name: "React.js" },
+      ],
+      image: "/projects/4.png",
+      live: "https://project-car-germany.vercel.app/",
+      github: "/",
+    },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -88,7 +152,7 @@ function WorkePage() {
                       src={item.image}
                       alt={item.title}
                       fill
-                      className="object-cover"
+                      className="object-contain"
                       priority
                     />
                   </div>

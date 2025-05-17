@@ -19,7 +19,7 @@ const ThemeToggle = () => {
     <div className="relative inline-block text-left">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-2 z-10 px-4 py-1 xl:py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
         {options.find((opt) => opt.value === mode)?.icon}
         {options.find((opt) => opt.value === mode)?.label}
