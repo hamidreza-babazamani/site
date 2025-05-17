@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { Phone, MessageCircle, Send } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useTranslations } from "use-intl";
-import { set } from "react-hook-form";
 
 export default function ContactButton() {
   const [open, setOpen] = useState(false);
@@ -14,7 +13,7 @@ export default function ContactButton() {
 
   useEffect(() => {
     const clickOut = (e: MouseEvent) => {
-      if (open && ref.current && !ref.current.contains(e.target)) {
+      if (open && ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
