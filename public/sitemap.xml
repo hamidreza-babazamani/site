@@ -1,32 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- صفحه اصلی -->
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
+  <!-- صفحه اصلی / صفحه فارسی -->
   <url>
-    <loc>https://kamyarkamali.ir/</loc>
+    <loc>https://kamyarkamali.ir/fa</loc>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://kamyarkamali.ir/fa" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://kamyarkamali.ir/en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kamyarkamali.ir/" />
     <lastmod>2025-05-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- صفحه فارسی -->
-  <url>
-    <loc>https://kamyarkamali.ir/fa</loc>
-    <lastmod>2025-05-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- صفحه انگلیسی -->
+  <!-- صفحه اصلی انگلیسی -->
   <url>
     <loc>https://kamyarkamali.ir/en</loc>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://kamyarkamali.ir/fa" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://kamyarkamali.ir/en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kamyarkamali.ir/" />
     <lastmod>2025-05-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>1.0</priority>
   </url>
 
-  <!-- صفحه درباره -->
+  <!-- صفحه درباره (Resume) به دو زبان -->
   <url>
-    <loc>https://kamyarkamali.ir/about</loc>
+    <loc>https://kamyarkamali.ir/fa/resume</loc>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://kamyarkamali.ir/fa/resume" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://kamyarkamali.ir/en/resume" />
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://kamyarkamali.ir/en/resume</loc>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://kamyarkamali.ir/fa/resume" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://kamyarkamali.ir/en/resume" />
     <lastmod>2025-05-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
