@@ -39,7 +39,11 @@ export async function generateMetadata({
         ? "کامیار کمالی، متخصص فرانت‌اند و وردپرس. طراحی سایت شخصی، شرکتی، فروشگاهی و ریسپانسیو."
         : "Kamyar Kamali, Frontend and WordPress specialist. Creating personal, corporate, and e-commerce websites.",
     alternates: {
-      canonical: `https://yourdomain.com/${locale}`,
+      canonical: `https://kamyarkamali.ir/${locale}`,
+      languages: {
+        fa: "https://kamyarkamali.ir/fa",
+        en: "https://kamyarkamali.ir/en",
+      },
     },
 
     icons: {
@@ -48,19 +52,23 @@ export async function generateMetadata({
       apple: "/logo.jpg",
     },
     other: {
-      // ✅ Structured data
       "ld+json": JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Person",
         name: locale === "fa" ? "کامیار کمالی" : "Kamyar Kamali",
-        jobTitle:
-          locale === "fa"
-            ? "توسعه‌دهنده فرانت‌اند و وردپرس"
-            : "Frontend Developer and WordPress Specialist",
-        url: `https://yourdomain.com/${locale}`,
+        jobTitle: "Frontend Developer and WordPress Specialist",
+        url: `https://kamyarkamali.ir/${locale}`,
         sameAs: [
           "https://github.com/Kamyarkamali",
           "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
+        ],
+        knowsAbout: [
+          "طراحی سایت شخصی",
+          "طراحی سایت شرکتی",
+          "سایت فروشگاهی",
+          "برنامه‌نویسی فرانت‌اند",
+          "پروژه‌های دانشجویی",
+          "وردپرس",
         ],
       }),
     },
@@ -86,7 +94,7 @@ export default async function LocaleLayout({
       <body>
         <DarkModeProvider>
           <Script src="https://js.hcaptcha.com/1/api.js" async defer />
-          <NextIntlClientProvider>
+          <NextIntlClientProvider locale={locale}>
             <ThemeProvider attribute="class">
               <Layout>{children}</Layout>
             </ThemeProvider>
