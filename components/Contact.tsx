@@ -91,7 +91,6 @@ function WorkComponent() {
   const locale = useLocale();
   const t = useTranslations("HomePage");
 
-  // استفاده از هوک برای منطق فرم
   const { register, handleSubmit, errors, onSubmit, setValue, service } =
     useWorkForm(t);
 
@@ -100,21 +99,25 @@ function WorkComponent() {
       icon: <FaPhoneAlt />,
       title: t("contact.title1"),
       description: "0935478110",
+      href: "tel:0935478110",
     },
     {
       icon: <FaEnvelope />,
       title: t("contact.email"),
       description: "kamyarkamali021@gmail.com",
+      href: "mailto:kamyarkamali021@gmail.com",
     },
     {
       icon: <FaTelegram />,
       title: t("contact.telegram"),
       description: "@KamDevJs",
+      href: "https://t.me/KamDevJs",
     },
     {
       icon: <FaWhatsapp />,
       title: t("contact.WhatsApp"),
       description: "09354378110",
+      href: "https://wa.me/98935478110",
     },
   ];
 
@@ -248,46 +251,28 @@ function WorkComponent() {
           {/* Info */}
           <div className="w-full xl:w-1/3 flex flex-col justify-start">
             <ul className="flex flex-col gap-4">
-              {info.map((item, index) => {
-                let href = "#";
-                switch (item.title) {
-                  case t("title1"):
-                    href = "tel:0935478110";
-                    break;
-                  case t("email"):
-                    href = "mailto:kamyarkamali021@gmail.com";
-                    break;
-                  case t("telegram"):
-                    href = "https://t.me/KamDevJs";
-                    break;
-                  case t("WhatsApp"):
-                    href = "https://wa.me/98935478110";
-                    break;
-                }
-
-                return (
-                  <li key={index}>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#27272c] shadow-md transition-all hover:bg-green-50 dark:hover:bg-green-900"
-                    >
-                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300 text-xl">
-                        {item.icon}
-                      </div>
-                      <div className="flex flex-col">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {item.title}
-                        </p>
-                        <h3 className="text-base font-medium text-gray-800 dark:text-white">
-                          {item.description}
-                        </h3>
-                      </div>
-                    </a>
-                  </li>
-                );
-              })}
+              {info.map((item, index) => (
+                <li key={index}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#27272c] shadow-md transition-all hover:bg-green-50 dark:hover:bg-green-900"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300 text-xl">
+                      {item.icon}
+                    </div>
+                    <div className="flex flex-col">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.title}
+                      </p>
+                      <h3 className="text-base font-medium text-gray-800 dark:text-white">
+                        {item.description}
+                      </h3>
+                    </div>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

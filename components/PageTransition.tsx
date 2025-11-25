@@ -8,7 +8,7 @@ const PageTransition: FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setIsVisible(false), 800); // مثلاً بعد از 0.8 ثانیه محو بشه
+    const timeout = setTimeout(() => setIsVisible(false), 800);
     return () => clearTimeout(timeout);
   }, [pathname]);
 

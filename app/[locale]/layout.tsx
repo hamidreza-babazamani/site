@@ -21,23 +21,46 @@ const googleFont = localFont({
   display: "swap",
 });
 
-// ✅ generateMetadata برای SEO
 export async function generateMetadata({
   params,
 }: {
   params: { locale: string };
 }) {
   const locale = params.locale;
+  const isFA = locale === "fa";
 
   return {
-    title:
-      locale === "fa"
-        ? "کامیار کمالی | توسعه‌دهنده فرانت‌اند و متخصص وردپرس"
-        : "Kamyar Kamali | Frontend Developer & WordPress Expert",
-    description:
-      locale === "fa"
-        ? "کامیار کمالی، متخصص فرانت‌اند و وردپرس. طراحی سایت شخصی، شرکتی، فروشگاهی و ریسپانسیو."
-        : "Kamyar Kamali, Frontend and WordPress specialist. Creating personal, corporate, and e-commerce websites.",
+    title: isFA
+      ? "کامیار کمالی | توسعه‌دهنده فرانت‌اند React, Next.js و Node.js"
+      : "Kamyar Kamali | Frontend Developer React, Next.js & Node.js",
+
+    description: isFA
+      ? "کامیار کمالی، برنامه‌نویس فرانت‌اند با تخصص React، Next.js و توسعه بک‌اند با Node.js و Express. طراحی و توسعه وب‌سایت‌های مدرن، سریع و حرفه‌ای."
+      : "Kamyar Kamali, Frontend Developer specializing in React, Next.js, and backend development with Node.js & Express. Building fast and modern web applications.",
+
+    keywords: isFA
+      ? [
+          "کامیار کمالی",
+          "برنامه نویس",
+          "برنامه نویس فرانت اند",
+          "توسعه دهنده وب",
+          "React",
+          "Next.js",
+          "Node.js",
+          "Express",
+          "طراحی سایت",
+          "طراح سایت حرفه ای",
+        ]
+      : [
+          "Kamyar Kamali",
+          "Frontend Developer",
+          "React Developer",
+          "Next.js Engineer",
+          "Node.js Developer",
+          "Express Developer",
+          "Web Developer",
+        ],
+
     alternates: {
       canonical: `https://kamyarkamali.ir/${locale}`,
       languages: {
@@ -51,25 +74,40 @@ export async function generateMetadata({
       shortcut: "/logo.jpg",
       apple: "/logo.jpg",
     },
+
     other: {
       "ld+json": JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Person",
-        name: locale === "fa" ? "کامیار کمالی" : "Kamyar Kamali",
-        jobTitle: "Frontend Developer and WordPress Specialist",
+        name: isFA ? "کامیار کمالی" : "Kamyar Kamali",
+        jobTitle: isFA
+          ? "توسعه‌دهنده فرانت‌اند و Node.js"
+          : "Frontend & Node.js Developer",
         url: `https://kamyarkamali.ir/${locale}`,
         sameAs: [
           "https://github.com/Kamyarkamali",
           "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
         ],
-        knowsAbout: [
-          "طراحی سایت شخصی",
-          "طراحی سایت شرکتی",
-          "سایت فروشگاهی",
-          "برنامه‌نویسی فرانت‌اند",
-          "پروژه‌های دانشجویی",
-          "وردپرس",
-        ],
+        knowsAbout: isFA
+          ? [
+              "React",
+              "Next.js",
+              "Node.js",
+              "Express",
+              "جاوااسکریپت",
+              "طراحی وب",
+              "فرانت اند",
+              "بک اند",
+            ]
+          : [
+              "React",
+              "Next.js",
+              "Node.js",
+              "Express",
+              "JavaScript",
+              "Frontend",
+              "Backend",
+            ],
       }),
     },
   };

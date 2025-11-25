@@ -31,17 +31,15 @@ function Photo() {
           }}
           className="relative w-[298px] h-[298px] xl:w-[498px] xl:h-[498px]"
         >
-          {/* عکس */}
           <Image
             src="/images/kamyar.jpg"
             priority
             quality={100}
             fill
-            alt="Kamyar kamali"
+            alt="Portrait of Kamyar Kamali, Front-end Developer"
             className="object-cover rounded-[100%]"
           />
 
-          {/* لایه تاریک شفاف */}
           <div className="absolute top-0 left-0 w-full h-full bg-black/30 z-10 rounded-[100%]" />
           <motion.svg
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 

@@ -1,5 +1,3 @@
-"use client";
-
 import WorkComponent from "@/components/Contact";
 
 function Contact() {

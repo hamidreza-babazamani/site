@@ -8,10 +8,12 @@ import {
   FaFigma,
   FaNodeJs,
   FaBootstrap,
-  FaElementor,
+  FaDatabase,
 } from "react-icons/fa";
+import { GrGraphQl } from "react-icons/gr";
+
 import { RiNextjsLine, RiTailwindCssFill } from "react-icons/ri";
-import { FaWordpress } from "react-icons/fa6";
+import { SiMongodb, SiReactquery, SiRedux, SiExpress } from "react-icons/si";
 import { BiLogoTypescript } from "react-icons/bi";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -109,20 +111,36 @@ function ResumehComponents() {
         name: "React.Js",
       },
       {
+        icon: <SiReactquery />,
+        name: "React Query",
+      },
+      {
+        icon: <SiRedux />,
+        name: "Redux and Redux toolkit",
+      },
+      {
         icon: <RiNextjsLine />,
         name: "Next.Js",
+      },
+      {
+        icon: <GrGraphQl />,
+        name: "GraphQL",
       },
       {
         icon: <FaNodeJs />,
         name: "Node.Js",
       },
       {
-        icon: <FaWordpress />,
-        name: "Wordpress",
+        icon: <SiExpress />,
+        name: "Express",
       },
       {
-        icon: <FaElementor />,
-        name: "Elementor",
+        icon: <SiMongodb />,
+        name: "MongoDB",
+      },
+      {
+        icon: <FaDatabase />,
+        name: "NoSQL",
       },
       {
         icon: <FaFigma />,
@@ -292,7 +310,7 @@ function ResumehComponents() {
                       if (key === t("info.phone")) {
                         content = (
                           <a
-                            href={`tel:${value.replace(/\D/g, "")}`} // فقط عدد بگیر
+                            href={`tel:${value.replace(/\D/g, "")}`}
                             className="text-blue-600 hover:underline"
                           >
                             {value}

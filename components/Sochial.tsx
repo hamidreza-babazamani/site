@@ -2,42 +2,46 @@ import Link from "next/link";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { RiTwitterXLine } from "react-icons/ri";
 
-interface SochialProps {
+interface SocialProps {
   containerStyle?: string;
   iconStyle?: string;
 }
 
-const Sochial = ({ containerStyle, iconStyle }: SochialProps) => {
-  const git: string = "https://github.com/Kamyarkamali";
-  const linkdin: string =
-    "https://www.linkedin.com/in/kamyar-kamali-671a5822b/";
-  const X: string = "https://x.com/KamyarKamali021";
-
-  const sochial = [
+const Social = ({ containerStyle, iconStyle }: SocialProps) => {
+  const socialLinks = [
     {
       icon: <FaGithub />,
-      path: git,
+      path: "https://github.com/Kamyarkamali",
+      name: "GitHub",
     },
     {
       icon: <FaLinkedinIn />,
-      path: linkdin,
+      path: "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
+      name: "LinkedIn",
     },
     {
       icon: <RiTwitterXLine />,
-      path: X,
+      path: "https://x.com/KamyarKamali021",
+      name: "X/Twitter",
     },
   ];
+
   return (
     <div className={containerStyle}>
-      {sochial.map((item, index) => {
-        return (
-          <Link key={index} href={item.path} className={iconStyle}>
-            {item.icon}
-          </Link>
-        );
-      })}
+      {socialLinks.map((item, index) => (
+        <Link
+          key={index}
+          href={item.path}
+          className={iconStyle}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Visit my ${item.name} profile`}
+        >
+          {item.icon}
+        </Link>
+      ))}
     </div>
   );
 };
 
-export default Sochial;
+export default Social;

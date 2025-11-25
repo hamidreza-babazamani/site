@@ -52,7 +52,7 @@ function MobileNavbar() {
             <Link
               key={index}
               href={link.path}
-              onClick={() => setIsOpen(false)} // ✅ بستن منو بعد از کلیک روی لینک
+              onClick={() => setIsOpen(false)}
               className={`text-gray-900 dark:text-white ${
                 link.path === currentPath &&
                 "text-green-500 border-b-2 border-green-500 capitalize hover:text-green-600 ease-in-out duration-200"

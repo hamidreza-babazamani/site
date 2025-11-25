@@ -12,36 +12,39 @@ function ServicesComponent() {
       title: t("services.title1"),
       description: t("services.desc1"),
       num: "01",
-      href: "",
+      href: "/services",
     },
     {
       title: t("services.title2"),
       description: t("services.desc2"),
       num: "02",
-      href: "",
+      href: "/services",
     },
     {
       title: t("services.title3"),
       description: t("services.desc3"),
       num: "03",
-      href: "",
+      href: "/services",
     },
     {
       title: t("services.title4"),
       description: t("services.desc4"),
       num: "04",
-      href: "",
+      href: "/services",
     },
     {
       title: t("services.title5"),
       description: t("services.desc5"),
       num: "05",
-      href: "",
+      href: "/services",
     },
   ];
 
   return (
-    <section className="min-h-[80vh] flex flex-col justify-center py-12 xl:py-0 px-4 md:px-0">
+    <section
+      id="services"
+      className="min-h-[80vh] flex flex-col justify-center py-12 xl:py-0 px-4 md:px-0"
+    >
       <div className="container mx-auto">
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 gap-[40px] md:gap-[60px]"

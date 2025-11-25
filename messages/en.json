@@ -24,7 +24,7 @@
       "how": "Front-end Developer",
       "me": "I'm",
       "name": "Kamyar Kamali",
-      "skill": "I'm a front-end developer specializing in JavaScript, React, Next.js, and WordPress. I design fast, responsive, and SEO-friendly websites.",
+      "skill": "I am a front-end developer specializing in JavaScript, React, Next.js, Node.js, and Express. I build fast, responsive, and SEO-optimized websites and applications to deliver a professional and smooth user experience.",
       "download": "Download Resume"
     },
     "stats": {
@@ -48,8 +48,6 @@
       "node": "Node.js",
       "express": "Express",
       "hook": "React Hook Form",
-      "Wordprees": "WordPress",
-      "elementor": "Elementor",
       "Figma": "Figma",
       "grap": "GraphQL",
       "git": "Git",
@@ -73,7 +71,7 @@
       "description": "A quick overview of my professional background and key details.",
       "info": {
         "aboutus": "About Me",
-        "descriptionme": "I’m Kamyar Kamali, a front-end and WordPress developer with over 4 years of active experience designing and building responsive websites and applications. Throughout my career, I have collaborated with various companies, mastering skills in HTML, CSS, JavaScript, modern frameworks like React and Next.js, as well as WordPress development and customization. My goal is to create beautiful and user-friendly interfaces that enhance the digital experience.",
+        "descriptionme": "I am Kamyar Kamali, a front-end developer with over 4 years of experience in designing and building responsive websites and applications. I have worked with modern technologies such as HTML, CSS, JavaScript, React, Next.js, as well as Node.js and Express. My goal is to create professional, fast, and user-friendly interfaces that enhance the digital experience for users.",
         "fullName": "Full Name",
         "fullNameValue": "Kamyar Kamali",
         "email": "Email",
@@ -127,7 +125,10 @@
       "description5": "A psychology website was designed and developed for a client based in the UK using the Next.js framework. The site is built to deliver psychology-related content in a user-friendly manner, optimized for fast performance and seamless user experience.",
       "title6": "German Car Repair Website",
       "category6": "Front-End",
-      "description6": "The German car repair website has been fully designed and coded, including all pages, as requested by the client."
+      "description6": "The German car repair website has been fully designed and coded, including all pages, as requested by the client.",
+      "title7": "Rojin tak panel",
+      "category7": "Front-End",
+      "description7": "Front-end development of the admin and user panels for Rojin Tak company in an outsourced project"
     },
     "contact": {
       "title1": "Phone",

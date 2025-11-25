@@ -40,7 +40,7 @@ function WorkePage() {
         { name: "Redux Toolkit" },
       ],
       image: "/projects/almas1.png",
-      live: "https://almas-store-j8mt.vercel.app/",
+      live: "https://test.almasvista.ir/",
       github: "/",
     },
     {
@@ -91,7 +91,7 @@ function WorkePage() {
       github: "/",
     },
     {
-      num: "04",
+      num: "05",
       category: t("category5"),
       title: t("title5"),
       description: t("description5"),
@@ -107,7 +107,7 @@ function WorkePage() {
       github: "/",
     },
     {
-      num: "05",
+      num: "06",
       category: t("category6"),
       title: t("title6"),
       description: t("description6"),
@@ -120,6 +120,23 @@ function WorkePage() {
       ],
       image: "/projects/4.png",
       live: "https://project-car-germany.vercel.app/",
+      github: "/",
+    },
+    {
+      num: "07",
+      category: t("category7"),
+      title: t("title6"),
+      description: t("description7"),
+      stack: [
+        { name: "HTML5" },
+        { name: "CSS3" },
+        { name: "Tailwind CSS" },
+        { name: "JavaScript" },
+        { name: "React.js" },
+        { name: "Ant desain" },
+      ],
+      image: "/projects/rojintak.png",
+      live: "https://rojin-talk-panel2-new.vercel.app/login",
       github: "/",
     },
   ];

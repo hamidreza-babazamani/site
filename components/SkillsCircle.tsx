@@ -16,8 +16,6 @@ const skills = [
   { src: "skills/nodedotjs.svg", name: "Node Js" },
   { src: "skills/express.svg", name: "express" },
   { src: "skills/reacthookform.svg", name: "React Hook Form" },
-  { src: "skills/wordpress.svg", name: "Wordprees" },
-  { src: "skills/elementor.svg", name: "Elementor" },
   { src: "skills/figma.svg", name: "Figma" },
   { src: "skills/graphql.svg", name: "GrapQL" },
   { src: "skills/git.svg", name: "Git" },
