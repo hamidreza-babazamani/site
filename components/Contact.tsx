@@ -35,7 +35,7 @@ function getSchema(t: (key: string) => string) {
 
 type FormData = z.infer<ReturnType<typeof getSchema>>;
 
-function useWorkForm(t: (key: string) => string) {
+function useWorkForm(t: (key: string) => string, locale: string) {
   const schema = getSchema(t);
   const {
     register,
@@ -53,17 +53,17 @@ function useWorkForm(t: (key: string) => string) {
   const onSubmit = async (data: FormData) => {
     const loadingToast = toast.loading(t("contact.sending"));
     try {
-      const res = await fetch(
-        "https://formsubmit.co/ajax/kamyarkamali021@gmail.com",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const res = await fetch("/api/public/contact-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          name: `${data.firstname} ${data.lastname}`.trim(),
+          email: data.email,
+          subject: data.service,
+          message: `${data.phone}\n\n${data.message}`,
+          locale,
+        }),
+      });
 
       if (res.ok) {
         toast.success(t("contact.sucsend"), { id: loadingToast });
@@ -92,7 +92,7 @@ function WorkComponent() {
   const t = useTranslations("HomePage");
 
   const { register, handleSubmit, errors, onSubmit, setValue, service } =
-    useWorkForm(t);
+    useWorkForm(t, locale);
 
   const info = [
     {

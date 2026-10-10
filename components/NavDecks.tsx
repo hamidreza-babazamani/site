@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import AdminEntryButton from "./ui/AdminEntryButton";
 
 function NavDecks() {
   const t = useTranslations("HomePage");

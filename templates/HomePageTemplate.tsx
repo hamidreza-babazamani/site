@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { TfiDownload } from "react-icons/tfi";
 import SkillsCircle from "@/components/SkillsCircle";
 
+
 function HomePageTemplate() {
   const locale = useLocale();
 

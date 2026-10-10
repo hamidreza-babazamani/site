@@ -6,7 +6,7 @@ module.exports = {
 
   sitemapSize: 5000,
 
-  exclude: ["/api/*"],
+  exclude: ["/api/*", "/fa/admin", "/fa/admin/*", "/en/admin", "/en/admin/*"],
 
   alternateRefs: [
     {
@@ -24,9 +24,9 @@ module.exports = {
       {
         userAgent: "*",
         allow: "/",
+        disallow: ["/api/", "/fa/admin", "/en/admin"],
       },
     ],
 
-    additionalSitemaps: ["https://kamyarkamali.ir/sitemap-0.xml"],
   },
 };

@@ -7,7 +7,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import { ThemeProvider } from "next-themes";
-import Script from "next/script";
 
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
@@ -24,19 +23,19 @@ const googleFont = localFont({
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const locale = params.locale;
+  const { locale } = await params;
   const isFA = locale === "fa";
 
   return {
     title: isFA
-      ? "کامیار کمالی | توسعه‌دهنده فرانت‌اند React, Next.js و Node.js"
-      : "Kamyar Kamali | Frontend Developer React, Next.js & Node.js",
+      ? "کامیار کمالی | مهندس نرم‌افزار و متخصص اپلیکیشن‌های هوش مصنوعی"
+      : "Kamyar Kamali | Software Engineer for AI Applications",
 
     description: isFA
-      ? "کامیار کمالی، برنامه‌نویس فرانت‌اند با تخصص React، Next.js و توسعه بک‌اند با Node.js و Express. طراحی و توسعه وب‌سایت‌های مدرن، سریع و حرفه‌ای."
-      : "Kamyar Kamali, Frontend Developer specializing in React, Next.js, and backend development with Node.js & Express. Building fast and modern web applications.",
+      ? "کامیار کمالی، مهندس نرم‌افزار با تمرکز بر فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM با React، Next.js و TypeScript."
+      : "Kamyar Kamali is a software engineer focused on frontend engineering, AI-powered web applications, and LLM-enabled products with React, Next.js, and TypeScript.",
 
     keywords: isFA
       ? [
@@ -53,12 +52,13 @@ export async function generateMetadata({
         ]
       : [
           "Kamyar Kamali",
-          "Frontend Developer",
-          "React Developer",
-          "Next.js Engineer",
-          "Node.js Developer",
-          "Express Developer",
-          "Web Developer",
+          "Software Engineer",
+          "AI Applications",
+          "Frontend Engineering",
+          "React",
+          "Next.js",
+          "TypeScript",
+          "LLM applications",
         ],
 
     alternates: {
@@ -68,6 +68,16 @@ export async function generateMetadata({
         en: "https://kamyarkamali.ir/en",
       },
     },
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: "profile",
+      title: isFA ? "کامیار کمالی | مهندس نرم‌افزار و اپلیکیشن‌های هوش مصنوعی" : "Kamyar Kamali | Software Engineer for AI Applications",
+      description: isFA ? "فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM." : "Frontend engineering, AI-powered web applications, and LLM-enabled products.",
+      url: `https://kamyarkamali.ir/${locale}`,
+      siteName: "Kamyar Kamali",
+      images: [{ url: "https://kamyarkamali.ir/images/kamyar.jpg", width: 1200, height: 630, alt: isFA ? "تصویر کامیار کمالی" : "Kamyar Kamali" }],
+    },
+    twitter: { card: "summary_large_image", title: isFA ? "کامیار کمالی | مهندس نرم‌افزار" : "Kamyar Kamali | Software Engineer", description: isFA ? "اپلیکیشن‌های هوش مصنوعی و مهندسی فرانت‌اند." : "AI applications and frontend engineering." },
 
     icons: {
       icon: "/logo.jpg",
@@ -131,7 +141,6 @@ export default async function LocaleLayout({
     >
       <body>
         <DarkModeProvider>
-          <Script src="https://js.hcaptcha.com/1/api.js" async defer />
           <NextIntlClientProvider locale={locale}>
             <ThemeProvider attribute="class">
               <Layout>{children}</Layout>

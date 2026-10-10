@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -18,11 +18,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Swiper as SwiperType } from "swiper";
 
 function WorkePage() {
   const t = useTranslations("HomePage.project");
+  const locale = useLocale();
 
   const projects = [
     {
@@ -141,9 +142,32 @@ function WorkePage() {
     },
   ];
 
+  const [remoteProjects, setRemoteProjects] = useState<typeof projects | null>(null);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/public/projects?limit=50&visible=true")
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (!active || !result?.data?.length) return;
+        setRemoteProjects(result.data.map((item: { title?: { fa?: string; en?: string }; shortDescription?: { fa?: string; en?: string }; description?: { fa?: string; en?: string }; images?: { url: string; alt?: { fa?: string; en?: string } }[]; liveUrl?: string; repositoryUrl?: string; technologies?: string[] }, index: number) => ({
+          num: String(index + 1).padStart(2, "0"),
+          category: item.technologies?.join(" · ") || "Software project",
+          title: item.title?.[locale as "fa" | "en"] || item.title?.en || item.title?.fa || "Project",
+          description: item.description?.[locale as "fa" | "en"] || item.description?.en || item.description?.fa || item.shortDescription?.[locale as "fa" | "en"] || item.shortDescription?.en || item.shortDescription?.fa || "",
+          stack: (item.technologies || []).map((name) => ({ name })),
+          image: item.images?.[0]?.url || "/projects/almas1.png",
+          live: item.liveUrl || "#",
+          github: item.repositoryUrl || "#",
+        })));
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [locale]);
+
+  const displayedProjects = remoteProjects || projects;
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef<SwiperType | null>(null);
-  const project = projects[activeIndex];
+  const project = displayedProjects[Math.min(activeIndex, displayedProjects.length - 1)];
 
   return (
     <motion.div
@@ -162,7 +186,7 @@ function WorkePage() {
               onSwiper={(swiper) => (swiperRef.current = swiper)}
               className="h-[400px] md:h-[500px] w-full"
             >
-              {projects.map((item, index) => (
+              {displayedProjects.map((item, index) => (
                 <SwiperSlide key={index}>
                   <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300">
                     <Image
@@ -170,7 +194,7 @@ function WorkePage() {
                       alt={item.title}
                       fill
                       className="object-contain"
-                      priority
+                      priority={index === 0}
                     />
                   </div>
                 </SwiperSlide>

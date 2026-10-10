@@ -8,7 +8,7 @@ import { RiMenu2Line } from "react-icons/ri";
 import { useLocale, useTranslations } from "next-intl";
 
 function MobileNavbar() {
-  const [isOpen, setIsOpen] = useState(false); // ✅ کنترل باز و بسته بودن منو
+  const [isOpen, setIsOpen] = useState(false); 
   const pathname = usePathname();
   const t = useTranslations("HomePage");
   const locale = useLocale();
@@ -32,6 +32,7 @@ function MobileNavbar() {
           <CiMenuFries className="text-[32px] text-gray-400 cursor-pointer" />
         ) : (
           <RiMenu2Line className="text-[32px] text-gray-400 cursor-pointer" />
+          
         )}
       </SheetTrigger>
 
@@ -40,7 +41,7 @@ function MobileNavbar() {
         <div className="mt-7 text-left">
           <Link
             href="/"
-            onClick={() => setIsOpen(false)} // ✅ بستن منو بعد از کلیک روی لوگو
+            onClick={() => setIsOpen(false)} 
             className="xl:text-4xl text-2xl text-gray-900 dark:text-white p-2 font-semibold"
           >
             Kamyar<span className="text-green-500 text-4xl">.</span>Dev
