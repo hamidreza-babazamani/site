@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { isValidObjectId } from "mongoose";
 import { env, requiredEnv } from "./env";
 import { Admin } from "./models";
-
+import { connectDatabase } from "./db-core";
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -81,10 +81,16 @@ export const tokenFor = (admin: ReturnType<typeof safeAdmin>) =>
     algorithm: "HS256",
     expiresIn: env.jwtExpiresIn as jwt.SignOptions["expiresIn"],
   });
+
 export const requireAdmin = async () => {
   const token = (await cookies()).get("admin_token")?.value;
-  if (!token) throw new ApiError(401, "Authentication required");
+
+  if (!token) {
+    throw new ApiError(401, "Authentication required");
+  }
+
   let payload: string | jwt.JwtPayload;
+
   try {
     payload = jwt.verify(token, requiredEnv("JWT_SECRET"), {
       algorithms: ["HS256"],
@@ -92,13 +98,21 @@ export const requireAdmin = async () => {
   } catch {
     throw new ApiError(401, "Authentication required");
   }
-  if (typeof payload !== "object" || typeof payload.sub !== "string")
-    throw new ApiError(401, "Authentication required");
 
-  // خطاهای اعتبارسنجی توکن باید ۴۰۱ باشند؛ خطاهای پایگاه‌داده عمداً عبور می‌کنند.
-  const admin = await Admin.findById(payload.sub).select("email role").lean();
-  if (!admin || admin.role !== "admin")
+  if (typeof payload !== "object" || typeof payload.sub !== "string") {
     throw new ApiError(401, "Authentication required");
+  }
+
+  // ابتدا اتصال MongoDB را برقرار می‌کنیم.
+  await connectDatabase();
+
+  // سپس اطلاعات ادمین را از دیتابیس دریافت می‌کنیم.
+  const admin = await Admin.findById(payload.sub).select("email role").lean();
+
+  if (!admin || admin.role !== "admin") {
+    throw new ApiError(401, "Authentication required");
+  }
+
   return safeAdmin(admin);
 };
 
@@ -146,40 +160,43 @@ export const validate = (
 ) => {
   const errors: Record<string, string> = {};
   const required = (key: string) => !partial || input[key] !== undefined;
-  const local = {
-    hero: ["jobTitle", "headline", "description", "primaryCta"],
-    profile: ["name", "bio", "location", "availability"],
-    experience: ["role", "description"],
-    service: ["title", "description"],
-    technology: ["name"],
-    language: ["name", "level"],
-    project: ["title", "shortDescription", "description"],
-    contactMethod: ["label"],
-    resume: ["title"],
-  }[resource] ?? [];
-  const requiredLocalized = new Set(
-    ({
-      hero: ["jobTitle", "headline"],
-      profile: ["name", "bio"],
-      experience: ["role"],
+  const local =
+    {
+      hero: ["jobTitle", "headline", "description", "primaryCta"],
+      profile: ["name", "bio", "location", "availability"],
+      experience: ["role", "description"],
       service: ["title", "description"],
       technology: ["name"],
       language: ["name", "level"],
-      project: ["title"],
-      contactMethod: [],
-    } as Record<string, string[]>)[resource] ?? [],
+      project: ["title", "shortDescription", "description"],
+      contactMethod: ["label"],
+      resume: ["title"],
+    }[resource] ?? [];
+  const requiredLocalized = new Set(
+    (
+      {
+        hero: ["jobTitle", "headline"],
+        profile: ["name", "bio"],
+        experience: ["role"],
+        service: ["title", "description"],
+        technology: ["name"],
+        language: ["name", "level"],
+        project: ["title"],
+        contactMethod: [],
+      } as Record<string, string[]>
+    )[resource] ?? [],
   );
   const hasLocalizedContent = (value: unknown) =>
     Boolean(
       value &&
-        typeof value === "object" &&
-        (["fa", "en"] as const).some((key) =>
-          Boolean(String((value as Record<string, unknown>)[key] ?? "").trim()),
-        ),
+      typeof value === "object" &&
+      (["fa", "en"] as const).some((key) =>
+        Boolean(String((value as Record<string, unknown>)[key] ?? "").trim()),
+      ),
     );
   for (const key of local)
     if (
-      (requiredLocalized.has(key) && required(key) ||
+      ((requiredLocalized.has(key) && required(key)) ||
         (input[key] !== undefined && hasLocalizedContent(input[key]))) &&
       !localized(input[key])
     )
@@ -218,9 +235,14 @@ export const validate = (
   )
     errors.email = "email must be valid";
   const numeric = (key: string, min?: number, max?: number) => {
-    if (input[key] === undefined || input[key] === null || input[key] === "") return;
+    if (input[key] === undefined || input[key] === null || input[key] === "")
+      return;
     const value = Number(input[key]);
-    if (!Number.isFinite(value) || (min !== undefined && value < min) || (max !== undefined && value > max))
+    if (
+      !Number.isFinite(value) ||
+      (min !== undefined && value < min) ||
+      (max !== undefined && value > max)
+    )
       errors[key] = `${key} must be a valid number`;
   };
   numeric("order", 0);
@@ -230,17 +252,35 @@ export const validate = (
       errors[key] = `${key} is required`;
   };
   if (resource === "project") {
-    if (typeof input.slug === "string" && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug.trim()))
+    if (
+      typeof input.slug === "string" &&
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug.trim())
+    )
       errors.slug = "slug must contain lowercase letters, numbers, and hyphens";
   }
   if (resource === "experience") {
-    if (required("startDate") && (typeof input.startDate !== "string" || Number.isNaN(Date.parse(input.startDate))))
+    if (
+      required("startDate") &&
+      (typeof input.startDate !== "string" ||
+        Number.isNaN(Date.parse(input.startDate)))
+    )
       errors.startDate = "startDate must be a valid date";
-    if (input.endDate !== undefined && input.endDate !== null && input.endDate !== "" && (typeof input.endDate !== "string" || Number.isNaN(Date.parse(input.endDate))))
+    if (
+      input.endDate !== undefined &&
+      input.endDate !== null &&
+      input.endDate !== "" &&
+      (typeof input.endDate !== "string" ||
+        Number.isNaN(Date.parse(input.endDate)))
+    )
       errors.endDate = "endDate must be a valid date";
-    if (input.current === true && input.endDate) errors.endDate = "endDate must be empty for a current experience";
+    if (input.current === true && input.endDate)
+      errors.endDate = "endDate must be empty for a current experience";
   }
-  if (resource === "contactMethod" && input.type !== undefined && typeof input.type !== "string")
+  if (
+    resource === "contactMethod" &&
+    input.type !== undefined &&
+    typeof input.type !== "string"
+  )
     errors.type = "type is required";
   if (
     resource === "contactMethod" &&
@@ -250,7 +290,12 @@ export const validate = (
   )
     errors.value = "value must be a valid email";
   for (const key of ["company", "type", "value"])
-    if (resource === "contactMethod" ? ["type", "value"].includes(key) : resource === "experience" && key === "company") textRequired(key);
+    if (
+      resource === "contactMethod"
+        ? ["type", "value"].includes(key)
+        : resource === "experience" && key === "company"
+    )
+      textRequired(key);
   for (const key of ["liveUrl", "repositoryUrl", "url", "primaryCtaUrl"])
     if (
       input[key] !== undefined &&
