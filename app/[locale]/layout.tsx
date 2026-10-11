@@ -1,6 +1,6 @@
-// layout.tsx
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import Layout from "@/layouts/Layout";
 import localFont from "next/font/local";
@@ -8,7 +8,9 @@ import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import { ThemeProvider } from "next-themes";
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir").replace(/\/$/, "");
+const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir"
+).replace(/\/$/, "");
 
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
@@ -22,11 +24,16 @@ const googleFont = localFont({
   display: "swap",
 });
 
+type LocaleLayoutProps = {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}): Promise<Metadata> {
   const { locale } = await params;
   const isFA = locale === "fa";
 
@@ -70,16 +77,41 @@ export async function generateMetadata({
         en: `${siteUrl}/en`,
       },
     },
-    robots: { index: true, follow: true },
+
+    robots: {
+      index: true,
+      follow: true,
+    },
+
     openGraph: {
       type: "profile",
-      title: isFA ? "کامیار کمالی | مهندس نرم‌افزار و اپلیکیشن‌های هوش مصنوعی" : "Kamyar Kamali | Software Engineer for AI Applications",
-      description: isFA ? "فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM." : "Frontend engineering, AI-powered web applications, and LLM-enabled products.",
+      title: isFA
+        ? "کامیار کمالی | مهندس نرم‌افزار و اپلیکیشن‌های هوش مصنوعی"
+        : "Kamyar Kamali | Software Engineer for AI Applications",
+      description: isFA
+        ? "فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM."
+        : "Frontend engineering, AI-powered web applications, and LLM-enabled products.",
       url: `${siteUrl}/${locale}`,
       siteName: "Kamyar Kamali",
-      images: [{ url: "https://kamyarkamali.ir/images/kamyar.jpg", width: 1200, height: 630, alt: isFA ? "تصویر کامیار کمالی" : "Kamyar Kamali" }],
+      images: [
+        {
+          url: `${siteUrl}/images/kamyar.jpg`,
+          width: 1200,
+          height: 630,
+          alt: isFA ? "تصویر کامیار کمالی" : "Kamyar Kamali",
+        },
+      ],
     },
-    twitter: { card: "summary_large_image", title: isFA ? "کامیار کمالی | مهندس نرم‌افزار" : "Kamyar Kamali | Software Engineer", description: isFA ? "اپلیکیشن‌های هوش مصنوعی و مهندسی فرانت‌اند." : "AI applications and frontend engineering." },
+
+    twitter: {
+      card: "summary_large_image",
+      title: isFA
+        ? "کامیار کمالی | مهندس نرم‌افزار"
+        : "Kamyar Kamali | Software Engineer",
+      description: isFA
+        ? "اپلیکیشن‌های هوش مصنوعی و مهندسی فرانت‌اند."
+        : "AI applications and frontend engineering.",
+    },
 
     icons: {
       icon: "/logo.jpg",
@@ -128,18 +160,19 @@ export async function generateMetadata({
 export default async function LocaleLayout({
   children,
   params,
-}: {
-  children: React.ReactNode;
-  params: { locale: string };
-}) {
-  const locale = params.locale;
-  if (!hasLocale(routing.locales, locale)) notFound();
+}: LocaleLayoutProps) {
+  const { locale } = await params;
+
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
 
   return (
     <html
       lang={locale}
       dir={locale === "fa" ? "rtl" : "ltr"}
       className={locale === "fa" ? iranYekan.className : googleFont.className}
+      suppressHydrationWarning
     >
       <body>
         <DarkModeProvider>
