@@ -331,7 +331,7 @@ export default function Footer() {
         <div
           className="
             flex flex-col items-center
-            justify-between gap-4
+            justify-center gap-4
             border-t border-slate-200/80
             py-6 text-center
             dark:border-white/[0.08]
@@ -350,25 +350,7 @@ export default function Footer() {
             {t("footer.end")}
           </p>
 
-          <div
-            className="
-              inline-flex items-center gap-2
-              text-xs
-              text-slate-500
-              dark:text-slate-400
-            "
-          >
-            <span>Built with</span>
-
-            <Heart
-              size={13}
-              fill="currentColor"
-              className="text-emerald-500"
-              aria-hidden="true"
-            />
-
-            <span>Next.js & TypeScript</span>
-          </div>
+         
         </div>
       </div>
     </footer>
