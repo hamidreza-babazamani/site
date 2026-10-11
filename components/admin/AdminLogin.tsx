@@ -1,4 +1,3 @@
-
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -27,16 +26,14 @@ import {
   SiNextdotjs,
   SiOpenai,
   SiNodedotjs,
+  SiClaude,
 } from "react-icons/si";
 
 import toast, { Toaster } from "react-hot-toast";
 import { toApiRequestError } from "@/lib/api/axios";
 import { loginAdmin } from "@/lib/api/requests/auth";
 
-import {
-  localizedError,
-  messages,
-} from "./adminShared";
+import { localizedError, messages } from "./adminShared";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -115,9 +112,7 @@ function FloatingTechnology({
   const Icon = technology.Icon;
 
   return (
-    <div
-      className={`absolute z-20 ${technology.position}`}
-    >
+    <div className={`absolute z-20 ${technology.position}`}>
       <div
         className="
           tech-float
@@ -135,10 +130,7 @@ function FloatingTechnology({
           animationDuration: technology.duration,
         }}
       >
-        <Icon
-          size={compact ? 17 : 20}
-          className={technology.color}
-        />
+        <Icon size={compact ? 17 : 20} className={technology.color} />
 
         <span
           className="
@@ -173,11 +165,7 @@ function ClaudeBadge() {
           animationDuration: "6.3s",
         }}
       >
-        <BrainCircuit
-          size={20}
-          className="text-orange-300"
-          aria-hidden="true"
-        />
+        <SiClaude size={20} className="text-[#D97757]" aria-hidden="true" />
         <span className="text-[10px] font-semibold text-slate-100 sm:text-xs">
           Claude
         </span>
@@ -186,11 +174,7 @@ function ClaudeBadge() {
   );
 }
 
-function LoginTechVisual({
-  fa,
-}: {
-  fa: boolean;
-}) {
+function LoginTechVisual({ fa }: { fa: boolean }) {
   return (
     <div
       aria-hidden="true"
@@ -213,8 +197,7 @@ function LoginTechVisual({
           opacity-[0.12]
         "
         style={{
-          backgroundImage:
-            "radial-gradient(#94a3b8 0.7px, transparent 0.7px)",
+          backgroundImage: "radial-gradient(#94a3b8 0.7px, transparent 0.7px)",
           backgroundSize: "22px 22px",
         }}
       />
@@ -293,10 +276,7 @@ function LoginTechVisual({
             sm:size-12
           "
         >
-          <Code2
-            size={27}
-            strokeWidth={1.7}
-          />
+          <Code2 size={27} strokeWidth={1.7} />
         </div>
 
         <span
@@ -323,10 +303,7 @@ function LoginTechVisual({
 
       {/* Technology badges */}
       {technologies.map((technology) => (
-        <FloatingTechnology
-          key={technology.name}
-          technology={technology}
-        />
+        <FloatingTechnology key={technology.name} technology={technology} />
       ))}
 
       <ClaudeBadge />
@@ -422,7 +399,7 @@ export default function AdminLogin() {
           ? lang.invalidCredentials
           : status === 400
             ? lang.validation
-          : localizedError({ ...normalized, code: status }, locale);
+            : localizedError({ ...normalized, code: status }, locale);
 
       setError(message);
       toast.error(message);
@@ -472,9 +449,7 @@ export default function AdminLogin() {
         lg:py-16
       "
     >
-      <Toaster
-        position={fa ? "bottom-left" : "bottom-right"}
-      />
+      <Toaster position={fa ? "bottom-left" : "bottom-right"} />
 
       {/* Background ambience */}
       <div
@@ -525,11 +500,7 @@ export default function AdminLogin() {
               dark:text-emerald-300
             "
           >
-            <ShieldCheck
-              size={22}
-              strokeWidth={1.7}
-              aria-hidden="true"
-            />
+            <ShieldCheck size={22} strokeWidth={1.7} aria-hidden="true" />
           </div>
 
           <div>
@@ -549,9 +520,7 @@ export default function AdminLogin() {
                 dark:text-slate-400
               "
             >
-              {fa
-                ? "فضای مدیریت پورتفولیو"
-                : "Portfolio Management"}
+              {fa ? "فضای مدیریت پورتفولیو" : "Portfolio Management"}
             </p>
           </div>
         </div>
@@ -702,11 +671,7 @@ export default function AdminLogin() {
                   dark:text-emerald-300
                 "
               >
-                <LockKeyhole
-                  size={22}
-                  strokeWidth={1.7}
-                  aria-hidden="true"
-                />
+                <LockKeyhole size={22} strokeWidth={1.7} aria-hidden="true" />
               </div>
 
               <span
@@ -768,9 +733,7 @@ export default function AdminLogin() {
                 <input
                   id="admin-email"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
+                  onChange={(event) => setEmail(event.target.value)}
                   type="email"
                   inputMode="email"
                   autoComplete="email"
@@ -802,9 +765,7 @@ export default function AdminLogin() {
                   <input
                     id="admin-password"
                     value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
+                    onChange={(event) => setPassword(event.target.value)}
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     dir="ltr"
@@ -817,9 +778,7 @@ export default function AdminLogin() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowPassword((value) => !value)
-                    }
+                    onClick={() => setShowPassword((value) => !value)}
                     disabled={busy}
                     aria-label={
                       showPassword
@@ -902,24 +861,13 @@ export default function AdminLogin() {
                       className="animate-spin motion-reduce:animate-none"
                       aria-hidden="true"
                     />
-                    <span>
-                      {fa
-                        ? "در حال ورود..."
-                        : "Signing in..."}
-                    </span>
+                    <span>{fa ? "در حال ورود..." : "Signing in..."}</span>
                   </>
                 ) : (
                   <>
-                    <span>
-                      {fa
-                        ? "ورود به داشبورد"
-                        : "Enter dashboard"}
-                    </span>
+                    <span>{fa ? "ورود به داشبورد" : "Enter dashboard"}</span>
 
-                    <Arrow
-                      size={18}
-                      aria-hidden="true"
-                    />
+                    <Arrow size={18} aria-hidden="true" />
                   </>
                 )}
               </button>

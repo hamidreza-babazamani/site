@@ -2144,7 +2144,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
   }
   if (checking)
     return (
-      <main className="min-h-[78vh] bg-[#f7faf9] p-6 dark:bg-[#0b1118]">
+      <main className="min-h-[78vh] bg-[#f7faf9] p-6 dark:bg-[#0b1118] over">
         <div className="mx-auto max-w-7xl space-y-5">
           <div className="h-12 w-64 animate-pulse rounded-xl bg-slate-200 dark:bg-white/10" />
           <div className="h-72 animate-pulse rounded-3xl bg-slate-200 dark:bg-white/10" />
@@ -2251,37 +2251,77 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
           </div>
         </aside>
         <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200/80 bg-[#f7faf9]/85 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1118]/85 sm:px-8">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setMobileOpen(true)}
-                aria-label={fa ? "باز کردن منو" : "Open menu"}
-                aria-expanded={mobileOpen}
-                className="rounded-xl border border-slate-200 p-2 lg:hidden dark:border-white/10"
-              >
-                <Menu size={18} />
-              </button>
-              <div>
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <span>{fa ? "داشبورد" : "Dashboard"}</span>
-                  <ChevronDown size={12} />
-                  <span className="text-emerald-500">{title}</span>
-                </div>
-                <h1 className="mt-1 text-lg font-bold sm:text-xl">{title}</h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <ThemeToggle />
-              <a
-                href={`/${locale}`}
-                className="hidden items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-emerald-400 hover:text-emerald-500 sm:flex dark:border-white/10"
-              >
-                <ExternalLink size={14} />
-                {fa ? "مشاهده سایت" : "View site"}
-              </a>
-            </div>
-          </header>
+          
+<header
+  className="
+    sticky top-0 z-30
+    w-full min-w-0
+    border-b border-slate-200/80
+    bg-[#f7faf9]/90 backdrop-blur-xl
+    dark:border-white/10
+    dark:bg-[#0b1118]/90
+  "
+>
+  <div
+    className="
+      flex min-h-16 items-center
+      justify-between gap-2
+      px-3 sm:min-h-20 sm:px-6
+    "
+  >
+    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        aria-label={fa ? "باز کردن منو" : "Open menu"}
+        aria-expanded={mobileOpen}
+        className="
+          flex h-10 w-10 shrink-0
+          items-center justify-center
+          rounded-xl border border-slate-200
+          bg-white shadow-sm
+          dark:border-white/10 dark:bg-white/5
+          lg:hidden
+        "
+      >
+        <Menu size={19} />
+      </button>
+
+      <div className="min-w-0 flex-1">
+        <p className="hidden text-xs text-slate-400 sm:block">
+          {fa ? "داشبورد مدیریت" : "Admin dashboard"}
+        </p>
+
+        <h1 className="truncate text-sm font-bold sm:text-xl">
+          {title}
+        </h1>
+      </div>
+    </div>
+
+    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+      <LanguageSwitcher />
+      <ThemeToggle />
+
+      <a
+        href={`/${locale}`}
+        className="
+          hidden items-center gap-2
+          rounded-xl border border-slate-200
+          px-3 py-2 text-xs font-semibold
+          text-slate-500 transition-colors
+          hover:border-emerald-400
+          hover:text-emerald-500
+          dark:border-white/10
+          lg:flex
+        "
+      >
+        <ExternalLink size={14} />
+        {fa ? "مشاهده سایت" : "View site"}
+      </a>
+    </div>
+  </div>
+</header>
+
           <div className="p-4 sm:p-8">
             {active === "overview" ? (
               <Overview
