@@ -16,7 +16,8 @@
     "links": {
       "home": "Home",
       "services": "Services",
-      "resume": "Resume",
+      "resume": "Skills",
+      "profile": "Aboute Me",
       "work": "Portfolio",
       "contact": "Contact"
     },

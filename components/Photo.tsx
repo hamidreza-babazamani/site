@@ -1,20 +1,39 @@
-import Image from "next/image";
+import { getLocale } from "next-intl/server";
+import HeroImage from "@/components/HeroImage";
+import HeroTechEcosystem from "@/components/HeroTechEcosystem";
+import type { PublicHero } from "@/lib/services/public-portfolio";
 
-function Photo() {
+export default async function Photo({ hero }: { hero: PublicHero | null }) {
+  const locale = await getLocale();
+
+  const alt =
+    hero?.image?.alt?.[locale as "fa" | "en"] ||
+    hero?.image?.alt?.en ||
+    (locale === "fa"
+      ? "تصویر کامیار کمالی، توسعه‌دهنده فرانت‌اند"
+      : "Portrait of Kamyar Kamali, Front-end Developer");
+
   return (
-    <div className="relative w-[298px] h-[298px] xl:w-[498px] xl:h-[498px]">
-      <Image
-        src="/images/kamyar.jpg"
-        priority
-        quality={80}
-        fill
-        alt="Portrait of Kamyar Kamali, Front-end Developer"
-        className="object-cover rounded-full"
+    <div
+      className="
+        relative mx-auto
+        h-[280px] w-[280px]
+        sm:h-[380px] sm:w-[380px]
+        xl:h-[498px] xl:w-[498px]
+      "
+    >
+      <HeroImage src={hero?.image?.url} alt={alt} />
+
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute inset-0 z-10
+          rounded-full bg-black/20
+        "
       />
 
-      <div className="absolute top-0 left-0 w-full h-full bg-black/30 z-10 rounded-full" />
+      <HeroTechEcosystem />
     </div>
   );
 }
-
-export default Photo;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
 import { connectDatabase } from "@/lib/server/db";
 import {
   Admin,
@@ -27,6 +27,7 @@ import {
   ok,
   requireAdmin,
   tokenFor,
+  validateSameOrigin,
   validate,
 } from "@/lib/server/api";
 import { removeMedia, saveMedia } from "@/lib/server/storage";
@@ -121,6 +122,24 @@ const publicFields = (item: any) => {
   const { createdAt, updatedAt, key, updatedBy, ...rest } = item;
   return rest;
 };
+const publicMedia = (media: any) =>
+  media?.url
+    ? { url: media.url, ...(media.alt ? { alt: media.alt } : {}) }
+    : media;
+const publicContent = (item: any): any => {
+  const value = publicFields(item);
+  if (!value || typeof value !== "object") return value;
+  if (value.image) value.image = publicMedia(value.image);
+  if (value.file) value.file = publicMedia(value.file);
+  if (Array.isArray(value.images)) value.images = value.images.map(publicMedia);
+  return value;
+};
+const publicProfileFields = (item: any) => {
+  const value = publicContent(item);
+  if (!value || typeof value !== "object") return value;
+  const { email: _email, ...safe } = value;
+  return safe;
+};
 const escapeRegex = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const queryOptions = (url: URL, allowedSort: string[] = ["order"]) => {
@@ -153,7 +172,16 @@ const clean = (input: Record<string, unknown>, fields: string[]) =>
   Object.fromEntries(
     fields
       .filter((x) => Object.hasOwn(input, x))
-      .map((x) => [x, normalize(input[x])]),
+      .map((x) => {
+        const value = normalize(input[x]);
+        return [
+          x,
+          ["liveUrl", "repositoryUrl", "url", "primaryCtaUrl"].includes(x) &&
+          value === ""
+            ? null
+            : value,
+        ];
+      }),
   );
 const parseForm = async (request: Request) => {
   const contentType = request.headers.get("content-type") || "";
@@ -231,6 +259,28 @@ const checkLoginRate = (request: Request, _email?: string) => {
 };
 
 async function publicGet(parts: string[], url: URL) {
+  if (parts[0] === "resume" && parts[1] === "download" && parts.length === 2) {
+    const resume = await Resume.findOne({ key: "default" }).select("file").lean();
+    const fileUrl = resume?.file?.url;
+    if (!fileUrl) throw new ApiError(404, "Resume is not available");
+    let parsedUrl: URL;
+    try { parsedUrl = new URL(fileUrl); } catch { throw new ApiError(404, "Resume is not available"); }
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:")
+      throw new ApiError(404, "Resume is not available");
+    let upstream: Response;
+    try {
+      upstream = await fetch(parsedUrl, { cache: "no-store", signal: AbortSignal.timeout(15_000) });
+    } catch { throw new ApiError(502, "Unable to retrieve the resume"); }
+    if (!upstream.ok || !upstream.body) throw new ApiError(502, "Unable to retrieve the resume");
+    return new Response(upstream.body, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": 'attachment; filename="resume.pdf"',
+        "Cache-Control": "public, max-age=300, s-maxage=300",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
   if (parts[0] === "portfolio") {
     const [
       hero,
@@ -256,15 +306,15 @@ async function publicGet(parts: string[], url: URL) {
       ContactMethod.find({ isVisible: true }).sort({ order: 1 }).lean(),
     ]);
     return ok({
-      hero: publicFields(hero),
-      profile: publicFields(profile),
-      experiences: experiences.map(publicFields),
-      services: services.map(publicFields),
-      technologies: technologies.map(publicFields),
+      hero: publicContent(hero),
+      profile: publicProfileFields(profile),
+      experiences: experiences.map(publicContent),
+      services: services.map(publicContent),
+      technologies: technologies.map(publicContent),
       languages: languages.map(publicFields),
-      projects: projects.map(publicFields),
-      resume: publicFields(resume),
-      contactMethods: contactMethods.map(publicFields),
+      projects: projects.map(publicContent),
+      resume: publicContent(resume),
+      contactMethods: contactMethods.map(publicContent),
     });
   }
   if (singleton[parts[0]]) {
@@ -274,7 +324,7 @@ async function publicGet(parts: string[], url: URL) {
         ...(parts[0] === "hero" ? { isVisible: true } : {}),
       })
       .lean();
-    return ok(publicFields(item));
+    return ok(parts[0] === "profile" ? publicProfileFields(item) : publicContent(item));
   }
   const resource = resources[parts[0]];
   if (!resource || parts.length !== 1)
@@ -295,7 +345,7 @@ async function publicGet(parts: string[], url: URL) {
     .limit(q.limit)
     .select("-createdAt -updatedAt")
     .lean();
-  return ok(data.map(publicFields));
+  return ok(data.map(publicContent));
 }
 
 async function adminGet(parts: string[], url: URL) {
@@ -362,6 +412,7 @@ async function publicPost(parts: string[], request: Request) {
   return json({ success: true, data: { id: item._id.toString() } }, 201);
 }
 async function adminWrite(parts: string[], request: Request, method: string) {
+  validateSameOrigin(request, { requireOrigin: true });
   await requireAdmin();
   const name = parts[0];
   if (name === "contact-messages" || name === "messages") {
@@ -450,6 +501,7 @@ async function removeMediaIfUnused(fileId?: string) {
 }
 
 async function mediaWrite(parts: string[], request: Request, method: string) {
+  validateSameOrigin(request, { requireOrigin: true });
   await requireAdmin();
   const kind = parts[0];
   const isProject =
@@ -578,6 +630,7 @@ async function handler(
   }
   if (parts[0] === "auth") {
     if (parts[1] === "login" && request.method === "POST") {
+      validateSameOrigin(request, { requireOrigin: true });
       const input = await body(request);
       if (
         typeof input.email !== "string" ||
@@ -606,6 +659,7 @@ async function handler(
       return json({ success: true, admin: safe });
     }
     if (parts[1] === "logout" && request.method === "POST") {
+      validateSameOrigin(request, { requireOrigin: true });
       (await cookies()).set("admin_token", "", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -640,19 +694,33 @@ async function handler(
 }
 const wrap =
   (fn: typeof handler) =>
-  (request: Request, context: { params: Promise<{ path: string[] }> }) =>
-    fn(request, context).catch(fail);
+  async (request: Request, context: { params: Promise<{ path: string[] }> }) => {
+    try {
+      const response = await fn(request, context);
+      const { path } = await context.params;
+      if (path[0] === "admin" && request.method !== "GET") {
+        // محتوای عمومی پس از تغییر موفق پنل باید در مسیرهای فارسی و انگلیسی تازه شود.
+        // این invalidation فقط هنگام mutation اجرا می‌شود و caching عمومی را خاموش نمی‌کند.
+        revalidatePath("/fa", "layout");
+        revalidatePath("/en", "layout");
+      }
+      return response;
+    } catch (error) {
+      return fail(error);
+    }
+  };
 const route = async (
   request: Request,
   context: { params: Promise<{ path: string[] }> },
 ) => {
   const { path } = await context.params;
   if (request.method === "GET" && path.length === 1 && path[0] === "health") {
-    const ready = mongoose.connection.readyState === 1;
-    return json(
-      { success: ready, message: "Backend is running 🚀" },
-      ready ? 200 : 503,
-    );
+    try {
+      await connectDatabase();
+      return json({ success: true, message: "Backend is running 🚀" });
+    } catch {
+      return json({ success: false, message: "Database is unavailable" }, 503);
+    }
   }
   return handler(request, context);
 };

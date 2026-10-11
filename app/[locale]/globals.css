@@ -1,92 +1,56 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* فعال‌سازی Dark Mode با کلاس dark */
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --backgroundColor: #1c1c22;
-}
+/* ========================================
+   تنظیمات پایه
+======================================== */
 
-.dark {
-  background-color: var(--backgroundColor);
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
+html {
   box-sizing: border-box;
   min-height: 100%;
-  font-family: var(--font-iran), var(--font-en), sans-serif;
-  transition: background 0.5s ease, color 0.5s ease;
+  background-color: var(--background);
+  color-scheme: light;
 }
 
-/* فقط box-sizing برای همه، نه margin/padding */
+html.dark {
+  color-scheme: dark;
+}
+
 *,
 *::before,
 *::after {
   box-sizing: inherit;
 }
 
-html.dark {
-  background-color: #171717;
-  color: #fff;
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: var(--font-iran), var(--font-en), sans-serif;
+  line-height: 1.6;
+  color: var(--foreground);
+
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
 }
 
-/* لایت مود با افکت موج */
-html:not(.dark) {
-  background-color: #171717;
-  background-image: radial-gradient(
-    circle at 50% 0%,
-    rgba(255, 255, 255, 0.05),
-    transparent 70%
-  );
-  background-size: 100% 200%;
-  animation: wave 8s ease-in-out infinite;
-  color: #fff;
-}
+/* ========================================
+   انیمیشن‌های گرادیان
+======================================== */
 
-@keyframes wave {
+@keyframes gradient-wave {
   0%,
   100% {
-    background-position: center 0%;
-  }
-  50% {
-    background-position: center 100%;
-  }
-}
-
-/* بدنه */
-body {
-  line-height: 1.6;
-}
-
-@keyframes gradient-wave {
-  0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-gradient-wave {
-  background-size: 200% 200%;
-  animation: gradient-wave 6s ease infinite;
-}
-
-@keyframes gradient-wave {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }
 
@@ -96,14 +60,13 @@ body {
 }
 
 @keyframes gradient-move {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  0%,
   100% {
     background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
   }
 }
 
@@ -112,19 +75,44 @@ body {
   animation: gradient-move 5s ease infinite;
 }
 
+@keyframes gradient-x {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 5s ease infinite;
+}
+
+/* ========================================
+   انیمیشن اسکرول
+======================================== */
+
 @keyframes scroll {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
 }
 
 .animate-scroll {
-  animation: scroll 40s linear infinite;
   display: flex;
+  animation: scroll 40s linear infinite;
 }
+
+/* ========================================
+   افکت متن دورخط
+======================================== */
 
 .text-outline {
   -webkit-text-stroke: 1px #ffffff;
@@ -134,10 +122,15 @@ body {
   -webkit-text-stroke: 1px #00ff99;
 }
 
+/* ========================================
+   افکت Shimmer
+======================================== */
+
 @keyframes shimmer-effect {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -150,63 +143,66 @@ body {
   left: -100%;
   width: 200%;
   height: 100%;
+
   background: linear-gradient(
     120deg,
     transparent 0%,
     rgba(255, 255, 255, 0.2) 50%,
     transparent 100%
   );
+
   animation: shimmer-effect 2s infinite;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
 }
 
 .group:hover .shimmer-layer::before {
   opacity: 1;
 }
 
-@keyframes gradient-x {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-.animate-gradient-x {
-  background-size: 200% 200%;
-  animation: gradient-x 5s ease infinite;
-}
+/* ========================================
+   Tailwind v4 Theme Tokens
+======================================== */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
   --color-destructive: var(--destructive);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -217,80 +213,388 @@ body {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ========================================
+   Light Mode — Soft Pearl
+======================================== */
+
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+
+  --background: #f8fafc;
+  --foreground: #142235;
+
+  --card: #ffffff;
+  --card-foreground: #142235;
+
+  --popover: #ffffff;
+  --popover-foreground: #142235;
+
+  --primary: #087f68;
+  --primary-foreground: #ffffff;
+
+  --secondary: #e8f4f1;
+  --secondary-foreground: #164e45;
+
+  --muted: #eef3f6;
+  --muted-foreground: #64748b;
+
+  --accent: #ddf5ec;
+  --accent-foreground: #086b57;
+
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+
+  --border: #dce7e9;
+  --input: #dce7e9;
+  --ring: #10b981;
+
+  /* نمودارها */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #142235;
+  --sidebar-primary: #087f68;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f4f1;
+  --sidebar-accent-foreground: #164e45;
+  --sidebar-border: #dce7e9;
+  --sidebar-ring: #10b981;
 }
 
+/* ========================================
+   Dark Mode — Deep Midnight
+======================================== */
+
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #0c1118;
+  --foreground: #f1f5f9;
+
+  --card: #151e29;
+  --card-foreground: #f1f5f9;
+
+  --popover: #151e29;
+  --popover-foreground: #f1f5f9;
+
+  --primary: #5ee9ba;
+  --primary-foreground: #071b16;
+
+  --secondary: #1c2b35;
+  --secondary-foreground: #e2e8f0;
+
+  --muted: #1c2b35;
+  --muted-foreground: #a3b3c1;
+
+  --accent: #18382f;
+  --accent-foreground: #a7f3d0;
+
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+
+  --border: #293742;
+  --input: #293742;
+  --ring: #34d399;
+
+  /* نمودارها */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+
+  /* Sidebar */
+  --sidebar: #151e29;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #5ee9ba;
+  --sidebar-primary-foreground: #071b16;
+  --sidebar-accent: #1c2b35;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #293742;
+  --sidebar-ring: #34d399;
 }
+
+/* ========================================
+   Aurora Background — Light
+======================================== */
+
+html:not(.dark) {
+  background-color: #f8fafc;
+}
+
+html:not(.dark) body {
+  background-color: var(--background);
+
+  background-image:
+    radial-gradient(
+      ellipse 65% 45% at 5% 5%,
+      rgba(16, 185, 129, 0.09),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 95% 25%,
+      rgba(6, 182, 212, 0.07),
+      transparent 75%
+    );
+
+  background-repeat: no-repeat;
+}
+
+/* ========================================
+   Aurora Background — Dark
+======================================== */
+
+html.dark {
+  background-color: #0c1118;
+}
+
+html.dark body {
+  background-color: var(--background);
+
+  background-image:
+    radial-gradient(
+      ellipse 65% 45% at 5% 5%,
+      rgba(16, 185, 129, 0.10),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 95% 30%,
+      rgba(6, 182, 212, 0.07),
+      transparent 75%
+    );
+
+  background-repeat: no-repeat;
+}
+
+/* ========================================
+   استایل‌های پایه shadcn/ui
+======================================== */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ========================================
+   Accessibility — Reduced Motion
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+
+/* ========================================
+   Shooting Stars — Hero Background
+======================================== */
+
+.shooting-star-dot {
+  background: #0d9488;
+  box-shadow: 0 0 6px rgba(13, 148, 136, 0.35);
+  animation: star-drift 8s ease-in-out infinite alternate;
+}
+
+.dark .shooting-star-dot {
+  background: #ccfbf1;
+  box-shadow: 0 0 9px rgba(45, 212, 191, 0.6);
+}
+
+@keyframes star-drift {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(0, 0, 0) scale(0.7);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: translate3d(12px, -15px, 0) scale(1.2);
+  }
+
+  100% {
+    opacity: 0.3;
+    transform: translate3d(20px, -25px, 0) scale(0.8);
+  }
+}
+
+/* شهاب دنباله‌دار */
+.shooting-meteor {
+  width: clamp(100px, 12vw, 180px);
+  height: 2px;
+  border-radius: 999px;
+  opacity: 0;
+
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(13, 148, 136, 0.35) 35%,
+    rgba(13, 148, 136, 0.95) 100%
+  );
+
+  box-shadow:
+    0 0 8px rgba(13, 148, 136, 0.4),
+    0 0 16px rgba(13, 148, 136, 0.15);
+
+  transform-origin: right center;
+  animation: meteor-travel 7s linear infinite;
+}
+
+.dark .shooting-meteor {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(45, 212, 191, 0.5) 35%,
+    rgba(165, 243, 252, 1) 100%
+  );
+
+  box-shadow:
+    0 0 10px rgba(45, 212, 191, 0.6),
+    0 0 22px rgba(45, 212, 191, 0.25);
+}
+
+.shooting-meteor::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #0d9488;
+  transform: translateY(-50%);
+  box-shadow: 0 0 10px rgba(13, 148, 136, 0.8);
+}
+
+.dark .shooting-meteor::after {
+  background: #ccfbf1;
+  box-shadow: 0 0 12px rgba(165, 243, 252, 0.95);
+}
+
+
+@keyframes meteor-travel {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(35deg);
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  45% {
+    opacity: 0;
+    transform: translate3d(320px, 230px, 0) rotate(35deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(320px, 230px, 0) rotate(35deg);
+  }
+}
+
+
+/* دسترس‌پذیری */
+@media (prefers-reduced-motion: reduce) {
+  .shooting-star-dot {
+    animation: none;
+    opacity: 0.4;
+  }
+
+  .shooting-meteor {
+    animation: none;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes skills-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-skills-marquee {
+  animation: skills-marquee 55s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-skills-marquee {
+    animation: none;
+  }
+}
+
+@keyframes heroTechFloating {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+.hero-tech-float {
+  animation-name: heroTechFloating;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-tech-float {
+    animation: none;
+  }
+}
+
+@keyframes heroTechFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+.hero-tech-float {
+  animation-name: heroTechFloat;
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-tech-float {
+    animation: none !important;
   }
 }

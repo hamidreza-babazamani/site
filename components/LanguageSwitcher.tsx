@@ -1,173 +1,241 @@
+
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { Check, ChevronDown, Languages } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const languages = [
+  {
+    code: "fa",
+    label: "فارسی",
+    flag: "/flags/flagiran.webp",
+  },
+  {
+    code: "en",
+    label: "English",
+    flag: "/flags/flagamerican.png",
+  },
+] as const;
+
+type Locale = (typeof languages)[number]["code"];
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
-  const router = useRouter();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // تشخیص جهت صفحه (LTR یا RTL)
-  const direction = locale === "fa" ? "rtl" : "ltr";
+  const current =
+    languages.find((lang) => lang.code === locale) ??
+    languages[0];
 
-  // بستن دراپ‌داون وقتی کلیک خارج انجام بشه
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleChangeLocale = (newLocale: Locale) => {
+    if (newLocale === locale) return;
 
-  // جابجایی زبان
-  const handleChangeLocale = (newLocale: string) => {
+    const query = searchParams.toString();
+    const hash = window.location.hash;
+    const suffix = `${query ? `?${query}` : ""}${hash}`;
+
+    const isAdminRoute =
+      pathname === "/admin" ||
+      pathname.startsWith("/admin/");
+
+    if (isAdminRoute) {
+      // مسیر ادمین بدون پیشوند زبان باقی می‌ماند.
+      document.cookie =
+        `NEXT_LOCALE=${newLocale}; Path=/; Max-Age=31536000; SameSite=Lax`;
+
+      window.location.assign(`${pathname}${suffix}`);
+      return;
+    }
+
+    // پشتیبانی از مسیرهای دارای پیشوند و بدون پیشوند
     const segments = pathname.split("/");
-    segments[1] = newLocale;
-    router.replace(segments.join("/"));
-    setOpen(false);
+    const hasLocalePrefix =
+      segments[1] === "fa" || segments[1] === "en";
+
+    const nextPath = hasLocalePrefix
+      ? `/${newLocale}${pathname.slice(3) || ""}`
+      : `/${newLocale}${pathname === "/" ? "" : pathname}`;
+
+    router.replace(`${nextPath}${suffix}`);
   };
 
-  const languages = [
-    { code: "fa", label: "فارسی", flag: "/flags/flagiran.webp" },
-    { code: "en", label: "English", flag: "/flags/flagamerican.png" },
-  ];
-
-  const current = languages.find((l) => l.code === locale);
-
-  // جلوگیری از overflow در موبایل (کنترل موقعیت و اندازه)
-  // این useEffect برای تغییر موقعیت در صورت overflow می‌تونه اضافه بشه
-  useEffect(() => {
-    if (!open) return;
-
-    const dropdown = dropdownRef.current;
-    if (!dropdown) return;
-
-    const rect = dropdown.getBoundingClientRect();
-    const padding = 10; // فاصله از لبه صفحه
-
-    if (direction === "rtl") {
-      if (rect.left < padding) {
-        // اگر از چپ بیرون رفت، جابجا کن
-        dropdown.style.left = `${padding}px`;
-        dropdown.style.right = "auto";
-      } else {
-        dropdown.style.left = "auto";
-        dropdown.style.right = "0";
-      }
-    } else {
-      if (rect.right > window.innerWidth - padding) {
-        dropdown.style.right = `${padding}px`;
-        dropdown.style.left = "auto";
-      } else {
-        dropdown.style.right = "0";
-        dropdown.style.left = "auto";
-      }
-    }
-  }, [open, direction]);
-
   return (
-    <div
-      ref={dropdownRef}
-      className={`relative inline-block text-left ${
-        direction === "rtl" ? "direction-rtl" : "direction-ltr"
-      }`}
-      dir={direction}
-    >
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full max-w-[160px] sm:max-w-[200px]"
-        aria-haspopup="true"
-        aria-expanded={open}
-        aria-label="Select language"
-      >
-        <Image
-          src={current?.flag || ""}
-          alt={locale}
-          width={20}
-          height={20}
-          className="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-full flex-shrink-0"
-        />
-        <span className="truncate">{current?.label}</span>
-        <svg
-          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 transition-transform duration-200 ml-auto ${
-            open ? "rotate-180" : ""
-          }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          aria-hidden="true"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={
+            locale === "fa"
+              ? "تغییر زبان سایت"
+              : "Change website language"
+          }
+          className="
+            group
+            inline-flex h-10
+            max-w-[155px]
+            items-center justify-center
+            gap-2
+            rounded-xl
+            border border-emerald-900/10
+            bg-white/70
+            px-3
+            text-sm font-medium
+            text-slate-700
+            shadow-[0_4px_16px_rgba(15,118,110,0.04)]
+            backdrop-blur-md
+            outline-none
+            transition-[color,background-color,border-color,box-shadow]
+            duration-300
+            hover:border-emerald-500/30
+            hover:bg-emerald-50/80
+            hover:text-emerald-800
+            focus-visible:ring-2
+            focus-visible:ring-emerald-500/50
+            dark:border-white/10
+            dark:bg-white/[0.05]
+            dark:text-slate-200
+            dark:hover:border-emerald-400/30
+            dark:hover:bg-emerald-400/[0.08]
+            dark:hover:text-emerald-200
+            sm:h-11
+            sm:px-3.5
+          "
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
+          <Languages
+            size={16}
+            aria-hidden="true"
+            className="
+              shrink-0
+              text-emerald-600
+              dark:text-emerald-400
+            "
           />
-        </svg>
-      </button>
 
-      <div
-        className={`absolute z-20 mt-2 w-full max-w-[200px] sm:max-w-[220px] rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-200 origin-top-${
-          direction === "rtl" ? "left" : "right"
-        } ${
-          open
-            ? "opacity-100 scale-100 translate-y-0"
-            : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-        }`}
-        style={{
-          right: direction === "ltr" ? "0" : undefined,
-          left: direction === "rtl" ? "0" : undefined,
-        }}
+          <Image
+            src={current.flag}
+            alt=""
+            width={20}
+            height={20}
+            className="
+              h-[18px] w-[18px]
+              shrink-0
+              rounded-full
+              object-cover
+              ring-1 ring-slate-200
+              dark:ring-white/15
+            "
+          />
+
+          <span className="truncate">
+            {current.label}
+          </span>
+
+          <ChevronDown
+            size={14}
+            aria-hidden="true"
+            className="
+              shrink-0
+              text-slate-400
+              transition-transform duration-200
+              group-data-[state=open]:rotate-180
+              dark:text-slate-500
+            "
+          />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        collisionPadding={12}
+        className="
+          z-50
+          min-w-[175px]
+          rounded-2xl
+          border border-emerald-900/10
+          bg-white/95
+          p-1.5
+          text-slate-800
+          shadow-[0_16px_45px_rgba(15,23,42,0.12)]
+          backdrop-blur-xl
+          dark:border-white/10
+          dark:bg-[#141c26]/95
+          dark:text-slate-100
+          dark:shadow-[0_16px_45px_rgba(0,0,0,0.4)]
+        "
       >
-        <ul className="py-1 max-h-60 overflow-y-auto">
-          {languages.map((lang) => (
-            <li key={lang.code}>
-              <button
-                onClick={() => handleChangeLocale(lang.code)}
-                className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-left transition-colors truncate ${
-                  locale === lang.code
-                    ? "bg-gray-100 dark:bg-gray-700 font-semibold text-blue-600 dark:text-blue-400"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-              >
-                <Image
-                  src={lang.flag}
-                  alt={lang.code}
-                  width={20}
-                  height={20}
-                  className="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-full flex-shrink-0"
+        {languages.map((lang) => {
+          const selected = locale === lang.code;
+
+          return (
+            <DropdownMenuItem
+              key={lang.code}
+              onSelect={() => handleChangeLocale(lang.code)}
+              className={`
+                flex cursor-pointer
+                items-center gap-3
+                rounded-xl
+                px-3 py-2.5
+                text-sm
+                outline-none
+                transition-colors
+                focus:bg-emerald-500/10
+                focus:text-emerald-800
+                dark:focus:bg-emerald-400/10
+                dark:focus:text-emerald-200
+                ${
+                  selected
+                    ? "bg-emerald-500/10 font-semibold text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-300"
+                    : "text-slate-700 dark:text-slate-300"
+                }
+              `}
+            >
+              <Image
+                src={lang.flag}
+                alt=""
+                width={22}
+                height={22}
+                className="
+                  h-5 w-5
+                  shrink-0
+                  rounded-full
+                  object-cover
+                  ring-1 ring-slate-200
+                  dark:ring-white/15
+                "
+              />
+
+              <span className="flex-1">
+                {lang.label}
+              </span>
+
+              {selected && (
+                <Check
+                  size={16}
+                  aria-hidden="true"
+                  className="
+                    shrink-0
+                    text-emerald-600
+                    dark:text-emerald-400
+                  "
                 />
-                <span className="truncate">{lang.label}</span>
-                {locale === lang.code && (
-                  <svg
-                    className="w-4 h-4 ml-auto text-blue-500 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+              )}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

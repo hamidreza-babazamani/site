@@ -1,9 +1,11 @@
 import WorkComponent from "@/components/Contact";
+import { getPublicPortfolio } from "@/lib/services/public-portfolio";
 
-function Contact() {
+async function Contact() {
+  const { contactMethods } = await getPublicPortfolio();
   return (
     <>
-      <WorkComponent />
+      <WorkComponent initialContactMethods={contactMethods} />
     </>
   );
 }

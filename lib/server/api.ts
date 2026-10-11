@@ -43,6 +43,34 @@ export const body = async (request: Request) => {
     throw new ApiError(400, "Invalid JSON body");
   }
 };
+
+/**
+ * اعتبارسنجی Origin برای درخواست‌های تغییر‌دهنده وضعیت.
+ * Origin مورد انتظار از URL خود Request ساخته می‌شود و به Host ارسالی کاربر
+ * اعتماد نمی‌کنیم. برای endpointهای وابسته به کوکی، نبودن Origin نیز رد می‌شود؛
+ * بنابراین مرورگر یا کلاینت داخلی باید صراحتاً همان origin را ارسال کند.
+ * endpointهای عمومیِ بدون نشست می‌توانند این بررسی را اختیاری نگه دارند.
+ */
+export const validateSameOrigin = (
+  request: Request,
+  options: { requireOrigin?: boolean } = {},
+) => {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    if (options.requireOrigin) throw new ApiError(403, "Origin is required");
+    return;
+  }
+
+  let expected: string;
+  let received: string;
+  try {
+    expected = new URL(request.url).origin;
+    received = new URL(origin).origin;
+  } catch {
+    throw new ApiError(403, "Invalid origin");
+  }
+  if (received !== expected) throw new ApiError(403, "Invalid origin");
+};
 export const safeAdmin = (admin: {
   _id: { toString(): string };
   email: string;
@@ -56,17 +84,32 @@ export const tokenFor = (admin: ReturnType<typeof safeAdmin>) =>
 export const requireAdmin = async () => {
   const token = (await cookies()).get("admin_token")?.value;
   if (!token) throw new ApiError(401, "Authentication required");
+  let payload: string | jwt.JwtPayload;
   try {
-    const payload = jwt.verify(token, requiredEnv("JWT_SECRET"), {
+    payload = jwt.verify(token, requiredEnv("JWT_SECRET"), {
       algorithms: ["HS256"],
     });
-    if (typeof payload !== "object" || typeof payload.sub !== "string")
-      throw new Error();
-    const admin = await Admin.findById(payload.sub).select("email role").lean();
-    if (!admin || admin.role !== "admin") throw new Error();
-    return safeAdmin(admin);
   } catch {
     throw new ApiError(401, "Authentication required");
+  }
+  if (typeof payload !== "object" || typeof payload.sub !== "string")
+    throw new ApiError(401, "Authentication required");
+
+  // خطاهای اعتبارسنجی توکن باید ۴۰۱ باشند؛ خطاهای پایگاه‌داده عمداً عبور می‌کنند.
+  const admin = await Admin.findById(payload.sub).select("email role").lean();
+  if (!admin || admin.role !== "admin")
+    throw new ApiError(401, "Authentication required");
+  return safeAdmin(admin);
+};
+
+/** نشست مدیر برای Server Componentها؛ توکن هرگز به کلاینت برگردانده نمی‌شود. */
+export const getAdminSession = async () => {
+  try {
+    return await requireAdmin();
+  } catch (error) {
+    // فقط نشست نامعتبر null می‌شود و خطاهای غیرمنتظره سرور حفظ می‌شوند.
+    if (error instanceof ApiError && error.status === 401) return null;
+    throw error;
   }
 };
 export const ensureId = (id: string, label = "resource") => {
@@ -123,7 +166,7 @@ export const validate = (
       technology: ["name"],
       language: ["name", "level"],
       project: ["title"],
-      contactMethod: ["label"],
+      contactMethod: [],
     } as Record<string, string[]>)[resource] ?? [],
   );
   const hasLocalizedContent = (value: unknown) =>
@@ -212,7 +255,7 @@ export const validate = (
     if (
       input[key] !== undefined &&
       input[key] !== null &&
-      input[key] !== "" &&
+      !(typeof input[key] === "string" && input[key].trim() === "") &&
       !isUrl(input[key])
     )
       errors[key] = `${key} must be an http(s) URL`;

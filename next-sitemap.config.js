@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: "https://kamyarkamali.ir",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir",
 
   generateRobotsTxt: true,
 

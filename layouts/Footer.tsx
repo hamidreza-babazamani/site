@@ -1,91 +1,376 @@
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import React from "react";
 import {
-  FaInstagram,
-  FaTelegramPlane,
-  FaLinkedin,
   FaGithub,
+  FaInstagram,
+  FaLinkedinIn,
+  FaTelegramPlane,
 } from "react-icons/fa";
+import { ArrowUpRight, Heart } from "lucide-react";
 
-const Footer = () => {
+const socialLinks = [
+  {
+    name: "GitHub",
+    href: "https://github.com/Kamyarkamali",
+    icon: FaGithub,
+    hover: "hover:text-slate-900 dark:hover:text-white",
+  },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
+    icon: FaLinkedinIn,
+    hover: "hover:text-[#0A66C2] dark:hover:text-[#70B5F9]",
+  },
+  {
+    name: "Telegram",
+    href: "https://t.me/KamDevJs",
+    icon: FaTelegramPlane,
+    hover: "hover:text-[#229ED9] dark:hover:text-[#55BDEA]",
+  },
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/kamyar_parsi0211/",
+    icon: FaInstagram,
+    hover: "hover:text-[#E1306C] dark:hover:text-[#F472B6]",
+  },
+];
+
+export default function Footer() {
   const t = useTranslations("HomePage");
+
+  const footerLinks = [
+    {
+      label: t("footer.aboutme"),
+      href: "/resume" as const,
+    },
+    {
+      label: t("footer.project"),
+      href: "/work" as const,
+    },
+    {
+      label: t("footer.contact"),
+      href: "/contact" as const,
+    },
+  ];
+
   return (
-    <footer className="bg-gray-100 dark:bg-black dark:text-gray-300 text-gray-700 pt-10 pb-6 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-right">
-        {/* توضیح */}
-        <div>
-          <h3 className="text-2xl font-bold mb-3">{t("footer.name")}</h3>
-          <p className="text-sm dark:text-gray-300 text-gray-700 leading-6">
-            {t("footer.desc")}
-          </p>
-        </div>
+    <footer
+      className="
+        relative isolate overflow-hidden
+        border-t border-emerald-900/10
+        bg-[#f8fafc]
+        text-slate-700
+        dark:border-white/[0.07]
+        dark:bg-[#0c1118]
+        dark:text-slate-300
+      "
+    >
+      {/* Decorative aurora */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      >
+        <div
+          className="
+            absolute -top-44 -start-32
+            h-[350px] w-[350px]
+            rounded-full
+            bg-emerald-400/[0.09]
+            blur-[100px]
+            dark:bg-emerald-500/[0.07]
+          "
+        />
 
-        {/* لینک‌های مفید */}
-        <div>
-          <h4 className="text-lg font-semibold mb-3">{t("footer.link")}</h4>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link
-                href="/resume"
-                className="hover:text-blue-600 transition dark:text-gray-300 text-gray-700"
+        <div
+          className="
+            absolute -bottom-52 -end-28
+            h-[400px] w-[400px]
+            rounded-full
+            bg-cyan-400/[0.09]
+            blur-[110px]
+            dark:bg-cyan-500/[0.06]
+          "
+        />
+
+        <div
+          className="
+            absolute inset-x-0 top-0
+            h-px
+            bg-gradient-to-r
+            from-transparent
+            via-emerald-500/35
+            to-transparent
+          "
+        />
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main content */}
+        <div
+          className="
+            grid grid-cols-1
+            gap-10
+            py-12
+            sm:py-16
+            md:grid-cols-2
+            lg:grid-cols-[1.5fr_1fr_1fr]
+            lg:gap-14
+            lg:py-20
+          "
+        >
+          {/* Brand */}
+          <div className="max-w-md">
+            <Link
+              href="/"
+              className="
+                group inline-flex items-center gap-3
+                rounded-xl
+                focus-visible:outline-2
+                focus-visible:outline-offset-4
+                focus-visible:outline-emerald-500
+              "
+            >
+              <div
+                className="
+                  flex h-11 w-11 shrink-0
+                  items-center justify-center
+                  rounded-2xl
+                  border border-emerald-500/20
+                  bg-gradient-to-br
+                  from-emerald-500/15
+                  to-cyan-500/10
+                  shadow-[0_6px_20px_rgba(16,185,129,0.08)]
+                  dark:border-emerald-400/20
+                "
               >
-                {t("footer.aboutme")}
-              </Link>
-            </li>
-            <li>
-              <Link href="/work" className="hover:text-blue-600 transition">
-                {t("footer.project")}
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" className="hover:text-blue-600 transition">
-                {t("footer.contact")}
-              </Link>
-            </li>
-          </ul>
-        </div>
+                <span
+                  className="
+                    text-lg font-black
+                    text-emerald-700
+                    dark:text-emerald-300
+                  "
+                  aria-hidden="true"
+                >
+                  K.
+                </span>
+              </div>
 
-        <div>
-          <h4 className="text-lg font-semibold mb-3">{t("footer.medi")}</h4>
-          <div className="flex justify-center md:justify-end gap-4 text-xl text-gray-600">
+              <h2
+                className="
+                  text-xl font-bold
+                  tracking-tight
+                  text-slate-900
+                  transition-colors duration-300
+                  group-hover:text-emerald-700
+                  dark:text-slate-100
+                  dark:group-hover:text-emerald-300
+                "
+              >
+                {t("footer.name")}
+              </h2>
+            </Link>
+
+            <p
+              className="
+                mt-5 max-w-sm
+                text-sm leading-8
+                text-slate-600
+                dark:text-slate-400
+                sm:text-[15px]
+              "
+            >
+              {t("footer.desc")}
+            </p>
+
+            {/* Decorative brand line */}
+            <div
+              aria-hidden="true"
+              className="
+                mt-6 h-[3px] w-14
+                rounded-full
+                bg-gradient-to-r
+                from-emerald-500
+                via-teal-400
+                to-cyan-400
+              "
+            />
+          </div>
+
+          {/* Quick links */}
+          <nav aria-label={t("footer.link")}>
+            <h3
+              className="
+                mb-6 text-sm font-bold
+                tracking-wide
+                text-slate-900
+                dark:text-slate-100
+              "
+            >
+              {t("footer.link")}
+            </h3>
+
+            <ul className="space-y-4">
+              {footerLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="
+                      group inline-flex
+                      items-center gap-2
+                      text-sm font-medium
+                      text-slate-600
+                      transition-colors duration-300
+                      hover:text-emerald-700
+                      dark:text-slate-400
+                      dark:hover:text-emerald-300
+                      focus-visible:rounded
+                      focus-visible:outline-2
+                      focus-visible:outline-emerald-500
+                    "
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="
+                        h-1.5 w-1.5
+                        rounded-full
+                        bg-slate-300
+                        transition-colors duration-300
+                        group-hover:bg-emerald-500
+                        dark:bg-slate-600
+                        dark:group-hover:bg-emerald-400
+                      "
+                    />
+
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Social links */}
+          <div>
+            <h3
+              className="
+                mb-6 text-sm font-bold
+                tracking-wide
+                text-slate-900
+                dark:text-slate-100
+              "
+            >
+              {t("footer.medi")}
+            </h3>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+
+                return (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.name}
+                    title={social.name}
+                    className={`
+                      group flex h-12 w-12
+                      items-center justify-center
+                      rounded-2xl
+                      border border-slate-200/80
+                      bg-white/70
+                      text-slate-600
+                      shadow-sm
+                      backdrop-blur-sm
+                      transition-[color,background-color,border-color,transform,box-shadow]
+                      duration-300
+                      hover:-translate-y-1
+                      hover:border-emerald-500/25
+                      hover:bg-white
+                      hover:shadow-[0_8px_24px_rgba(15,118,110,0.10)]
+                      dark:border-white/10
+                      dark:bg-white/[0.04]
+                      dark:text-slate-300
+                      dark:hover:border-emerald-400/25
+                      dark:hover:bg-white/[0.08]
+                      dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)]
+                      focus-visible:outline-2
+                      focus-visible:outline-offset-2
+                      focus-visible:outline-emerald-500
+                      motion-reduce:transform-none
+                      ${social.hover}
+                    `}
+                  >
+                    <Icon aria-hidden="true" className="text-[19px]" />
+                  </a>
+                );
+              })}
+            </div>
+
             <a
               href="https://github.com/Kamyarkamali"
               target="_blank"
-              className="hover:text-black transition"
+              rel="noopener noreferrer"
+              className="
+                mt-6 inline-flex items-center
+                gap-2 text-xs font-medium
+                text-slate-500
+                transition-colors duration-300
+                hover:text-emerald-700
+                dark:text-slate-500
+                dark:hover:text-emerald-300
+              "
             >
-              <FaGithub className="dark:text-gray-300 text-gray-700" />
-            </a>
-            <a
-              href="https://www.linkedin.com/in/kamyar-kamali-671a5822b/"
-              target="_blank"
-              className="hover:text-blue-700 transition"
-            >
-              <FaLinkedin className="dark:text-gray-300 text-gray-700" />
-            </a>
-            <a
-              href="https://t.me/KamDevJs"
-              target="_blank"
-              className="hover:text-blue-500 transition"
-            >
-              <FaTelegramPlane className="dark:text-gray-300 text-gray-700" />
-            </a>
-            <a
-              href="https://www.instagram.com/kamyar_parsi0211/"
-              target="_blank"
-              className="hover:text-pink-500 transition"
-            >
-              <FaInstagram className="dark:text-gray-300 text-gray-700" />
+              <span>github.com/Kamyarkamali</span>
+              <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           </div>
         </div>
-      </div>
 
-      <div className="mt-10 text-center text-sm text-gray-400 border-t pt-4">
-        {t("footer.end")}
+        {/* Bottom bar */}
+        <div
+          className="
+            flex flex-col items-center
+            justify-between gap-4
+            border-t border-slate-200/80
+            py-6 text-center
+            dark:border-white/[0.08]
+            sm:flex-row
+            sm:text-start
+          "
+        >
+          <p
+            className="
+              text-xs leading-6
+              text-slate-500
+              dark:text-slate-500
+              sm:text-sm
+            "
+          >
+            {t("footer.end")}
+          </p>
+
+          <div
+            className="
+              inline-flex items-center gap-2
+              text-xs
+              text-slate-500
+              dark:text-slate-400
+            "
+          >
+            <span>Built with</span>
+
+            <Heart
+              size={13}
+              fill="currentColor"
+              className="text-emerald-500"
+              aria-hidden="true"
+            />
+
+            <span>Next.js & TypeScript</span>
+          </div>
+        </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

@@ -1,24 +1,21 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
-const publicMediaUrl = process.env.R2_PUBLIC_URL;
-const remoteMedia = publicMediaUrl
-  ? (() => {
-      try {
-        const url = new URL(publicMediaUrl);
-        return [
-          {
-            protocol: url.protocol.replace(":", "") as "http" | "https",
-            hostname: url.hostname,
-            port: url.port,
-            pathname: `${url.pathname.replace(/\/$/, "")}/**`,
-          },
-        ];
-      } catch {
-        return [];
-      }
-    })()
-  : [];
+const remoteMedia = [process.env.R2_PUBLIC_URL, process.env.IMAGEKIT_URL_ENDPOINT]
+  .flatMap((mediaUrl) => {
+    if (!mediaUrl) return [];
+    try {
+      const url = new URL(mediaUrl);
+      return [{
+        protocol: url.protocol.replace(":", "") as "http" | "https",
+        hostname: url.hostname,
+        port: url.port,
+        pathname: `${url.pathname.replace(/\/$/, "")}/**`,
+      }];
+    } catch {
+      return [];
+    }
+  });
 
 const nextConfig: NextConfig = {
   images: { remotePatterns: remoteMedia },

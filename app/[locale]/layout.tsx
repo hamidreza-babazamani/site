@@ -8,6 +8,8 @@ import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import { ThemeProvider } from "next-themes";
 
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir").replace(/\/$/, "");
+
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
   variable: "--font-iran",
@@ -62,10 +64,10 @@ export async function generateMetadata({
         ],
 
     alternates: {
-      canonical: `https://kamyarkamali.ir/${locale}`,
+      canonical: `${siteUrl}/${locale}`,
       languages: {
-        fa: "https://kamyarkamali.ir/fa",
-        en: "https://kamyarkamali.ir/en",
+        fa: `${siteUrl}/fa`,
+        en: `${siteUrl}/en`,
       },
     },
     robots: { index: true, follow: true },
@@ -73,7 +75,7 @@ export async function generateMetadata({
       type: "profile",
       title: isFA ? "کامیار کمالی | مهندس نرم‌افزار و اپلیکیشن‌های هوش مصنوعی" : "Kamyar Kamali | Software Engineer for AI Applications",
       description: isFA ? "فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM." : "Frontend engineering, AI-powered web applications, and LLM-enabled products.",
-      url: `https://kamyarkamali.ir/${locale}`,
+      url: `${siteUrl}/${locale}`,
       siteName: "Kamyar Kamali",
       images: [{ url: "https://kamyarkamali.ir/images/kamyar.jpg", width: 1200, height: 630, alt: isFA ? "تصویر کامیار کمالی" : "Kamyar Kamali" }],
     },
@@ -93,7 +95,7 @@ export async function generateMetadata({
         jobTitle: isFA
           ? "توسعه‌دهنده فرانت‌اند و Node.js"
           : "Frontend & Node.js Developer",
-        url: `https://kamyarkamali.ir/${locale}`,
+        url: `${siteUrl}/${locale}`,
         sameAs: [
           "https://github.com/Kamyarkamali",
           "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",

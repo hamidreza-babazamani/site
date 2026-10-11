@@ -184,7 +184,7 @@ export const ContactMethod =
     new Schema(
       {
         type: { type: String, required: true },
-        label: { type: localized, required: true },
+        label: { type: localized },
         value: { type: String, required: true },
         url: String,
         icon: String,

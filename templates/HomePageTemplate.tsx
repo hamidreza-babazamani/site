@@ -2,88 +2,158 @@ import Photo from "@/components/Photo";
 import Sochial from "@/components/Sochial";
 import Stats from "@/components/Stats";
 import { Button } from "@/components/ui/button";
-import { useLocale, useTranslations } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getPublicPortfolio } from "@/lib/services/public-portfolio";
 import { TfiDownload } from "react-icons/tfi";
 import SkillsCircle from "@/components/SkillsCircle";
+import ShootingStars from "@/components/ShootingStars";
 
+async function HomePageTemplate() {
+  const locale = await getLocale();
+  const t = await getTranslations("HomePage");
+  const portfolio = await getPublicPortfolio();
 
-function HomePageTemplate() {
-  const locale = useLocale();
+  const isPersian = locale === "fa";
 
-  const t = useTranslations("HomePage");
   return (
     <section className="w-full">
-      <div className="container mx-auto h-full order-2 xl:order-none px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col xl:flex-row items-center justify-between pt-10 xl:pt-16 pb-16 xl:pb-24 gap-8">
-          {/* text */}
-          <div className="text-center order-2 xl:order-1 xl:text-left dark:text-white text-gray-800 max-w-2xl">
-            <h1
-              className={`text-[32px] sm:text-[40px] md:text-[48px] xl:text-[64px] leading-tight font-semibold ${
-                locale === "fa" ? "text-right" : "text-center xl:text-left"
-              }`}
+      {/* محدوده Hero: افکت ستاره‌ها فقط در این قسمت اجرا می‌شود */}
+      <div className="relative isolate overflow-hidden">
+        {/* لایه پس‌زمینه ستاره‌ها */}
+        <ShootingStars />
+
+        {/* محتوای اصلی Hero بالاتر از لایه ستاره‌ها */}
+        <div className="container relative z-10 mx-auto h-full px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col xl:flex-row items-center justify-between gap-8 pt-10 pb-16 xl:pt-16 xl:pb-24">
+            {/* بخش متن‌های اصلی Hero */}
+            <div
+              className={`
+                order-2 xl:order-1
+                w-full max-w-2xl
+                text-center
+                ${isPersian ? "text-right" : "xl:text-left"}
+              `}
             >
-              <span
-                className="bg-gradient-to-r from-green-400 via-teal-500 to-emerald-400 bg-clip-text text-transparent animate-gradient-wave
-               drop-shadow-md"
+              {/* عنوان اصلی و نام */}
+              <h1
+                className="
+                  text-[36px] sm:text-[46px]
+                  md:text-[56px] xl:text-[68px]
+                  leading-[1.2]
+                  font-extrabold
+                  tracking-tight
+                  text-slate-900 dark:text-white
+                "
               >
-                {t("me.me")}&nbsp;
-              </span>
-              <span
-                className="bg-gradient-to-r from-emerald-400 via-green-500 to-lime-400 bg-clip-text text-transparent animate-gradient-wave
-               drop-shadow-md"
-              >
-                {t("me.name")}
-              </span>
-            </h1>
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("me.me")}{" "}
+                </span>
 
-            <h2
-              className={`${
-                locale === "fa" ? "text-right" : "text-left"
-              } text-[18px] sm:text-[20px] md:text-[24px] font-semibold mt-4
-     bg-gradient-to-r from-green-400 via-teal-500 to-emerald-400
-     bg-clip-text text-transparent animate-gradient-wave`}
-            >
-              {t("me.how")}
-            </h2>
-
-            <p
-              className={`${
-                locale === "fa" ? "text-right" : "text-left"
-              } mt-4 text-[16px] sm:text-[18px] md:text-[20px] leading-relaxed
-     text-gray-700 dark:text-gray-300`}
-            >
-              {t("me.skill")}
-            </p>
-
-            <div className="flex flex-col mt-8 xl:flex-row items-center gap-8">
-              <a href="files/kamyar-kamali.pdf" download>
-                <Button
-                  variant={"default"}
-                  size="lg"
-                  className="uppercase flex items-center gap-2"
+                <span
+                  className="
+                    inline-block
+                    bg-gradient-to-r
+                    from-emerald-600
+                    via-teal-500
+                    to-cyan-500
+                    dark:from-emerald-300
+                    dark:via-teal-400
+                    dark:to-cyan-400
+                    bg-clip-text
+                    text-transparent
+                    [background-size:200%_auto]
+                    motion-safe:animate-gradient-wave
+                  "
                 >
-                  <span>{t("me.download")}</span>
-                  <TfiDownload className="text-xl" />
-                </Button>
-              </a>
+                  {portfolio.profile?.name?.[locale as "fa" | "en"] || t("me.name")}
+                </span>
+              </h1>
 
-              {/* sochial */}
-              <div className="mb-8 xl:mb-0 flex">
-                <Sochial
-                  containerStyle="flex gap-6 items-center"
-                  iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-[100%] flex  justify-center items-center hover:bg-green-600 text-center text-base hoveer:transition-all p-2 duration-500"
-                />
-              </div>
+              {/* عنوان شغلی */}
+              <h2
+                className={`
+                  mt-6
+                  text-[19px] sm:text-[23px]
+                  md:text-[27px]
+                  font-semibold
+                  leading-relaxed
+                  text-slate-800
+                  dark:text-slate-100
+                  ${isPersian ? "text-right" : "text-left"}
+                `}
+              >
+                <span
+                  className="
+                    inline-block
+                    border-b-2
+                    border-emerald-500/70
+                    pb-2
+                  "
+                >
+                  {portfolio.hero?.headline?.[locale as "fa" | "en"] || portfolio.hero?.jobTitle?.[locale as "fa" | "en"] || t("me.how")}
+                </span>
+              </h2>
+
+              {/* توضیحات مهارت‌ها */}
+              <p
+                className={`
+                  mt-6
+                  max-w-xl
+                  text-[16px] sm:text-[18px]
+                  md:text-[19px]
+                  leading-[1.9]
+                  text-slate-600
+                  dark:text-slate-400
+                  ${isPersian ? "text-right" : "text-left"}
+                `}
+              >
+                {portfolio.hero?.description?.[locale as "fa" | "en"] || portfolio.profile?.bio?.[locale as "fa" | "en"] || t("me.skill")}
+              </p>
+
+              {/* دکمه دانلود و شبکه‌های اجتماعی */}
+              {(portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl) && <div
+                className="
+                  flex flex-col
+                  xl:flex-row
+                  items-center
+                  gap-8
+                  mt-8
+                "
+              >
+                <a
+                  href={portfolio.resumeAvailable ? "/api/public/resume/download" : portfolio.hero?.primaryCtaUrl}
+                  target={portfolio.resumeAvailable ? undefined : "_blank"}
+                  rel={portfolio.resumeAvailable ? undefined : "noopener noreferrer"}
+                  download={portfolio.resumeAvailable ? true : undefined}
+                >
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="uppercase flex items-center gap-2"
+                  >
+                    <span>{portfolio.hero?.primaryCta?.[locale as "fa" | "en"] || t("me.download")}</span>
+                    <TfiDownload className="text-xl" />
+                  </Button>
+                </a>
+
+                <div className="mb-8 xl:mb-0 flex">
+                  <Sochial
+                    containerStyle="flex gap-6 items-center"
+                    iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-full flex justify-center items-center hover:bg-green-600 text-center text-base p-2 transition-all duration-500"
+                  />
+                </div>
+              </div>}
             </div>
-          </div>
 
-          {/*sochial */}
-
-          <div className="order-1 xl:order-2 mb-8 xl:mb-0">
-            <Photo />
+            {/* تصویر پروفایل - بدون تغییر */}
+            <div className="order-1 xl:order-2 mb-8 xl:mb-0">
+              <Photo hero={portfolio.hero} />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* بخش‌های دیگر خارج از محدوده افکت */}
       <Stats />
       <SkillsCircle />
     </section>

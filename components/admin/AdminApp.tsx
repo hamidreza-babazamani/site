@@ -1,8 +1,16 @@
 "use client";
 
-import { DragEvent, FormEvent, useCallback, useEffect, useState } from "react";
+import {
+  DragEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -33,6 +41,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
+import { requestAdmin } from "@/lib/api/requests/admin";
 
 type Localized = { fa: string; en: string };
 type ResourceKey =
@@ -43,9 +52,17 @@ type ResourceKey =
   | "languages"
   | "contact-methods";
 type Section = string;
-type Item = Record<string, any> & { _id?: string };
+type MediaItem = {
+  key: string;
+  url: string;
+  alt?: Localized;
+  fileId?: string;
+};
+// مدل‌های پنل چندشکل هستند؛ نوع مقدار از JSON برای حفظ قراردادهای فعلی استفاده می‌شود.
+type DynamicValue = ReturnType<JSON["parse"]>;
+type Item = Record<string, DynamicValue> & { _id?: string };
 
-const labels: Record<string, { en: string; fa: string; icon: any }> = {
+const labels: Record<string, { en: string; fa: string; icon: LucideIcon }> = {
   overview: { en: "Overview", fa: "نمای کلی", icon: LayoutDashboard },
   projects: { en: "Projects", fa: "پروژه‌ها", icon: BriefcaseBusiness },
   technologies: { en: "Technologies", fa: "مهارت‌ها", icon: Zap },
@@ -71,14 +88,21 @@ const resourceKeys: ResourceKey[] = [
   "contact-methods",
 ];
 const emptyLocalized = (): Localized => ({ fa: "", en: "" });
-const localized = (value: any): Localized => ({
-  fa: value?.fa ?? "",
-  en: value?.en ?? "",
+const localized = (value: unknown): Localized => ({
+  fa: (value as Partial<Localized> | undefined)?.fa ?? "",
+  en: (value as Partial<Localized> | undefined)?.en ?? "",
 });
-const text = (value: any, locale: string) =>
-  typeof value === "object"
-    ? value?.[locale] || value?.en || value?.fa || ""
-    : (value ?? "");
+const text = (value: unknown, locale: string) => {
+  if (value && typeof value === "object") {
+    const localizedValue = value as Record<string, unknown>;
+    const selected =
+      localizedValue[locale] ?? localizedValue.en ?? localizedValue.fa;
+    return typeof selected === "string" ? selected : "";
+  }
+  return typeof value === "string" || typeof value === "number"
+    ? String(value)
+    : "";
+};
 const defaultFor = (key: ResourceKey): Item => ({
   ...(key === "projects"
     ? {
@@ -119,28 +143,52 @@ const defaultFor = (key: ResourceKey): Item => ({
 });
 
 async function api(path: string, init?: RequestInit) {
+  // درخواست واقعی از لایه Axios متمرکز عبور می‌کند؛ کد قدیمی زیر در فاز بعدی حذف می‌شود.
+  return requestAdmin<Record<string, DynamicValue>>(path, init);
+  /*
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 20000);
   const headers = new Headers(init?.headers);
   // The browser must add the multipart boundary itself. Removing a caller's
   // stale JSON header also makes this helper safe for every upload surface.
   if (init?.body instanceof FormData) headers.delete("Content-Type");
-  const response = await fetch(path, {
-    credentials: "include",
-    ...init,
-    headers,
-  });
-  const result = await response.json().catch(() => ({}));
-  if (response.status === 401) {
-    window.dispatchEvent(new Event("admin:expired"));
-    throw Object.assign(new Error("AUTH_REQUIRED"), { code: 401 });
-  }
-  if (!response.ok) {
-    const error = Object.assign(new Error(result.message || "REQUEST_FAILED"), {
-      code: response.status,
-      errors: result.errors || {},
+  try {
+    const response = await removedRequest(path, {
+      credentials: "include",
+      ...init,
+      headers,
+      signal: init?.signal ?? controller.signal,
     });
+    const raw = await response.text();
+    const result = (() => {
+      try { return raw ? JSON.parse(raw) : {}; }
+      catch { return { message: raw }; }
+    })();
+    const payload = result && typeof result === "object" ? result as Record<string, unknown> : {};
+    if (response.status === 401) {
+      window.dispatchEvent(new Event("admin:expired"));
+      throw Object.assign(new Error("AUTH_REQUIRED"), { code: 401 });
+    }
+    if (!response.ok) {
+      throw Object.assign(new Error(String(payload.message || "REQUEST_FAILED")), {
+        code: response.status,
+        errors: payload.errors && typeof payload.errors === "object" ? payload.errors as Record<string, string> : undefined,
+      });
+    }
+    if (!result || typeof result !== "object")
+      throw Object.assign(new Error("INVALID_RESPONSE"), { code: 502 });
+    // پاسخ endpointها شکل‌های متفاوتی دارد؛ قرارداد موجود را بدون تغییر نگه می‌داریم.
+    return result;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError")
+      throw Object.assign(new Error("REQUEST_TIMEOUT"), { code: 408 });
+    if (error instanceof TypeError)
+      throw Object.assign(new Error("NETWORK_ERROR"), { code: 0 });
     throw error;
+  } finally {
+    window.clearTimeout(timeout);
   }
-  return result;
+  */
 }
 
 type AdminError = Error & { code?: number; errors?: Record<string, string> };
@@ -202,6 +250,22 @@ const localizedError = (error: unknown, locale: string, upload = false) => {
   const status = (error as AdminError)?.code;
   if (status === 401 || (error as Error)?.message === "AUTH_REQUIRED")
     return lang.auth;
+  if (status === 403)
+    return locale === "fa"
+      ? "شما اجازه انجام این کار را ندارید."
+      : "You do not have permission to perform this action.";
+  if (status === 404)
+    return locale === "fa"
+      ? "مورد درخواستی پیدا نشد."
+      : "The requested item was not found.";
+  if (status === 408 || (error as Error)?.message === "REQUEST_TIMEOUT")
+    return locale === "fa"
+      ? "پاسخ‌گویی درخواست بیش از حد طول کشید. دوباره تلاش کنید."
+      : "The request took too long. Please try again.";
+  if (status === 429)
+    return locale === "fa"
+      ? "تعداد تلاش‌ها زیاد است. کمی صبر و دوباره تلاش کنید."
+      : "Too many attempts. Please wait and try again.";
   if (
     upload ||
     status === 413 ||
@@ -213,11 +277,12 @@ const localizedError = (error: unknown, locale: string, upload = false) => {
   return lang.network;
 };
 const isHttpUrl = (value: string) => {
+  const normalized = value.trim();
   try {
-    const url = new URL(value);
+    const url = new URL(normalized);
     return (
       (url.protocol === "http:" || url.protocol === "https:") &&
-      value.length <= 2048
+      normalized.length <= 2048
     );
   } catch {
     return false;
@@ -226,6 +291,32 @@ const isHttpUrl = (value: string) => {
 
 const imageTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const maxImageSize = 4 * 1024 * 1024;
+
+/** Keep object URLs stable and release them when files change or unmount. */
+function LocalImagePreview({
+  file,
+  alt,
+  className,
+}: {
+  file: File;
+  alt: string;
+  className: string;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  return src ? (
+    <img src={src} alt={alt} className={className} />
+  ) : (
+    <div
+      className={`${className} animate-pulse bg-slate-100 dark:bg-white/10`}
+      aria-hidden="true"
+    />
+  );
+}
 
 function ImageDropzone({
   locale,
@@ -306,13 +397,10 @@ function ImageDropzone({
                 key={key}
                 className="relative rounded-xl border border-slate-200 p-2 dark:border-white/10"
               >
-                <img
-                  src={URL.createObjectURL(file)}
+                <LocalImagePreview
+                  file={file}
                   alt={file.name}
                   className="aspect-video w-full rounded-lg object-cover"
-                  onLoad={(event) =>
-                    URL.revokeObjectURL((event.target as HTMLImageElement).src)
-                  }
                 />
 
                 <button
@@ -383,7 +471,7 @@ function LocalizedField({
           <Control
             id={`${name || label}-fa`}
             value={value.fa}
-            onChange={(e: any) => onChange({ ...value, fa: e.target.value })}
+            onChange={(e) => onChange({ ...value, fa: e.target.value })}
             aria-invalid={!!error}
             aria-describedby={error ? `${name || label}-error` : undefined}
             dir="rtl"
@@ -398,7 +486,7 @@ function LocalizedField({
           <Control
             id={`${name || label}-en`}
             value={value.en}
-            onChange={(e: any) => onChange({ ...value, en: e.target.value })}
+            onChange={(e) => onChange({ ...value, en: e.target.value })}
             aria-invalid={!!error}
             aria-describedby={error ? `${name || label}-error` : undefined}
             dir="ltr"
@@ -430,8 +518,8 @@ function Field({
   name,
 }: {
   label: string;
-  value: any;
-  onChange: (value: any) => void;
+  value: string | number | undefined;
+  onChange: (value: string | number) => void;
   type?: string;
   placeholder?: string;
   error?: string;
@@ -480,7 +568,9 @@ function Toggle({
     <button
       type="button"
       onClick={() => onChange(!value)}
-      className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-start text-sm dark:border-white/10 dark:bg-white/[0.04]"
+      role="switch"
+      aria-checked={value}
+      className="flex min-h-11 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-start text-sm transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-white/10 dark:bg-white/[0.04]"
     >
       <span>{label}</span>
       <span
@@ -499,28 +589,84 @@ function Modal({
   children,
   onClose,
   wide = false,
+  closeLabel = "Close dialog",
 }: {
   title: string;
   children: React.ReactNode;
   onClose: () => void;
   wide?: boolean;
+  closeLabel?: string;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  useEffect(() => {
+    closeRef.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    const previousFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialogRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+      const first = focusable[0],
+        last = focusable[focusable.length - 1];
+      if (
+        event.shiftKey &&
+        (document.activeElement === first ||
+          document.activeElement === dialogRef.current)
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
+  }, []);
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        className={`max-h-[94vh] w-full overflow-y-auto rounded-t-[2rem] border border-slate-200 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#101820] sm:rounded-[2rem] sm:p-7 ${wide ? "max-w-4xl" : "max-w-2xl"}`}
+        aria-label={title}
+        tabIndex={-1}
+        className={`max-h-[94vh] w-full overflow-y-auto overscroll-contain rounded-t-[2rem] border border-slate-200 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#101820] sm:rounded-[2rem] sm:p-7 ${wide ? "max-w-4xl" : "max-w-2xl"}`}
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <h2 className="text-xl font-bold">{title}</h2>
           <button
             onClick={onClose}
             className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10"
-            aria-label="Close"
+            aria-label={closeLabel}
           >
             <X size={19} />
           </button>
@@ -553,9 +699,24 @@ function ResourceEditor({
   const [newAlts, setNewAlts] = useState<Record<string, Localized>>({});
   const [replacements, setReplacements] = useState<Record<string, File>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isDirty, setIsDirty] = useState(false);
+  const requestClose = () => {
+    if (busy) return;
+    if (
+      isDirty &&
+      !window.confirm(
+        fa
+          ? "تغییرات ذخیره‌نشده از بین می‌روند. خارج می‌شوید؟"
+          : "Discard unsaved changes?",
+      )
+    )
+      return;
+    onClose();
+  };
   const fieldError = (key: string) => errors[key];
   const title = initial._id ? (fa ? "ویرایش" : "Edit") : fa ? "افزودن" : "Add";
-  const set = (key: string, value: any) => {
+  const set = (key: string, value: unknown) => {
+    setIsDirty(true);
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => {
       if (!current[key]) return current;
@@ -620,11 +781,15 @@ function ResourceEditor({
             />
             <Field
               label={fa ? "تکنولوژی‌ها" : "Technologies"}
-              value={(form.technologies || []).join(", ")}
+              value={
+                Array.isArray(form.technologies)
+                  ? form.technologies.join(", ")
+                  : ""
+              }
               onChange={(v) =>
                 set(
                   "technologies",
-                  v
+                  String(v)
                     .split(",")
                     .map((x: string) => x.trim())
                     .filter(Boolean),
@@ -636,6 +801,7 @@ function ResourceEditor({
               value={form.liveUrl}
               onChange={(v) => set("liveUrl", v)}
               name="liveUrl"
+              placeholder="Optional — https://example.com"
               error={fieldError("liveUrl")}
             />
             <Field
@@ -643,6 +809,7 @@ function ResourceEditor({
               value={form.repositoryUrl}
               onChange={(v) => set("repositoryUrl", v)}
               name="repositoryUrl"
+              placeholder="Optional — https://github.com/..."
               error={fieldError("repositoryUrl")}
             />
           </div>
@@ -658,14 +825,18 @@ function ResourceEditor({
             <ImageDropzone
               locale={locale}
               files={files}
-              onFiles={setFiles}
+              onFiles={(next) => {
+                setIsDirty(true);
+                setFiles(next);
+              }}
               alts={newAlts}
-              onAltChange={(file, alt) =>
+              onAltChange={(file, alt) => {
+                setIsDirty(true);
                 setNewAlts((current) => ({
                   ...current,
                   [`${file.name}-${file.lastModified}-${file.size}`]: alt,
-                }))
-              }
+                }));
+              }}
               notify={notify}
             />
             {fieldError("images") && (
@@ -678,26 +849,26 @@ function ResourceEditor({
                 ? "تصاویر جدید هنگام ذخیره بارگذاری می‌شوند."
                 : "New images upload when you save the project."}
             </p>
-            {(form.images || []).map((image: any) => {
+            {(form.images || []).map((image: MediaItem) => {
               const replacement = replacements[image.key];
               return (
                 <div
                   key={image.key}
                   className="mt-3 flex flex-col gap-3 rounded-xl bg-slate-50 p-2 dark:bg-white/[0.04] sm:flex-row sm:items-center"
                 >
-                  <img
-                    src={
-                      replacement ? URL.createObjectURL(replacement) : image.url
-                    }
-                    alt={text(image.alt, locale)}
-                    className="h-20 w-full rounded-lg object-cover sm:w-28"
-                    onLoad={(event) =>
-                      replacement &&
-                      URL.revokeObjectURL(
-                        (event.target as HTMLImageElement).src,
-                      )
-                    }
-                  />
+                  {replacement ? (
+                    <LocalImagePreview
+                      file={replacement}
+                      alt={text(image.alt, locale)}
+                      className="h-20 w-full rounded-lg object-cover sm:w-28"
+                    />
+                  ) : (
+                    <img
+                      src={image.url}
+                      alt={text(image.alt, locale)}
+                      className="h-20 w-full rounded-lg object-cover sm:w-28"
+                    />
+                  )}
                   <div className="grid flex-1 gap-1 sm:grid-cols-2">
                     <input
                       aria-label="Persian alt"
@@ -705,7 +876,7 @@ function ResourceEditor({
                       onChange={(e) =>
                         set(
                           "images",
-                          form.images.map((x: any) =>
+                          form.images.map((x: MediaItem) =>
                             x.key === image.key
                               ? { ...x, alt: { ...x.alt, fa: e.target.value } }
                               : x,
@@ -721,7 +892,7 @@ function ResourceEditor({
                       onChange={(e) =>
                         set(
                           "images",
-                          form.images.map((x: any) =>
+                          form.images.map((x: MediaItem) =>
                             x.key === image.key
                               ? { ...x, alt: { ...x.alt, en: e.target.value } }
                               : x,
@@ -750,6 +921,7 @@ function ResourceEditor({
                           e.currentTarget.value = "";
                           return;
                         }
+                        setIsDirty(true);
                         setReplacements((current) => ({
                           ...current,
                           [image.key]: next,
@@ -912,6 +1084,9 @@ function ResourceEditor({
             value={form.url}
             onChange={(v) => set("url", v)}
             name="url"
+            placeholder={
+              fa ? "اختیاری — https://..." : "Optional — https://..."
+            }
             error={fieldError("url")}
           />
           <Field
@@ -921,7 +1096,7 @@ function ResourceEditor({
           />
         </div>
         <LocalizedField
-          label={fa ? "برچسب" : "Label"}
+          label={fa ? "برچسب (اختیاری)" : "Label (optional)"}
           value={localized(form.label)}
           onChange={(v) => set("label", v)}
           name="label"
@@ -970,9 +1145,12 @@ function ResourceEditor({
         next.slug = fa
           ? "اسلاگ باید با حروف کوچک، عدد و خط تیره باشد."
           : "Use lowercase letters, numbers, and hyphens for the slug.";
-      if (form.liveUrl && !isHttpUrl(String(form.liveUrl)))
+      if (String(form.liveUrl || "").trim() && !isHttpUrl(String(form.liveUrl)))
         next.liveUrl = messages[fa ? "fa" : "en"].url;
-      if (form.repositoryUrl && !isHttpUrl(String(form.repositoryUrl)))
+      if (
+        String(form.repositoryUrl || "").trim() &&
+        !isHttpUrl(String(form.repositoryUrl))
+      )
         next.repositoryUrl = messages[fa ? "fa" : "en"].url;
     }
     if (resource === "technologies" || resource === "languages")
@@ -1004,8 +1182,8 @@ function ResourceEditor({
         next.type = messages[fa ? "fa" : "en"].required;
       if (!String(form.value || "").trim())
         next.value = messages[fa ? "fa" : "en"].required;
-      requiredLocalized("label");
-      if (form.url && !isHttpUrl(String(form.url)))
+      optionalLocalized("label");
+      if (String(form.url || "").trim() && !isHttpUrl(String(form.url)))
         next.url = messages[fa ? "fa" : "en"].url;
       if (
         String(form.type).trim().toLowerCase() === "email" &&
@@ -1075,7 +1253,7 @@ function ResourceEditor({
           data.append(
             "alt",
             JSON.stringify(
-              form.images.find((image: any) => image.key === key)?.alt ||
+              form.images.find((image: MediaItem) => image.key === key)?.alt ||
                 emptyLocalized(),
             ),
           );
@@ -1085,7 +1263,7 @@ function ResourceEditor({
           );
           saved = {
             ...saved,
-            images: (saved.images || []).map((image: any) =>
+            images: (saved.images || []).map((image: MediaItem) =>
               image.key === key ? upload.data : image,
             ),
           };
@@ -1115,7 +1293,8 @@ function ResourceEditor({
   return (
     <Modal
       title={`${title} ${labels[resource][fa ? "fa" : "en"]}`}
-      onClose={onClose}
+      onClose={requestClose}
+      closeLabel={fa ? "بستن فرم" : "Close form"}
       wide
     >
       <form onSubmit={submit} className="space-y-5">
@@ -1124,7 +1303,8 @@ function ResourceEditor({
         <div className="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-white/10">
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
+            disabled={busy}
             className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10"
           >
             {fa ? "انصراف" : "Cancel"}
@@ -1179,8 +1359,6 @@ function ResourceView({
     },
     [resource, search, locale, notify],
   );
-
-  console.log({ items, meta });
 
   useEffect(() => {
     void load();
@@ -1293,10 +1471,7 @@ function ResourceView({
                     }
                     className="h-24 w-24 rounded-lg object-cover"
                     onError={(e) => {
-                      console.log("Image failed:", e.currentTarget.src);
-                    }}
-                    onLoad={(e) => {
-                      console.log("Image loaded:", e.currentTarget.src);
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                 )}
@@ -1385,10 +1560,12 @@ function SingletonView({
   type,
   locale,
   notify,
+  onHeroImageUpdated,
 }: {
   type: "hero" | "profile" | "resume";
   locale: string;
   notify: (message: string, error?: boolean) => void;
+  onHeroImageUpdated?: () => void;
 }) {
   const fa = locale === "fa";
   const [data, setData] = useState<Item>({});
@@ -1408,7 +1585,7 @@ function SingletonView({
   useEffect(() => {
     void load();
   }, [load]);
-  const set = (key: string, value: any) => {
+  const set = (key: string, value: unknown) => {
     setData((current) => ({ ...current, [key]: value }));
     setFormErrors((current) => {
       if (!current[key]) return current;
@@ -1420,11 +1597,17 @@ function SingletonView({
   async function save(e: FormEvent) {
     e.preventDefault();
     const lang = messages[fa ? "fa" : "en"];
-    const invalidLocalized = (value: any) =>
-      !value?.fa?.trim() || !value?.en?.trim();
-    const invalidOptionalLocalized = (value: any) =>
-      Boolean(value?.fa?.trim() || value?.en?.trim()) &&
-      invalidLocalized(value);
+    const invalidLocalized = (value: unknown) => {
+      const localizedValue = localized(value);
+      return !localizedValue.fa.trim() || !localizedValue.en.trim();
+    };
+    const invalidOptionalLocalized = (value: unknown) => {
+      const localizedValue = localized(value);
+      return (
+        Boolean(localizedValue.fa.trim() || localizedValue.en.trim()) &&
+        invalidLocalized(value)
+      );
+    };
     const invalid =
       (type === "hero" &&
         (invalidLocalized(data.jobTitle) ||
@@ -1441,7 +1624,7 @@ function SingletonView({
         data.email &&
         !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(data.email).trim())) ||
       (type === "hero" &&
-        data.primaryCtaUrl &&
+        String(data.primaryCtaUrl || "").trim() &&
         !isHttpUrl(String(data.primaryCtaUrl)));
     if (invalid) {
       const next: Record<string, string> = {};
@@ -1452,7 +1635,10 @@ function SingletonView({
           next.description = lang.localized;
         if (invalidOptionalLocalized(data.primaryCta))
           next.primaryCta = lang.localized;
-        if (data.primaryCtaUrl && !isHttpUrl(String(data.primaryCtaUrl)))
+        if (
+          String(data.primaryCtaUrl || "").trim() &&
+          !isHttpUrl(String(data.primaryCtaUrl))
+        )
           next.primaryCtaUrl = lang.url;
       }
       if (type === "profile") {
@@ -1521,6 +1707,7 @@ function SingletonView({
           type === "hero" || type === "profile" ? "image" : "file",
           result.data,
         );
+      if (type === "hero") onHeroImageUpdated?.();
       setFile(null);
       notify(messages[fa ? "fa" : "en"].uploaded);
     } catch (e) {
@@ -1538,6 +1725,7 @@ function SingletonView({
         ...current,
         [type === "resume" ? "file" : "image"]: null,
       }));
+      if (type === "hero") onHeroImageUpdated?.();
       notify(fa ? "فایل حذف شد" : "File deleted");
     } catch (e) {
       notify(localizedError(e, locale), true);
@@ -1599,6 +1787,11 @@ function SingletonView({
                 value={data.primaryCtaUrl}
                 onChange={(v) => set("primaryCtaUrl", v)}
                 name="primaryCtaUrl"
+                placeholder={
+                  fa
+                    ? "اختیاری — در صورت نبود رزومه"
+                    : "Optional — used only when no resume is uploaded"
+                }
                 error={formErrors.primaryCtaUrl}
               />
             </div>
@@ -1675,7 +1868,7 @@ function SingletonView({
             <h2 className="font-bold">{fa ? "رسانه" : "Media"}</h2>
             <p className="mt-1 text-xs text-slate-500">
               {type === "resume" ? "PDF" : "PNG, JPG, WEBP"} ·{" "}
-              {fa ? "حداکثر ۱۰ مگابایت" : "up to 10MB"}
+              {fa ? "حداکثر ۴ مگابایت" : "up to 4MB"}
             </p>
           </div>
           {image?.url && (
@@ -1909,34 +2102,45 @@ function MessagesView({
   );
 }
 
-export default function AdminApp() {
+export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
   const locale = useLocale();
   const fa = locale === "fa";
   const router = useRouter();
   const [active, setActive] = useState<Section>("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [admin, setAdmin] = useState<Item | null>(null);
-  const [checking, setChecking] = useState(true);
+  const [admin, setAdmin] = useState<Item | null>(initialAdmin ?? null);
+  const [checking, setChecking] = useState(!initialAdmin);
+  const [loggingOut, setLoggingOut] = useState(false);
   const notify = useCallback((message: string, error?: boolean) => {
     if (error) toast.error(message, { id: "admin-error" });
     else toast.success(message, { id: "admin-success" });
   }, []);
   useEffect(() => {
-    const expired = () => router.replace(`/${locale}/admin/login`);
+    const expired = () => router.replace("/admin/login");
     window.addEventListener("admin:expired", expired);
+    // نشست در Server Component بررسی شده است؛ از درخواست تکراری /auth/me صرف‌نظر می‌کنیم.
+    if (initialAdmin)
+      return () => window.removeEventListener("admin:expired", expired);
     api("/api/auth/me")
       .then((result) => setAdmin(result.admin))
       .catch((error) => {
         if (error?.code === 401 || error?.message === "AUTH_REQUIRED")
-          router.replace(`/${locale}/admin/login`);
+          router.replace("/admin/login");
         else notify(localizedError(error, locale), true);
       })
       .finally(() => setChecking(false));
     return () => window.removeEventListener("admin:expired", expired);
-  }, [locale, notify, router]);
+  }, [initialAdmin, locale, notify, router]);
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    router.replace(`/${locale}/admin/login`);
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await api("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      notify(localizedError(error, locale), true);
+    } finally {
+      router.replace("/admin/login");
+    }
   }
   if (checking)
     return (
@@ -1956,7 +2160,8 @@ export default function AdminApp() {
         setActive(section);
         setMobileOpen(false);
       }}
-      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${active === section ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/10" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white"}`}
+      aria-current={active === section ? "page" : undefined}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 motion-reduce:transition-none ${active === section ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/10" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white"}`}
     >
       <span className="shrink-0">
         {(() => {
@@ -1982,7 +2187,7 @@ export default function AdminApp() {
       />
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside
-          className={`fixed inset-y-0 z-40 w-72 border-slate-200 bg-white p-5 shadow-2xl transition-transform dark:border-white/10 dark:bg-[#101820] lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:border-e lg:shadow-none ${mobileOpen ? "translate-x-0" : fa ? "translate-x-full" : "-translate-x-full"}`}
+          className={`fixed inset-y-0 z-40 flex w-72 flex-col border-slate-200 bg-white p-5 shadow-2xl transition-transform duration-300 motion-reduce:transition-none dark:border-white/10 dark:bg-[#101820] lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:border-e lg:shadow-none ${mobileOpen ? "translate-x-0" : fa ? "translate-x-full" : "-translate-x-full"}`}
         >
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
@@ -1998,12 +2203,16 @@ export default function AdminApp() {
             </div>
             <button
               onClick={() => setMobileOpen(false)}
+              aria-label={fa ? "بستن منو" : "Close menu"}
               className="rounded-lg p-2 lg:hidden"
             >
               <X size={18} />
             </button>
           </div>
-          <nav className="mt-9 space-y-1">
+          <nav
+            aria-label={fa ? "ناوبری مدیریت" : "Admin navigation"}
+            className="mt-8 min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pb-5 pe-1"
+          >
             <p className="px-3 pb-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-400">
               {fa ? "نمای کلی" : "Workspace"}
             </p>
@@ -2018,7 +2227,7 @@ export default function AdminApp() {
             </p>
             {["hero", "profile", "resume"].map(nav)}
           </nav>
-          <div className="fixed inset-x-5 bottom-5 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="mt-3 shrink-0 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/[0.04]">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-500">
                 <UserRound size={17} />
@@ -2030,9 +2239,13 @@ export default function AdminApp() {
               <button
                 onClick={logout}
                 aria-label="Logout"
-                className="text-slate-400 hover:text-red-400"
+                disabled={loggingOut}
+                className="text-slate-400 transition hover:text-red-400 disabled:cursor-wait disabled:opacity-50"
               >
-                <LogOut size={16} />
+                <LogOut
+                  size={16}
+                  className={loggingOut ? "animate-pulse" : undefined}
+                />
               </button>
             </div>
           </div>
@@ -2042,6 +2255,8 @@ export default function AdminApp() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileOpen(true)}
+                aria-label={fa ? "باز کردن منو" : "Open menu"}
+                aria-expanded={mobileOpen}
                 className="rounded-xl border border-slate-200 p-2 lg:hidden dark:border-white/10"
               >
                 <Menu size={18} />
@@ -2065,12 +2280,9 @@ export default function AdminApp() {
                 <ExternalLink size={14} />
                 {fa ? "مشاهده سایت" : "View site"}
               </a>
-              <span className="hidden rounded-full bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-600 sm:block">
-                {fa ? "آنلاین" : "Live"}
-              </span>
             </div>
           </header>
-          <div className="p-5 sm:p-8">
+          <div className="p-4 sm:p-8">
             {active === "overview" ? (
               <Overview
                 locale={locale}
