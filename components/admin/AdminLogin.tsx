@@ -8,7 +8,6 @@ import { useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
   ArrowRight,
-  BrainCircuit,
   Code2,
   Eye,
   EyeOff,

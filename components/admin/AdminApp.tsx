@@ -14,7 +14,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   BriefcaseBusiness,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -2251,9 +2250,8 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
           </div>
         </aside>
         <div className="min-w-0 flex-1">
-          
-<header
-  className="
+          <header
+            className="
     sticky top-0 z-30
     w-full min-w-0
     border-b border-slate-200/80
@@ -2261,21 +2259,21 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
     dark:border-white/10
     dark:bg-[#0b1118]/90
   "
->
-  <div
-    className="
+          >
+            <div
+              className="
       flex min-h-16 items-center
       justify-between gap-2
       px-3 sm:min-h-20 sm:px-6
     "
-  >
-    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        aria-label={fa ? "باز کردن منو" : "Open menu"}
-        aria-expanded={mobileOpen}
-        className="
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(true)}
+                  aria-label={fa ? "باز کردن منو" : "Open menu"}
+                  aria-expanded={mobileOpen}
+                  className="
           flex h-10 w-10 shrink-0
           items-center justify-center
           rounded-xl border border-slate-200
@@ -2283,28 +2281,28 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
           dark:border-white/10 dark:bg-white/5
           lg:hidden
         "
-      >
-        <Menu size={19} />
-      </button>
+                >
+                  <Menu size={19} />
+                </button>
 
-      <div className="min-w-0 flex-1">
-        <p className="hidden text-xs text-slate-400 sm:block">
-          {fa ? "داشبورد مدیریت" : "Admin dashboard"}
-        </p>
+                <div className="min-w-0 flex-1">
+                  <p className="hidden text-xs text-slate-400 sm:block">
+                    {fa ? "داشبورد مدیریت" : "Admin dashboard"}
+                  </p>
 
-        <h1 className="truncate text-sm font-bold sm:text-xl">
-          {title}
-        </h1>
-      </div>
-    </div>
+                  <h1 className="truncate text-sm font-bold sm:text-xl">
+                    {title}
+                  </h1>
+                </div>
+              </div>
 
-    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-      <LanguageSwitcher />
-      <ThemeToggle />
+              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                <LanguageSwitcher />
+                <ThemeToggle />
 
-      <a
-        href={`/${locale}`}
-        className="
+                <a
+                  href={`/${locale}`}
+                  className="
           hidden items-center gap-2
           rounded-xl border border-slate-200
           px-3 py-2 text-xs font-semibold
@@ -2314,13 +2312,13 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
           dark:border-white/10
           lg:flex
         "
-      >
-        <ExternalLink size={14} />
-        {fa ? "مشاهده سایت" : "View site"}
-      </a>
-    </div>
-  </div>
-</header>
+                >
+                  <ExternalLink size={14} />
+                  {fa ? "مشاهده سایت" : "View site"}
+                </a>
+              </div>
+            </div>
+          </header>
 
           <div className="p-4 sm:p-8">
             {active === "overview" ? (
