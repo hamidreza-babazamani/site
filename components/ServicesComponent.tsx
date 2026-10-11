@@ -1,4 +1,3 @@
-
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import {
@@ -9,12 +8,23 @@ import {
   Palette,
   Sparkles,
 } from "lucide-react";
-import WorkePage from "@/components/WorkePage";
 import { getPublicPortfolio } from "@/lib/services/public-portfolio";
 
-const iconMap = { Code2, MonitorSmartphone, Layers3, Palette, Sparkles } as const;
-const localize = (value: { fa?: string; en?: string } | undefined, locale: string) =>
-  (locale === "fa" ? value?.fa : value?.en)?.trim() || value?.en?.trim() || value?.fa?.trim() || "";
+const iconMap = {
+  Code2,
+  MonitorSmartphone,
+  Layers3,
+  Palette,
+  Sparkles,
+} as const;
+const localize = (
+  value: { fa?: string; en?: string } | undefined,
+  locale: string,
+) =>
+  (locale === "fa" ? value?.fa : value?.en)?.trim() ||
+  value?.en?.trim() ||
+  value?.fa?.trim() ||
+  "";
 
 export default async function ServicesComponent() {
   const t = await getTranslations("HomePage");
@@ -109,17 +119,21 @@ export default async function ServicesComponent() {
         >
           {portfolio.services.length === 0 ? (
             <p className="col-span-full rounded-2xl border border-dashed border-emerald-500/20 p-8 text-center text-sm text-slate-500 dark:text-slate-400">
-              {locale === "fa" ? "خدمتی برای نمایش ثبت نشده است." : "No services are available yet."}
+              {locale === "fa"
+                ? "خدمتی برای نمایش ثبت نشده است."
+                : "No services are available yet."}
             </p>
-          ) : portfolio.services.map((service, index) => {
-            const Icon = iconMap[service.icon as keyof typeof iconMap] ?? Code2;
-            const title = localize(service.title, locale);
-            const description = localize(service.description, locale);
+          ) : (
+            portfolio.services.map((service, index) => {
+              const Icon =
+                iconMap[service.icon as keyof typeof iconMap] ?? Code2;
+              const title = localize(service.title, locale);
+              const description = localize(service.description, locale);
 
-            return (
-              <article
-                key={service._id}
-                className={`
+              return (
+                <article
+                  key={service._id}
+                  className={`
                   group relative
                   flex h-full flex-col
                   overflow-hidden
@@ -152,16 +166,17 @@ export default async function ServicesComponent() {
                   lg:p-9
 
                   ${
-                    index === portfolio.services.length - 1 && portfolio.services.length % 2 === 1
+                    index === portfolio.services.length - 1 &&
+                    portfolio.services.length % 2 === 1
                       ? "md:col-span-2"
                       : ""
                   }
                 `}
-              >
-                {/* Corner glow */}
-                <div
-                  aria-hidden="true"
-                  className="
+                >
+                  {/* Corner glow */}
+                  <div
+                    aria-hidden="true"
+                    className="
                     pointer-events-none
                     absolute -top-24 -end-24
                     size-56 rounded-full
@@ -171,19 +186,19 @@ export default async function ServicesComponent() {
                     group-hover:bg-emerald-300/20
                     dark:group-hover:bg-emerald-400/[0.09]
                   "
-                />
+                  />
 
-                {/* Top row */}
-                <div
-                  className="
+                  {/* Top row */}
+                  <div
+                    className="
                     relative mb-8
                     flex items-start justify-between
                     gap-4
                   "
-                >
-                  <div className="flex items-center gap-4">
-                    <span
-                      className="
+                  >
+                    <div className="flex items-center gap-4">
+                      <span
+                        className="
                         flex size-13
                         shrink-0 items-center justify-center
                         rounded-2xl
@@ -198,30 +213,26 @@ export default async function ServicesComponent() {
                         dark:bg-emerald-400/[0.07]
                         dark:text-emerald-300
                       "
-                    >
-                      <Icon
-                        size={23}
-                        strokeWidth={1.7}
-                        aria-hidden="true"
-                      />
-                    </span>
+                      >
+                        <Icon size={23} strokeWidth={1.7} aria-hidden="true" />
+                      </span>
 
-                    <span
-                      className="
+                      <span
+                        className="
                         text-sm font-semibold
                         tracking-[0.15em]
                         text-slate-400
                         dark:text-slate-500
                       "
-                    >
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                  </div>
+                      >
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
 
-                  <Link
-                    href="/services"
-                    aria-label={title}
-                    className="
+                    <Link
+                      href="/services"
+                      aria-label={title}
+                      className="
                       relative flex size-11
                       shrink-0 items-center justify-center
                       rounded-full
@@ -250,19 +261,19 @@ export default async function ServicesComponent() {
 
                       motion-reduce:transform-none
                     "
-                  >
-                    <ArrowUpRight
-                      size={19}
-                      strokeWidth={1.8}
-                      aria-hidden="true"
-                    />
-                  </Link>
-                </div>
+                    >
+                      <ArrowUpRight
+                        size={19}
+                        strokeWidth={1.8}
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </div>
 
-                {/* Content */}
-                <div className="relative flex flex-1 flex-col">
-                  <h2
-                    className="
+                  {/* Content */}
+                  <div className="relative flex flex-1 flex-col">
+                    <h2
+                      className="
                       mb-4
                       text-xl font-bold
                       leading-snug
@@ -275,25 +286,25 @@ export default async function ServicesComponent() {
                       sm:text-2xl
                       lg:text-[27px]
                     "
-                  >
-                    {title}
-                  </h2>
+                    >
+                      {title}
+                    </h2>
 
-                  <p
-                    className="
+                    <p
+                      className="
                       max-w-[60ch]
                       text-sm leading-7
                       text-slate-600
                       dark:text-slate-400
                       sm:text-[15px]
                     "
-                  >
-                    {description}
-                  </p>
+                    >
+                      {description}
+                    </p>
 
-                  {/* Bottom accent */}
-                  <div
-                    className="
+                    {/* Bottom accent */}
+                    <div
+                      className="
                       mt-8 h-px w-full
                       bg-gradient-to-r
                       from-emerald-500/25
@@ -302,11 +313,12 @@ export default async function ServicesComponent() {
                       dark:from-emerald-400/20
                       dark:via-white/10
                     "
-                  />
-                </div>
-              </article>
-            );
-          })}
+                    />
+                  </div>
+                </article>
+              );
+            })
+          )}
         </div>
         {/* <div className="mt-20">
           <WorkePage initialProjects={portfolio.projects} embedded />
