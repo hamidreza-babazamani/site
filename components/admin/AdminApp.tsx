@@ -649,7 +649,7 @@ function Modal({
   }, []);
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -658,7 +658,7 @@ function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`max-h-[94vh] w-full overflow-y-auto overscroll-contain rounded-t-[2rem] border border-slate-200 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#101820] sm:rounded-[2rem] sm:p-7 ${wide ? "max-w-4xl" : "max-w-2xl"}`}
+        className={`max-h-[calc(100dvh-2rem)] w-full overflow-y-auto overscroll-contain rounded-[2rem] border border-slate-200 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#101820] sm:max-h-[calc(100dvh-3rem)] sm:p-7 ${wide ? "max-w-4xl" : "max-w-2xl"}`}
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <h2 className="text-xl font-bold">{title}</h2>
@@ -673,6 +673,56 @@ function Modal({
         {children}
       </div>
     </div>
+  );
+}
+
+function ConfirmDialog({
+  title,
+  message,
+  cancelLabel,
+  confirmLabel,
+  onCancel,
+  onConfirm,
+  busy = false,
+}: {
+  title: string;
+  message: string;
+  cancelLabel: string;
+  confirmLabel: string;
+  onCancel: () => void;
+  onConfirm: () => void | Promise<void>;
+  busy?: boolean;
+}) {
+  return (
+    <Modal title={title} onClose={busy ? () => undefined : onCancel}>
+      <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
+        {message}
+      </p>
+      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={busy}
+          className="min-h-11 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-50 dark:border-white/10 dark:hover:bg-white/[0.06]"
+        >
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          onClick={() => void onConfirm()}
+          disabled={busy}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-wait disabled:opacity-60"
+        >
+          {busy && (
+            <span
+              aria-hidden="true"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            />
+          )}
+          {confirmLabel}
+        </button>
+      </div>
+    </Modal>
   );
 }
 
@@ -699,17 +749,15 @@ function ResourceEditor({
   const [replacements, setReplacements] = useState<Record<string, File>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDirty, setIsDirty] = useState(false);
+  const [confirmation, setConfirmation] = useState<
+    { type: "discard" } | { type: "image"; key: string } | null
+  >(null);
   const requestClose = () => {
     if (busy) return;
-    if (
-      isDirty &&
-      !window.confirm(
-        fa
-          ? "تغییرات ذخیره‌نشده از بین می‌روند. خارج می‌شوید؟"
-          : "Discard unsaved changes?",
-      )
-    )
+    if (isDirty) {
+      setConfirmation({ type: "discard" });
       return;
+    }
     onClose();
   };
   const fieldError = (key: string) => errors[key];
@@ -1105,8 +1153,10 @@ function ResourceEditor({
     );
   }
   async function removeImage(key: string) {
-    if (!window.confirm(fa ? "این تصویر حذف شود؟" : "Remove this image?"))
-      return;
+    setConfirmation({ type: "image", key });
+  }
+  async function confirmImageRemoval(key: string) {
+    setBusy(true);
     try {
       const result = await api(
         `/api/admin/projects/${initial._id}/images/${encodeURIComponent(key)}`,
@@ -1116,6 +1166,9 @@ function ResourceEditor({
       notify(fa ? "تصویر حذف شد" : "Image deleted");
     } catch (e) {
       notify(localizedError(e, locale), true);
+    } finally {
+      setBusy(false);
+      setConfirmation(null);
     }
   }
   async function submit(event: FormEvent) {
@@ -1290,39 +1343,80 @@ function ResourceEditor({
     }
   }
   return (
-    <Modal
-      title={`${title} ${labels[resource][fa ? "fa" : "en"]}`}
-      onClose={requestClose}
-      closeLabel={fa ? "بستن فرم" : "Close form"}
-      wide
-    >
-      <form onSubmit={submit} className="space-y-5">
-        {fields()}
-        {common}
-        <div className="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-white/10">
-          <button
-            type="button"
-            onClick={requestClose}
-            disabled={busy}
-            className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10"
-          >
-            {fa ? "انصراف" : "Cancel"}
-          </button>
-          <button
-            disabled={busy}
-            className="rounded-xl bg-emerald-400 px-5 py-2 text-sm font-bold text-slate-950 disabled:opacity-50"
-          >
-            {busy
+    <>
+      <Modal
+        title={`${title} ${labels[resource][fa ? "fa" : "en"]}`}
+        onClose={requestClose}
+        closeLabel={fa ? "بستن فرم" : "Close form"}
+        wide
+      >
+        <form onSubmit={submit} className="space-y-5">
+          {fields()}
+          {common}
+          <div className="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-white/10">
+            <button
+              type="button"
+              onClick={requestClose}
+              disabled={busy}
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10"
+            >
+              {fa ? "انصراف" : "Cancel"}
+            </button>
+            <button
+              disabled={busy}
+              className="rounded-xl bg-emerald-400 px-5 py-2 text-sm font-bold text-slate-950 disabled:opacity-50"
+            >
+              {busy
+                ? fa
+                  ? "در حال ذخیره..."
+                  : "Saving..."
+                : fa
+                  ? "ذخیره تغییرات"
+                  : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+      {confirmation && (
+        <ConfirmDialog
+          title={
+            confirmation.type === "discard"
               ? fa
-                ? "در حال ذخیره..."
-                : "Saving..."
+                ? "خروج از فرم"
+                : "Discard changes"
               : fa
-                ? "ذخیره تغییرات"
-                : "Save changes"}
-          </button>
-        </div>
-      </form>
-    </Modal>
+                ? "حذف تصویر"
+                : "Delete image"
+          }
+          message={
+            confirmation.type === "discard"
+              ? fa
+                ? "تغییرات ذخیره‌نشده از بین می‌روند. ادامه می‌دهید؟"
+                : "Your unsaved changes will be lost. Continue?"
+              : fa
+                ? "آیا از حذف این تصویر مطمئن هستید؟"
+                : "Are you sure you want to delete this image?"
+          }
+          cancelLabel={fa ? "انصراف" : "Cancel"}
+          confirmLabel={
+            confirmation.type === "discard"
+              ? fa
+                ? "خروج"
+                : "Discard"
+              : fa
+                ? "تأیید حذف"
+                : "Confirm delete"
+          }
+          busy={busy}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() =>
+            confirmation.type === "discard"
+              ? onClose()
+              : confirmImageRemoval(confirmation.key)
+          }
+        />
+      )}
+    </>
   );
 }
 
@@ -1341,6 +1435,8 @@ function ResourceView({
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [editor, setEditor] = useState<Item | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const load = useCallback(
     async (page = 1) => {
       setLoading(true);
@@ -1364,13 +1460,22 @@ function ResourceView({
   }, [load]);
   const title = labels[resource][fa ? "fa" : "en"];
   async function remove(item: Item) {
-    if (!confirm(fa ? "این مورد حذف شود؟" : "Delete this item?")) return;
+    setDeleteTarget(item);
+  }
+  async function confirmRemoval() {
+    if (!deleteTarget?._id || deleting) return;
+    setDeleting(true);
     try {
-      await api(`/api/admin/${resource}/${item._id}`, { method: "DELETE" });
-      setItems((current) => current.filter((x) => x._id !== item._id));
+      await api(`/api/admin/${resource}/${deleteTarget._id}`, {
+        method: "DELETE",
+      });
+      setItems((current) => current.filter((x) => x._id !== deleteTarget._id));
       notify(fa ? "حذف شد" : "Deleted");
     } catch (e) {
       notify(localizedError(e, locale), true);
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   }
   const display = (item: Item) =>
@@ -1551,6 +1656,21 @@ function ResourceView({
           notify={notify}
         />
       )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title={fa ? "حذف مورد" : "Delete item"}
+          message={
+            fa
+              ? "آیا از حذف این مورد مطمئن هستید؟"
+              : "Are you sure you want to delete this item?"
+          }
+          cancelLabel={fa ? "انصراف" : "Cancel"}
+          confirmLabel={fa ? "تأیید حذف" : "Confirm delete"}
+          busy={deleting}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={confirmRemoval}
+        />
+      )}
     </section>
   );
 }
@@ -1571,6 +1691,8 @@ function SingletonView({
   const [busy, setBusy] = useState(true);
   const [file, setFile] = useState<File | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [mediaConfirmation, setMediaConfirmation] = useState(false);
+  const [deletingMedia, setDeletingMedia] = useState(false);
   const load = useCallback(async () => {
     try {
       const result = await api(`/api/admin/${type}`);
@@ -1715,7 +1837,11 @@ function SingletonView({
   }
   async function removeMediaFile() {
     if (!image?.key) return;
-    if (!window.confirm(fa ? "این فایل حذف شود؟" : "Remove this file?")) return;
+    setMediaConfirmation(true);
+  }
+  async function confirmMediaRemoval() {
+    if (!image?.key || deletingMedia) return;
+    setDeletingMedia(true);
     try {
       await api(`/api/admin/${type}/${type === "resume" ? "file" : "image"}`, {
         method: "DELETE",
@@ -1728,6 +1854,9 @@ function SingletonView({
       notify(fa ? "فایل حذف شد" : "File deleted");
     } catch (e) {
       notify(localizedError(e, locale), true);
+    } finally {
+      setDeletingMedia(false);
+      setMediaConfirmation(false);
     }
   }
   if (busy && !Object.keys(data).length)
@@ -1939,6 +2068,21 @@ function SingletonView({
           )}
         </div>
       </div>
+      {mediaConfirmation && (
+        <ConfirmDialog
+          title={fa ? "حذف فایل" : "Delete file"}
+          message={
+            fa
+              ? "آیا از حذف این فایل مطمئن هستید؟"
+              : "Are you sure you want to delete this file?"
+          }
+          cancelLabel={fa ? "انصراف" : "Cancel"}
+          confirmLabel={fa ? "تأیید حذف" : "Confirm delete"}
+          busy={deletingMedia}
+          onCancel={() => setMediaConfirmation(false)}
+          onConfirm={confirmMediaRemoval}
+        />
+      )}
     </section>
   );
 }
@@ -1954,6 +2098,8 @@ function MessagesView({
   const [items, setItems] = useState<Item[]>([]);
   const [selected, setSelected] = useState<Item | null>(null);
   const [status, setStatus] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const load = useCallback(async () => {
     try {
       const result = await api(
@@ -1984,15 +2130,22 @@ function MessagesView({
     }
   }
   async function remove(item: Item) {
-    if (!confirm(fa ? "پیام حذف شود؟" : "Delete message?")) return;
+    setDeleteTarget(item);
+  }
+  async function confirmRemoval() {
+    if (!deleteTarget?._id || deleting) return;
+    setDeleting(true);
     try {
-      await api(`/api/admin/contact-messages/${item._id}`, {
+      await api(`/api/admin/contact-messages/${deleteTarget._id}`, {
         method: "DELETE",
       });
-      setItems((current) => current.filter((x) => x._id !== item._id));
+      setItems((current) => current.filter((x) => x._id !== deleteTarget._id));
       setSelected(null);
     } catch (e) {
       notify(localizedError(e, locale), true);
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   }
   return (
@@ -2097,6 +2250,21 @@ function MessagesView({
           )}
         </div>
       </div>
+      {deleteTarget && (
+        <ConfirmDialog
+          title={fa ? "حذف پیام" : "Delete message"}
+          message={
+            fa
+              ? "آیا از حذف این پیام مطمئن هستید؟"
+              : "Are you sure you want to delete this message?"
+          }
+          cancelLabel={fa ? "انصراف" : "Cancel"}
+          confirmLabel={fa ? "تأیید حذف" : "Confirm delete"}
+          busy={deleting}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={confirmRemoval}
+        />
+      )}
     </section>
   );
 }
@@ -2303,17 +2471,16 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
                 <a
                   href={`/${locale}`}
                   className="
-          hidden items-center gap-2
+           items-center gap-2
           rounded-xl border border-slate-200
           px-3 py-2 text-xs font-semibold
           text-slate-500 transition-colors
           hover:border-emerald-400
           hover:text-emerald-500
           dark:border-white/10
-          lg:flex
         "
                 >
-                  <ExternalLink size={14} />
+                  <ExternalLink className="hidden lg:flex" size={14} />
                   {fa ? "مشاهده سایت" : "View site"}
                 </a>
               </div>

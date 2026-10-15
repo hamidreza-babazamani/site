@@ -1,16 +1,32 @@
+
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-import { routing } from "@/i18n/routing";
-import Layout from "@/layouts/Layout";
 import localFont from "next/font/local";
-import "./globals.css";
-import { DarkModeProvider } from "@/context/DarkModeContext";
 import { ThemeProvider } from "next-themes";
 
+import { routing } from "@/i18n/routing";
+import Layout from "@/layouts/Layout";
+import { DarkModeProvider } from "@/context/DarkModeContext";
+
+import "./globals.css";
+
+
+
 const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir"
-).replace(/\/$/, "");
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://kamyarkamali.ir"
+).replace(/\/+$/, "");
+
+type SupportedLocale = "fa" | "en";
+
+type LocaleLayoutProps = {
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
 
 const iranYekan = localFont({
   src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
@@ -18,16 +34,111 @@ const iranYekan = localFont({
   display: "swap",
 });
 
-const googleFont = localFont({
+const englishFont = localFont({
   src: "../fonts/en/JetBrainsMono-Regular.ttf",
   variable: "--font-en",
   display: "swap",
 });
 
-type LocaleLayoutProps = {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-};
+
+
+const seo = {
+  fa: {
+    title:
+      "کامیار کمالی | مهندس نرم‌افزار، Next.js و اپلیکیشن‌های هوش مصنوعی",
+
+    description:
+      "وب‌سایت رسمی کامیار کمالی، توسعه‌دهنده نرم‌افزار متخصص در React، Next.js، TypeScript و Node.js با تمرکز بر توسعه وب‌اپلیکیشن‌های مدرن، اپلیکیشن‌های هوش مصنوعی، عملکرد، امنیت و سئو.",
+
+    keywords: [
+      "کامیار کمالی",
+      "Kamyar Kamali",
+      "مهندس نرم افزار",
+      "توسعه دهنده فرانت اند",
+      "توسعه دهنده فول استک",
+      "طراحی سایت",
+      "طراحی سایت با Next.js",
+      "برنامه نویس React",
+      "اپلیکیشن هوش مصنوعی",
+      "React",
+      "Next.js",
+      "TypeScript",
+      "Node.js",
+      "LLM",
+    ],
+  },
+
+  en: {
+    title:
+      "Kamyar Kamali | Software Engineer · Next.js & AI Applications",
+
+    description:
+      "Official portfolio of Kamyar Kamali, a software developer specializing in React, Next.js, TypeScript, Node.js, modern web applications, AI integrations, performance, security, and technical SEO.",
+
+    keywords: [
+      "Kamyar Kamali",
+      "Software Engineer",
+      "Frontend Developer",
+      "Full Stack Developer",
+      "React Developer",
+      "Next.js Developer",
+      "TypeScript",
+      "Node.js",
+      "AI Applications",
+      "LLM Integration",
+      "Web Performance",
+      "Web Security",
+      "Technical SEO",
+    ],
+  },
+} as const;
+
+
+function getPersonSchema(locale: SupportedLocale) {
+  const isFA = locale === "fa";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${siteUrl}/#person`,
+
+    name: "Kamyar Kamali",
+    alternateName: "کامیار کمالی",
+
+    url: `${siteUrl}/${locale}`,
+
+    jobTitle: isFA
+      ? "توسعه‌دهنده نرم‌افزار و اپلیکیشن‌های هوش مصنوعی"
+      : "Software Developer and AI Application Developer",
+
+    description: seo[locale].description,
+
+    knowsAbout: [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "Frontend Development",
+      "Backend Development",
+      "Web Performance",
+      "Web Security",
+      "Technical SEO",
+      "AI Applications",
+      "Large Language Models",
+    ],
+
+    sameAs: [
+      "https://github.com/Kamyarkamali",
+      "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
+    ],
+  };
+}
+
 
 export async function generateMetadata({
   params,
@@ -35,125 +146,113 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const isFA = locale === "fa";
+
+  if (!hasLocale(routing.locales, locale)) {
+    return {};
+  }
+
+  const currentLocale = locale as SupportedLocale;
+  const isFA = currentLocale === "fa";
+  const content = seo[currentLocale];
 
   return {
-    title: isFA
-      ? "کامیار کمالی | مهندس نرم‌افزار و متخصص اپلیکیشن‌های هوش مصنوعی"
-      : "Kamyar Kamali | Software Engineer for AI Applications",
+    metadataBase: new URL(siteUrl),
 
-    description: isFA
-      ? "کامیار کمالی، مهندس نرم‌افزار با تمرکز بر فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM با React، Next.js و TypeScript."
-      : "Kamyar Kamali is a software engineer focused on frontend engineering, AI-powered web applications, and LLM-enabled products with React, Next.js, and TypeScript.",
+    applicationName: "Kamyar Kamali Portfolio",
 
-    keywords: isFA
-      ? [
-          "کامیار کمالی",
-          "برنامه نویس",
-          "برنامه نویس فرانت اند",
-          "توسعه دهنده وب",
-          "React",
-          "Next.js",
-          "Node.js",
-          "Express",
-          "طراحی سایت",
-          "طراح سایت حرفه ای",
-        ]
-      : [
-          "Kamyar Kamali",
-          "Software Engineer",
-          "AI Applications",
-          "Frontend Engineering",
-          "React",
-          "Next.js",
-          "TypeScript",
-          "LLM applications",
-        ],
-
-    alternates: {
-      canonical: `${siteUrl}/${locale}`,
-      languages: {
-        fa: `${siteUrl}/fa`,
-        en: `${siteUrl}/en`,
-      },
+    title: {
+      default: content.title,
+      template: isFA
+        ? "%s | کامیار کمالی"
+        : "%s | Kamyar Kamali",
     },
+
+    description: content.description,
+
+    keywords: [...content.keywords],
+
+    authors: [
+      {
+        name: "Kamyar Kamali",
+        url: siteUrl,
+      },
+    ],
+
+    creator: "Kamyar Kamali",
+    publisher: "Kamyar Kamali",
 
     robots: {
       index: true,
       follow: true,
+
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
 
     openGraph: {
-      type: "profile",
-      title: isFA
-        ? "کامیار کمالی | مهندس نرم‌افزار و اپلیکیشن‌های هوش مصنوعی"
-        : "Kamyar Kamali | Software Engineer for AI Applications",
-      description: isFA
-        ? "فرانت‌اند، اپلیکیشن‌های هوش مصنوعی و محصولات مبتنی بر LLM."
-        : "Frontend engineering, AI-powered web applications, and LLM-enabled products.",
-      url: `${siteUrl}/${locale}`,
+      type: "website",
+
+      locale: isFA ? "fa_IR" : "en_US",
+
+      alternateLocale: isFA
+        ? ["en_US"]
+        : ["fa_IR"],
+
       siteName: "Kamyar Kamali",
+
+      title: content.title,
+      description: content.description,
+
       images: [
         {
-          url: `${siteUrl}/images/kamyar.jpg`,
+          url: "/images/og-cover.jpg",
           width: 1200,
           height: 630,
-          alt: isFA ? "تصویر کامیار کمالی" : "Kamyar Kamali",
+
+          alt: isFA
+            ? "کامیار کمالی - توسعه‌دهنده نرم‌افزار"
+            : "Kamyar Kamali - Software Developer",
         },
       ],
     },
 
     twitter: {
       card: "summary_large_image",
-      title: isFA
-        ? "کامیار کمالی | مهندس نرم‌افزار"
-        : "Kamyar Kamali | Software Engineer",
-      description: isFA
-        ? "اپلیکیشن‌های هوش مصنوعی و مهندسی فرانت‌اند."
-        : "AI applications and frontend engineering.",
+
+      title: content.title,
+      description: content.description,
+
+      images: ["/images/og-cover.jpg"],
     },
 
     icons: {
-      icon: "/logo.jpg",
-      shortcut: "/logo.jpg",
-      apple: "/logo.jpg",
+      icon: [
+        {
+          url: "/favicon.ico",
+          sizes: "any",
+        },
+        {
+          url: "/icon.png",
+          type: "image/png",
+          sizes: "512x512",
+        },
+      ],
+
+      apple: [
+        {
+          url: "/apple-touch-icon.png",
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
     },
 
-    other: {
-      "ld+json": JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Person",
-        name: isFA ? "کامیار کمالی" : "Kamyar Kamali",
-        jobTitle: isFA
-          ? "توسعه‌دهنده فرانت‌اند و Node.js"
-          : "Frontend & Node.js Developer",
-        url: `${siteUrl}/${locale}`,
-        sameAs: [
-          "https://github.com/Kamyarkamali",
-          "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
-        ],
-        knowsAbout: isFA
-          ? [
-              "React",
-              "Next.js",
-              "Node.js",
-              "Express",
-              "جاوااسکریپت",
-              "طراحی وب",
-              "فرانت اند",
-              "بک اند",
-            ]
-          : [
-              "React",
-              "Next.js",
-              "Node.js",
-              "Express",
-              "JavaScript",
-              "Frontend",
-              "Backend",
-            ],
-      }),
-    },
+    category: "technology",
   };
 }
 
@@ -167,17 +266,40 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  const currentLocale = locale as SupportedLocale;
+  const isFA = currentLocale === "fa";
+
+  const personSchema = getPersonSchema(currentLocale);
+
+  const fontClassName = isFA
+    ? iranYekan.className
+    : englishFont.className;
+
   return (
     <html
-      lang={locale}
-      dir={locale === "fa" ? "rtl" : "ltr"}
-      className={locale === "fa" ? iranYekan.className : googleFont.className}
+      lang={currentLocale}
+      dir={isFA ? "rtl" : "ltr"}
+      className={fontClassName}
       suppressHydrationWarning
     >
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(personSchema).replace(
+              /</g,
+              "\\u003c"
+            ),
+          }}
+        />
+
         <DarkModeProvider>
-          <NextIntlClientProvider locale={locale}>
-            <ThemeProvider attribute="class">
+          <NextIntlClientProvider locale={currentLocale}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+            >
               <Layout>{children}</Layout>
             </ThemeProvider>
           </NextIntlClientProvider>

@@ -45,16 +45,15 @@ async function HomePageTemplate() {
                   text-slate-900 dark:text-white
                 "
               >
-               
-<span className="text-slate-500 dark:text-slate-400">
-  {t("me.me")}{" "}
-</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t("me.me")}{" "}
+                </span>
 
-<span className="group/name relative isolate inline-block">
-  {/* Soft ambient glow */}
-  <span
-    aria-hidden="true"
-    className="
+                <span className="group/name relative isolate inline-block">
+                  {/* Soft ambient glow */}
+                  <span
+                    aria-hidden="true"
+                    className="
       pointer-events-none absolute
       -inset-x-2 inset-y-0 -z-10
       rounded-2xl
@@ -70,11 +69,11 @@ async function HomePageTemplate() {
       dark:via-teal-400/15
       dark:to-cyan-400/20
     "
-  />
+                  />
 
-  {/* Premium gradient typography */}
-  <span
-    className="
+                  {/* Premium gradient typography */}
+                  <span
+                    className="
       relative inline-block
       bg-gradient-to-r
       from-emerald-700
@@ -89,12 +88,11 @@ async function HomePageTemplate() {
       transition-[filter,transform] duration-500
       group-hover/name:brightness-110
     "
-  >
-    {portfolio.profile?.name?.[locale as "fa" | "en"] ||
-      t("me.name")}
-  </span>
-</span>
-
+                  >
+                    {portfolio.profile?.name?.[locale as "fa" | "en"] ||
+                      t("me.name")}
+                  </span>
+                </span>
               </h1>
 
               {/* عنوان شغلی */}
@@ -118,86 +116,104 @@ async function HomePageTemplate() {
                     pb-2
                   "
                 >
-                  {portfolio.hero?.headline?.[locale as "fa" | "en"] || portfolio.hero?.jobTitle?.[locale as "fa" | "en"] || t("me.how")}
+                  {portfolio.hero?.headline?.[locale as "fa" | "en"] ||
+                    portfolio.hero?.jobTitle?.[locale as "fa" | "en"] ||
+                    t("me.how")}
                 </span>
               </h2>
 
               {/* توضیحات مهارت‌ها */}
-              
-<div
-  className={`
+
+              <div
+                className={`
     group relative mt-7 max-w-2xl
     ${isPersian ? "text-right" : "text-left"}
   `}
-  dir={isPersian ? "rtl" : "ltr"}
->
-  {/* Decorative gradient line */}
-  <span
-    aria-hidden="true"
-    className={`
+                dir={isPersian ? "rtl" : "ltr"}
+              >
+                {/* Decorative gradient line */}
+                <span
+                  aria-hidden="true"
+                  className={`
       absolute inset-y-1 w-[3px] rounded-full
       bg-gradient-to-b
       from-cyan-500 via-blue-500 to-violet-500
       opacity-80
       ${isPersian ? "right-0" : "left-0"}
     `}
-  />
+                />
 
-  <p
-    className="
-      relative
-      px-5 sm:px-6
-      text-[16px] sm:text-[18px] md:text-[19px]
-      leading-[2] md:leading-[2.1]
-      font-normal
-      tracking-normal
-      text-slate-600 dark:text-slate-300
-      transition-colors duration-300
-      group-hover:text-slate-800
-      dark:group-hover:text-slate-100
-      motion-safe:animate-[fadeInUp_700ms_ease-out_both]
-    "
-  >
-    {portfolio.hero?.description?.[locale as "fa" | "en"] ||
-      portfolio.profile?.bio?.[locale as "fa" | "en"] ||
-      t("me.skill")}
-  </p>
-</div>
-
+                <p
+                  className="
+    relative
+    px-5 sm:px-6
+    text-[15px] sm:text-[18px] md:text-[19px]
+    leading-[2] md:leading-[2.1]
+    font-normal
+    tracking-normal
+    text-justify
+    [text-align-last:start]
+    [text-justify:inter-word]
+    [overflow-wrap:break-word]
+    text-slate-600 dark:text-slate-300
+    transition-colors duration-300
+    group-hover:text-slate-800
+    dark:group-hover:text-slate-100
+    motion-safe:animate-[fadeInUp_700ms_ease-out_both]
+  "
+                >
+                  {portfolio.hero?.description?.[locale as "fa" | "en"] ||
+                    portfolio.profile?.bio?.[locale as "fa" | "en"] ||
+                    t("me.skill")}
+                </p>
+              </div>
 
               {/* دکمه دانلود و شبکه‌های اجتماعی */}
-              {(portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl) && <div
-                className="
+              {(portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl) && (
+                <div
+                  className="
                   flex flex-col
                   xl:flex-row
                   items-center
                   gap-8
                   mt-8
                 "
-              >
-                <a
-                  href={portfolio.resumeAvailable ? "/api/public/resume/download" : portfolio.hero?.primaryCtaUrl}
-                  target={portfolio.resumeAvailable ? undefined : "_blank"}
-                  rel={portfolio.resumeAvailable ? undefined : "noopener noreferrer"}
-                  download={portfolio.resumeAvailable ? true : undefined}
                 >
-                  <Button
-                    variant="default"
-                    size="lg"
-                    className="uppercase flex items-center gap-2"
+                  <a
+                    href={
+                      portfolio.resumeAvailable
+                        ? "/api/public/resume/download"
+                        : portfolio.hero?.primaryCtaUrl
+                    }
+                    target={portfolio.resumeAvailable ? undefined : "_blank"}
+                    rel={
+                      portfolio.resumeAvailable
+                        ? undefined
+                        : "noopener noreferrer"
+                    }
+                    download={portfolio.resumeAvailable ? true : undefined}
                   >
-                    <span>{portfolio.hero?.primaryCta?.[locale as "fa" | "en"] || t("me.download")}</span>
-                    <TfiDownload className="text-xl" />
-                  </Button>
-                </a>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="uppercase flex items-center gap-2"
+                    >
+                      <span>
+                        {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
+                          t("me.download")}
+                      </span>
+                      <TfiDownload className="text-xl" />
+                    </Button>
+                  </a>
 
-                <div className="mb-8 xl:mb-0 flex">
-                  <Sochial
-                    containerStyle="flex gap-6 items-center"
-                    iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-full flex justify-center items-center hover:bg-green-600 text-center text-base p-2 transition-all duration-500"
-                  />
+                  <div className="mb-8 xl:mb-0 flex">
+                    <Sochial
+                      containerStyle="flex gap-6 items-center"
+                      iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-full flex justify-center items-center hover:bg-green-600 text-center text-base p-2 transition-all duration-500"
+                    />
+                  </div>
                 </div>
-              </div>}
+              )}
             </div>
 
             {/* تصویر پروفایل - بدون تغییر */}

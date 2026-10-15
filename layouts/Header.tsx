@@ -1,61 +1,82 @@
+
+import Image from "next/image";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import MobileNavbar from "@/components/MobileNavbar";
 import NavDecks from "@/components/NavDecks";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
 
 function Header() {
   const locale = useLocale();
   const t = useTranslations("HomePage");
 
   return (
-    <header dir={locale === "fa" ? "rtl" : "ltr"} className="w-full">
+    <header
+      dir={locale === "fa" ? "rtl" : "ltr"}
+      className="relative z-40 w-full"
+    >
       <div
         className="
           container mx-auto
-          grid grid-cols-[auto_minmax(0,1fr)_auto]
-          items-center gap-2 px-3 py-4
+          grid min-h-20 w-full
+          grid-cols-[auto_minmax(0,1fr)_auto]
+          items-center gap-2
+          px-3 py-3
           sm:gap-4 sm:px-6
-          xl:flex xl:justify-between xl:py-6
+          xl:flex xl:min-h-24
+          xl:justify-between xl:gap-6
+          xl:py-4
         "
       >
         {/* Language & Theme */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
 
-        {/* Logo */}
         <Link
           href="/"
+          aria-label="Kamyar Kamali - Home"
           className="
-            min-w-0 justify-self-center
-            whitespace-nowrap
-            hidden
-            md:block
-            text-base font-semibold
-            text-gray-900 dark:text-white
-            sm:text-xl
-            xl:text-4xl
+            flex min-w-0 items-center justify-center
+            justify-self-center
+            transition-transform duration-300
+            hover:scale-[1.03]
+            focus-visible:outline-2
+            focus-visible:outline-offset-4
+            focus-visible:outline-emerald-500
           "
         >
-          Kamyar
-          <span className="text-2xl text-green-500 sm:text-4xl">.</span>
-          Dev
+          <Image
+            src="/images/logok.png"
+            alt="Kamyar Kamali - Developer"
+            width={220}
+            height={110}
+            priority
+            sizes="(max-width: 640px) 110px, (max-width: 1280px) 150px, 180px"
+            className="
+              h-auto w-[105px]
+              max-w-full object-contain
+              sm:w-[145px]
+              xl:w-[180px]
+              dark:brightness-110
+            "
+          />
         </Link>
 
         {/* Mobile Navigation */}
-        <div className="justify-self-end xl:hidden">
+        <div className="shrink-0 justify-self-end xl:hidden">
           <MobileNavbar />
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 xl:flex">
+        <nav className="hidden min-w-0 items-center gap-6 xl:flex 2xl:gap-8">
           <NavDecks />
 
-          <Link href="/contact">
+          <Link href="/contact" className="shrink-0">
             <Button>{t("worke")}</Button>
           </Link>
         </nav>

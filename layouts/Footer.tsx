@@ -7,6 +7,7 @@ import {
   FaTelegramPlane,
 } from "react-icons/fa";
 import { ArrowUpRight, Heart } from "lucide-react";
+import Image from "next/image";
 
 const socialLinks = [
   {
@@ -41,7 +42,7 @@ export default function Footer() {
   const footerLinks = [
     {
       label: t("footer.aboutme"),
-      href: "/resume" as const,
+      href: "/profile" as const,
     },
     {
       label: t("footer.project"),
@@ -130,30 +131,35 @@ export default function Footer() {
                 focus-visible:outline-emerald-500
               "
             >
-              <div
+              <Link
+                href="/"
+                aria-label="Kamyar Kamali - Home"
                 className="
-                  flex h-11 w-11 shrink-0
-                  items-center justify-center
-                  rounded-2xl
-                  border border-emerald-500/20
-                  bg-gradient-to-br
-                  from-emerald-500/15
-                  to-cyan-500/10
-                  shadow-[0_6px_20px_rgba(16,185,129,0.08)]
-                  dark:border-emerald-400/20
-                "
+            flex min-w-0 items-center justify-center
+            justify-self-center
+            transition-transform duration-300
+            hover:scale-[1.03]
+            focus-visible:outline-2
+            focus-visible:outline-offset-4
+            focus-visible:outline-emerald-500
+          "
               >
-                <span
+                <Image
+                  src="/images/logok.png"
+                  alt="Kamyar Kamali - Developer"
+                  width={220}
+                  height={110}
+                  priority
+                  sizes="(max-width: 640px) 110px, (max-width: 1280px) 150px, 180px"
                   className="
-                    text-lg font-black
-                    text-emerald-700
-                    dark:text-emerald-300
-                  "
-                  aria-hidden="true"
-                >
-                  K.
-                </span>
-              </div>
+              h-auto w-[105px]
+              max-w-full object-contain
+              sm:w-[145px]
+              xl:w-[180px]
+              dark:brightness-110
+            "
+                />
+              </Link>
 
               <h2
                 className="
@@ -349,8 +355,6 @@ export default function Footer() {
           >
             {t("footer.end")}
           </p>
-
-         
         </div>
       </div>
     </footer>
