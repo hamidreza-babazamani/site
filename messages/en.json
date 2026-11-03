@@ -1,8 +1,8 @@
 {
   "HomePage": {
     "meta": {
-      "title": "Kamyar Kamali | Front-end Developer",
-      "description": "Official website of Kamyar Kamali. A professional front-end developer focused on React, Next.js, and WordPress."
+      "title": "Hamidreza Babazamani | Front-end Developer",
+      "description": "Official website of Hamidreza Babazamani. A professional front-end developer focused on React, Next.js, and WordPress."
     },
     "title": "Hello world",
     "about": "Go to the About page",
@@ -24,7 +24,7 @@
     "me": {
       "how": "Front-end Developer",
       "me": "I'm",
-      "name": "Kamyar Kamali",
+      "name": "Hamidreza Babazamani",
       "skill": "I am a front-end developer specializing in JavaScript, React, Next.js, Node.js, and Express. I build fast, responsive, and SEO-optimized websites and applications to deliver a professional and smooth user experience.",
       "download": "Download Resume"
     },
@@ -72,9 +72,9 @@
       "description": "A quick overview of my professional background and key details.",
       "info": {
         "aboutus": "About Me",
-        "descriptionme": "I am Kamyar Kamali, a front-end developer with over 4 years of experience in designing and building responsive websites and applications. I have worked with modern technologies such as HTML, CSS, JavaScript, React, Next.js, as well as Node.js and Express. My goal is to create professional, fast, and user-friendly interfaces that enhance the digital experience for users.",
+        "descriptionme": "I am Hamidreza Babazamani, a front-end developer with over 4 years of experience in designing and building responsive websites and applications. I have worked with modern technologies such as HTML, CSS, JavaScript, React, Next.js, as well as Node.js and Express. My goal is to create professional, fast, and user-friendly interfaces that enhance the digital experience for users.",
         "fullName": "Full Name",
-        "fullNameValue": "Kamyar Kamali",
+        "fullNameValue": "Hamidreza Babazamani",
         "email": "Email",
         "emailValue": "kamyarkamali021@gmail.com",
         "phone": "Phone",
@@ -94,7 +94,7 @@
         "techStack": "Tech Stack",
         "techStackValue": "React, Next.js, JavaScript, WordPress, Tailwind",
         "title": "My Ecperience",
-        "desc": "I’m Kamyar Kamali, a front-end developer specialized in JavaScript, React, Next.js, WordPress, and Elementor. I create fast, responsive, and user-friendly websites that deliver exceptional user experiences.",
+        "desc": "I’m Hamidreza Babazamani, a front-end developer specialized in JavaScript, React, Next.js, WordPress, and Elementor. I create fast, responsive, and user-friendly websites that deliver exceptional user experiences.",
         "company1": "Habibi Hello",
         "position1": "Front-End Developer and Designer",
         "company2": "Arkam",
@@ -174,9 +174,9 @@
       "aboutme": "About Me",
       "contact": "Contact Me",
       "project": "Projects",
-      "name": "Kamyar Kamali",
+      "name": "Hamidreza Babazamani",
       "desc": "Front-End Engineer | React.js & Next.js | TypeScript | AI Enthusiast",
-      "end": "Written with ❤️ by Kamyar Kamali"
+      "end": "Written with ❤️ by Hamidreza Babazamani"
     }
   }
 }

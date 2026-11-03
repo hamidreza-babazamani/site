@@ -16,8 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
       locale === "fa"
-        ? "پروفایل | کامیار کمالی"
-        : "Profile | Kamyar Kamali",
+        ? "پروفایل | حمیدرضا بابازمانی"
+        : "Profile | Hamidreza Babazamani",
   };
 }
 

@@ -73,6 +73,32 @@ export const Profile =
       opts,
     ),
   );
+export const SiteSettings =
+  models.SiteSettings ??
+  model(
+    "SiteSettings",
+    new Schema(
+      {
+        key: { type: String, unique: true, default: "default" },
+        siteName: localized,
+        title: localized,
+        description: localized,
+        keywords: {
+          fa: { type: [String], default: undefined },
+          en: { type: [String], default: undefined },
+        },
+        robots: {
+          index: Boolean,
+          follow: Boolean,
+        },
+        logo: media,
+        openGraphImage: media,
+        favicon: media,
+        fallbackImage: media,
+      },
+      opts,
+    ),
+  );
 export const Experience =
   models.Experience ??
   model(
@@ -100,6 +126,7 @@ export const Service =
         title: { type: localized, required: true },
         description: { type: localized, required: true },
         icon: String,
+        image: media,
         order: { type: Number, default: 0 },
         isVisible: { type: Boolean, default: true },
       },
@@ -115,6 +142,7 @@ export const Technology =
         name: { type: localized, required: true },
         category: String,
         icon: String,
+        iconMedia: media,
         proficiency: { type: Number, min: 0, max: 100 },
         order: { type: Number, default: 0 },
         isVisible: { type: Boolean, default: true },
@@ -211,6 +239,20 @@ export const ContactMessage =
           default: "new",
         },
         readAt: Date,
+      },
+      opts,
+    ),
+  );
+export const Stat =
+  models.Stat ??
+  model(
+    "Stat",
+    new Schema(
+      {
+        label: { type: localized, required: true },
+        value: { type: Number, required: true },
+        order: { type: Number, default: 0 },
+        isVisible: { type: Boolean, default: true },
       },
       opts,
     ),

@@ -1,17 +1,23 @@
 import { getLocale } from "next-intl/server";
 import HeroImage from "@/components/HeroImage";
 import HeroTechEcosystem from "@/components/HeroTechEcosystem";
-import type { PublicHero } from "@/lib/services/public-portfolio";
+import type { PublicHero, PublicMedia } from "@/lib/services/public-portfolio";
 
-export default async function Photo({ hero }: { hero: PublicHero | null }) {
+export default async function Photo({
+  hero,
+  fallbackImage,
+}: {
+  hero: PublicHero | null;
+  fallbackImage?: PublicMedia;
+}) {
   const locale = await getLocale();
 
   const alt =
     hero?.image?.alt?.[locale as "fa" | "en"] ||
     hero?.image?.alt?.en ||
     (locale === "fa"
-      ? "تصویر کامیار کمالی، توسعه‌دهنده فرانت‌اند"
-      : "Portrait of Kamyar Kamali, Front-end Developer");
+      ? "تصویر حمیدرضا بابازمانی، توسعه‌دهنده فرانت‌اند"
+      : "Portrait of Hamidreza Babazamani, Front-end Developer");
 
   return (
     <div
@@ -22,7 +28,11 @@ export default async function Photo({ hero }: { hero: PublicHero | null }) {
         xl:h-[498px] xl:w-[498px]
       "
     >
-      <HeroImage src={hero?.image?.url} alt={alt} />
+      <HeroImage
+        src={hero?.image?.url}
+        fallbackSrc={fallbackImage?.url}
+        alt={alt}
+      />
 
       <div
         aria-hidden="true"

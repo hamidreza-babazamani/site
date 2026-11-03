@@ -133,7 +133,7 @@ export default function Footer() {
             >
               <Link
                 href="/"
-                aria-label="Kamyar Kamali - Home"
+                aria-label="Hamidreza Babazamani - Home"
                 className="
             flex min-w-0 items-center justify-center
             justify-self-center
@@ -146,7 +146,7 @@ export default function Footer() {
               >
                 <Image
                   src="/images/logok.png"
-                  alt="Kamyar Kamali - Developer"
+                  alt="Hamidreza Babazamani - Developer"
                   width={220}
                   height={110}
                   priority

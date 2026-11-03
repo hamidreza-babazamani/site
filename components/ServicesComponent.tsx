@@ -214,7 +214,21 @@ export default async function ServicesComponent() {
                         dark:text-emerald-300
                       "
                       >
-                        <Icon size={23} strokeWidth={1.7} aria-hidden="true" />
+                        {service.image?.url?.trim() ? (
+                          <img
+                            src={service.image.url.trim()}
+                            alt={
+                              localize(service.image.alt, locale) || title
+                            }
+                            className="size-9 object-contain"
+                          />
+                        ) : (
+                          <Icon
+                            size={23}
+                            strokeWidth={1.7}
+                            aria-hidden="true"
+                          />
+                        )}
                       </span>
 
                       <span

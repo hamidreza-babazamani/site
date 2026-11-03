@@ -195,7 +195,7 @@ export default function MobileNavbar() {
                   dark:text-white
                 "
               >
-                Kamyar.Dev
+                Hamidreza Babazamani
               </span>
 
               <span
@@ -405,7 +405,7 @@ export default function MobileNavbar() {
             />
 
             <span>
-              Kamyar Kamali · Portfolio
+              Hamidreza Babazamani · Portfolio
             </span>
           </div>
         </div>

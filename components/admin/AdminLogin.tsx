@@ -510,7 +510,7 @@ export default function AdminLogin() {
                 text-slate-900 dark:text-white
               "
             >
-              Kamyar Studio
+              Hamidreza Babazamani Studio
             </p>
 
             <p
@@ -909,7 +909,7 @@ export default function AdminLogin() {
             dark:text-slate-500
           "
         >
-          © {new Date().getFullYear()} Kamyar Studio
+          © {new Date().getFullYear()} Hamidreza Babazamani Studio
         </p>
       </div>
     </main>

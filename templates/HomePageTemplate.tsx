@@ -218,7 +218,7 @@ async function HomePageTemplate() {
 
             {/* تصویر پروفایل - بدون تغییر */}
             <div className="order-1 xl:order-2 mb-8 xl:mb-0">
-              <Photo hero={portfolio.hero} />
+              <Photo hero={portfolio.hero} fallbackImage={portfolio.fallbackImage} />
             </div>
           </div>
         </div>
@@ -226,7 +226,7 @@ async function HomePageTemplate() {
 
       {/* بخش‌های دیگر خارج از محدوده افکت */}
       <Stats />
-      <SkillsCircle />
+      <SkillsCircle skills={portfolio.technologies} locale={locale} />
     </section>
   );
 }

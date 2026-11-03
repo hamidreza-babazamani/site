@@ -62,6 +62,7 @@ type DynamicValue = ReturnType<JSON["parse"]>;
 type Item = Record<string, DynamicValue> & { _id?: string };
 
 const labels: Record<string, { en: string; fa: string; icon: LucideIcon }> = {
+  "site-settings": { en: "Site settings", fa: "تنظیمات سایت", icon: Settings2 },
   overview: { en: "Overview", fa: "نمای کلی", icon: LayoutDashboard },
   projects: { en: "Projects", fa: "پروژه‌ها", icon: BriefcaseBusiness },
   technologies: { en: "Technologies", fa: "مهارت‌ها", icon: Zap },
@@ -743,7 +744,23 @@ function ResourceEditor({
 }) {
   const fa = locale === "fa";
   const [form, setForm] = useState<Item>(initial);
+  const [projectId, setProjectId] = useState(initial._id);
+  const [technologyId, setTechnologyId] = useState(initial._id);
+  const [serviceId, setServiceId] = useState(initial._id);
+  const submitInProgress = useRef(false);
   const [busy, setBusy] = useState(false);
+  const [technologyLogoFile, setTechnologyLogoFile] = useState<File | null>(null);
+  const [technologyLogoRemovalPending, setTechnologyLogoRemovalPending] =
+    useState(false);
+  const [technologyLogoBusy, setTechnologyLogoBusy] = useState(false);
+  const [technologyLogoStatus, setTechnologyLogoStatus] = useState("");
+  const [technologyLogoError, setTechnologyLogoError] = useState("");
+  const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
+  const [serviceImageRemovalPending, setServiceImageRemovalPending] =
+    useState(false);
+  const [serviceImageBusy, setServiceImageBusy] = useState(false);
+  const [serviceImageStatus, setServiceImageStatus] = useState("");
+  const [serviceImageError, setServiceImageError] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [newAlts, setNewAlts] = useState<Record<string, Localized>>({});
   const [replacements, setReplacements] = useState<Record<string, File>>({});
@@ -771,6 +788,20 @@ function ResourceEditor({
       delete next[key];
       return next;
     });
+  };
+  const removeTechnologyLogo = () => {
+    setTechnologyLogoFile(null);
+    setTechnologyLogoRemovalPending(Boolean(form.iconMedia));
+    setTechnologyLogoError("");
+    setTechnologyLogoStatus("");
+    setIsDirty(true);
+  };
+  const removeServiceImage = () => {
+    setServiceImageFile(null);
+    setServiceImageRemovalPending(Boolean(form.image));
+    setServiceImageError("");
+    setServiceImageStatus("");
+    setIsDirty(true);
   };
   const common = (
     <>
@@ -1015,6 +1046,117 @@ function ResourceEditor({
               error={fieldError("proficiency")}
             />
           </div>
+          <div className="rounded-2xl border border-dashed border-slate-300 p-4 dark:border-white/15">
+            <div className="mb-3">
+              <p className="text-sm font-semibold">
+                {fa ? "لوگوی مهارت (اختیاری)" : "Technology logo (optional)"}
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                {fa
+                  ? "JPEG، PNG، WebP یا AVIF تا ۴ مگابایت. تصویر هنگام ذخیره بارگذاری می‌شود."
+                  : "JPEG, PNG, WebP, or AVIF up to 4 MB. The logo uploads when you save."}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {technologyLogoFile ? (
+                <LocalImagePreview
+                  file={technologyLogoFile}
+                  alt={text(form.name, locale)}
+                  className="h-24 w-24 rounded-xl border border-slate-200 object-contain p-2 dark:border-white/10"
+                />
+              ) : !technologyLogoRemovalPending && form.iconMedia?.url ? (
+                <img
+                  src={form.iconMedia.url}
+                  alt={text(form.name, locale)}
+                  className="h-24 w-24 rounded-xl border border-slate-200 object-contain p-2 dark:border-white/10"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-slate-200 text-xs text-slate-400 dark:border-white/10">
+                  {fa ? "بدون لوگو" : "No logo"}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="cursor-pointer rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-white/10">
+                  {form.iconMedia?.url || technologyLogoFile
+                    ? fa
+                      ? "جایگزینی لوگو"
+                      : "Choose or replace logo"
+                    : fa
+                      ? "انتخاب لوگو"
+                      : "Choose logo"}
+                  <input
+                    className="sr-only"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    disabled={busy}
+                    onChange={(event) => {
+                      const next = event.currentTarget.files?.[0];
+                      event.currentTarget.value = "";
+                      if (!next) return;
+                      if (
+                        !imageTypes.includes(next.type) ||
+                        next.size <= 0 ||
+                        next.size > maxImageSize
+                      ) {
+                        setTechnologyLogoError(
+                          fa
+                            ? "فرمت یا حجم تصویر معتبر نیست. حداکثر حجم ۴ مگابایت است."
+                            : "Use JPEG, PNG, WebP, or AVIF images up to 4 MB.",
+                        );
+                        return;
+                      }
+                      setTechnologyLogoError("");
+                      setTechnologyLogoStatus("");
+                      setTechnologyLogoFile(next);
+                      setTechnologyLogoRemovalPending(false);
+                      setIsDirty(true);
+                    }}
+                  />
+                </label>
+                {!technologyLogoRemovalPending &&
+                  (form.iconMedia?.url || technologyLogoFile) && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={removeTechnologyLogo}
+                    className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-500 disabled:opacity-50 dark:border-red-400/30"
+                  >
+                    {fa ? "حذف لوگو" : "Remove logo"}
+                  </button>
+                )}
+                {technologyLogoRemovalPending && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setTechnologyLogoRemovalPending(false);
+                      setIsDirty(true);
+                    }}
+                    className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 disabled:opacity-50"
+                  >
+                    {fa ? "لغو حذف" : "Undo removal"}
+                  </button>
+                )}
+              </div>
+            </div>
+            {technologyLogoRemovalPending && (
+              <p role="status" className="mt-3 text-xs text-slate-500">
+                {fa
+                  ? "لوگو پس از ذخیره حذف می‌شود."
+                  : "The logo will be removed when you save."}
+              </p>
+            )}
+            {technologyLogoBusy && (
+              <p role="status" className="mt-3 text-xs text-emerald-600">
+                {technologyLogoStatus || (fa ? "در حال پردازش لوگو..." : "Processing logo...")}
+              </p>
+            )}
+            {technologyLogoError && (
+              <p role="alert" className="mt-3 text-xs text-red-500">
+                {technologyLogoError}
+              </p>
+            )}
+          </div>
         </>
       );
     if (resource === "experiences")
@@ -1088,6 +1230,117 @@ function ResourceEditor({
             value={form.icon}
             onChange={(v) => set("icon", v)}
           />
+          <div className="rounded-2xl border border-dashed border-slate-300 p-4 dark:border-white/15">
+            <div className="mb-3">
+              <p className="text-sm font-semibold">
+                {fa ? "تصویر خدمت (اختیاری)" : "Service image (optional)"}
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                {fa
+                  ? "JPEG، PNG، WebP یا AVIF تا ۴ مگابایت. تصویر هنگام ذخیره بارگذاری می‌شود."
+                  : "JPEG, PNG, WebP, or AVIF up to 4 MB. The image uploads when you save."}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {serviceImageFile ? (
+                <LocalImagePreview
+                  file={serviceImageFile}
+                  alt={text(form.title, locale)}
+                  className="h-24 w-24 rounded-xl border border-slate-200 object-contain p-2 dark:border-white/10"
+                />
+              ) : !serviceImageRemovalPending && form.image?.url ? (
+                <img
+                  src={form.image.url}
+                  alt={text(form.title, locale)}
+                  className="h-24 w-24 rounded-xl border border-slate-200 object-contain p-2 dark:border-white/10"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-slate-200 text-xs text-slate-400 dark:border-white/10">
+                  {fa ? "بدون تصویر" : "No image"}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="cursor-pointer rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-white/10">
+                  {form.image?.url || serviceImageFile
+                    ? fa
+                      ? "جایگزینی تصویر"
+                      : "Choose or replace image"
+                    : fa
+                      ? "انتخاب تصویر"
+                      : "Choose image"}
+                  <input
+                    className="sr-only"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    disabled={busy}
+                    onChange={(event) => {
+                      const next = event.currentTarget.files?.[0];
+                      event.currentTarget.value = "";
+                      if (!next) return;
+                      if (
+                        !imageTypes.includes(next.type) ||
+                        next.size <= 0 ||
+                        next.size > maxImageSize
+                      ) {
+                        setServiceImageError(
+                          fa
+                            ? "فرمت یا حجم تصویر معتبر نیست. حداکثر حجم ۴ مگابایت است."
+                            : "Use JPEG, PNG, WebP, or AVIF images up to 4 MB.",
+                        );
+                        return;
+                      }
+                      setServiceImageError("");
+                      setServiceImageStatus("");
+                      setServiceImageFile(next);
+                      setServiceImageRemovalPending(false);
+                      setIsDirty(true);
+                    }}
+                  />
+                </label>
+                {!serviceImageRemovalPending &&
+                  (form.image?.url || serviceImageFile) && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={removeServiceImage}
+                      className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-500 disabled:opacity-50 dark:border-red-400/30"
+                    >
+                      {fa ? "حذف تصویر" : "Remove image"}
+                    </button>
+                  )}
+                {serviceImageRemovalPending && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setServiceImageRemovalPending(false);
+                      setIsDirty(true);
+                    }}
+                    className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 disabled:opacity-50"
+                  >
+                    {fa ? "لغو حذف" : "Undo removal"}
+                  </button>
+                )}
+              </div>
+            </div>
+            {serviceImageRemovalPending && (
+              <p role="status" className="mt-3 text-xs text-slate-500">
+                {fa
+                  ? "تصویر پس از ذخیره حذف می‌شود."
+                  : "The image will be removed when you save."}
+              </p>
+            )}
+            {serviceImageBusy && (
+              <p role="status" className="mt-3 text-xs text-emerald-600">
+                {serviceImageStatus || (fa ? "در حال پردازش تصویر..." : "Processing image...")}
+              </p>
+            )}
+            {serviceImageError && (
+              <p role="alert" className="mt-3 text-xs text-red-500">
+                {serviceImageError}
+              </p>
+            )}
+          </div>
         </>
       );
     if (resource === "languages")
@@ -1156,23 +1409,26 @@ function ResourceEditor({
     setConfirmation({ type: "image", key });
   }
   async function confirmImageRemoval(key: string) {
+    const currentProjectId = projectId || initial._id;
+    if (!currentProjectId || busy) return;
     setBusy(true);
     try {
       const result = await api(
-        `/api/admin/projects/${initial._id}/images/${encodeURIComponent(key)}`,
+        `/api/admin/projects/${currentProjectId}/images/${encodeURIComponent(key)}`,
         { method: "DELETE" },
       );
       set("images", result.data);
+      setConfirmation(null);
       notify(fa ? "تصویر حذف شد" : "Image deleted");
     } catch (e) {
       notify(localizedError(e, locale), true);
     } finally {
       setBusy(false);
-      setConfirmation(null);
     }
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (submitInProgress.current || busy) return;
     const next: Record<string, string> = {};
     const requiredLocalized = (key: string) => {
       const value = localized(form[key]);
@@ -1271,17 +1527,38 @@ function ResourceEditor({
       return;
     }
     setErrors({});
+    submitInProgress.current = true;
     setBusy(true);
+    let technologyLogoAction = false;
+    let serviceImageAction = false;
     try {
+      const resourceId =
+        resource === "projects"
+          ? projectId
+          : resource === "technologies"
+          ? technologyId
+          : resource === "services"
+            ? serviceId
+            : initial._id;
       const result = await api(
-        `/api/admin/${resource}${initial._id ? `/${initial._id}` : ""}`,
+        `/api/admin/${resource}${resourceId ? `/${resourceId}` : ""}`,
         {
-          method: initial._id ? "PATCH" : "POST",
+          method: resourceId ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         },
       );
       let saved = result.data;
+      if (resource === "projects" && saved._id) {
+        setProjectId(saved._id);
+        setForm(saved);
+      } else if (resource === "technologies") {
+        setTechnologyId(saved._id);
+        setForm(saved);
+      } else if (resource === "services") {
+        setServiceId(saved._id);
+        setForm(saved);
+      }
       if (resource === "projects" && saved._id) {
         const before = (initial.images || []) as Item[];
         for (const image of form.images || []) {
@@ -1289,7 +1566,7 @@ function ResourceEditor({
           if (
             old &&
             JSON.stringify(old.alt || {}) !== JSON.stringify(image.alt || {})
-          )
+          ) {
             await api(
               `/api/admin/projects/${saved._id}/images/${encodeURIComponent(image.key)}`,
               {
@@ -1298,6 +1575,14 @@ function ResourceEditor({
                 body: JSON.stringify({ alt: image.alt || emptyLocalized() }),
               },
             );
+            saved = {
+              ...saved,
+              images: (saved.images || []).map((savedImage: MediaItem) =>
+                savedImage.key === image.key ? { ...savedImage, alt: image.alt } : savedImage,
+              ),
+            };
+            setForm(saved);
+          }
         }
         for (const [key, file] of Object.entries(replacements)) {
           const data = new FormData();
@@ -1319,6 +1604,12 @@ function ResourceEditor({
               image.key === key ? upload.data : image,
             ),
           };
+          setForm(saved);
+          setReplacements((current) => {
+            const next = { ...current };
+            delete next[key];
+            return next;
+          });
         }
         for (const file of files) {
           const data = new FormData();
@@ -1330,16 +1621,111 @@ function ResourceEditor({
             body: data,
           });
           saved = { ...saved, images: [...(saved.images || []), upload.data] };
+          setForm(saved);
+          setFiles((current) => current.filter((pending) => pending !== file));
+          setNewAlts((current) => {
+            const next = { ...current };
+            delete next[key];
+            return next;
+          });
+        }
+      }
+      if (resource === "technologies" && saved._id) {
+        if (technologyLogoFile) {
+          technologyLogoAction = true;
+          setTechnologyLogoBusy(true);
+          setTechnologyLogoStatus(
+            fa ? "در حال بارگذاری لوگو..." : "Uploading logo...",
+          );
+          const data = new FormData();
+          data.append("file", technologyLogoFile);
+          const upload = await api(
+            `/api/admin/technologies/${encodeURIComponent(saved._id)}/icon-media`,
+            {
+              method: saved.iconMedia?.url ? "PUT" : "POST",
+              body: data,
+            },
+          );
+          saved = { ...saved, iconMedia: upload.data };
+          setForm(saved);
+          setTechnologyLogoFile(null);
+          setTechnologyLogoRemovalPending(false);
+          setTechnologyLogoError("");
+          setTechnologyLogoStatus("");
+        } else if (technologyLogoRemovalPending && saved.iconMedia?.url) {
+          technologyLogoAction = true;
+          setTechnologyLogoBusy(true);
+          setTechnologyLogoStatus(
+            fa ? "در حال حذف لوگو..." : "Removing logo...",
+          );
+          await api(
+            `/api/admin/technologies/${encodeURIComponent(saved._id)}/icon-media`,
+            { method: "DELETE" },
+          );
+          saved = { ...saved, iconMedia: null };
+          setForm(saved);
+          setTechnologyLogoRemovalPending(false);
+          setTechnologyLogoError("");
+          setTechnologyLogoStatus("");
+        }
+      }
+      if (resource === "services" && saved._id) {
+        if (serviceImageFile) {
+          serviceImageAction = true;
+          setServiceImageBusy(true);
+          setServiceImageStatus(
+            fa ? "در حال بارگذاری تصویر..." : "Uploading image...",
+          );
+          const data = new FormData();
+          data.append("file", serviceImageFile);
+          const upload = await api(
+            `/api/admin/services/${encodeURIComponent(saved._id)}/image`,
+            {
+              method: saved.image?.url ? "PUT" : "POST",
+              body: data,
+            },
+          );
+          saved = { ...saved, image: upload.data };
+          setForm(saved);
+          setServiceImageFile(null);
+          setServiceImageRemovalPending(false);
+          setServiceImageError("");
+          setServiceImageStatus("");
+        } else if (serviceImageRemovalPending && saved.image?.url) {
+          serviceImageAction = true;
+          setServiceImageBusy(true);
+          setServiceImageStatus(
+            fa ? "در حال حذف تصویر..." : "Removing image...",
+          );
+          await api(
+            `/api/admin/services/${encodeURIComponent(saved._id)}/image`,
+            { method: "DELETE" },
+          );
+          saved = { ...saved, image: null };
+          setForm(saved);
+          setServiceImageRemovalPending(false);
+          setServiceImageError("");
+          setServiceImageStatus("");
         }
       }
       onSaved(saved);
       notify(messages[fa ? "fa" : "en"].saved);
+      if (resource === "projects") setProjectId(undefined);
       onClose();
     } catch (e) {
       setErrors(localizedServerErrors(e, locale));
+      if (resource === "technologies" && technologyLogoAction)
+        setTechnologyLogoError(localizedError(e, locale, true));
+      if (resource === "services" && serviceImageAction)
+        setServiceImageError(localizedError(e, locale, true));
       notify(localizedError(e, locale), true);
     } finally {
+      setTechnologyLogoBusy(false);
+      setTechnologyLogoStatus("");
+      setServiceImageBusy(false);
+      setServiceImageStatus("");
       setBusy(false);
+      submitInProgress.current = false;
     }
   }
   return (
@@ -1672,6 +2058,237 @@ function ResourceView({
         />
       )}
     </section>
+  );
+}
+
+type SiteSettingsMediaField =
+  | "logo"
+  | "openGraphImage"
+  | "favicon"
+  | "fallbackImage";
+
+const siteSettingsMediaFields: {
+  key: SiteSettingsMediaField;
+  en: string;
+  fa: string;
+}[] = [
+  { key: "logo", en: "Logo", fa: "لوگو" },
+  { key: "openGraphImage", en: "Open Graph image", fa: "تصویر شبکه‌های اجتماعی" },
+  { key: "favicon", en: "Favicon", fa: "فاوآیکون" },
+  { key: "fallbackImage", en: "Fallback image", fa: "تصویر جایگزین" },
+];
+
+function SiteSettingsView({
+  locale,
+  notify,
+}: {
+  locale: string;
+  notify: (message: string, error?: boolean) => void;
+}) {
+  const fa = locale === "fa";
+  const [settings, setSettings] = useState<Item>({});
+  const [draft, setDraft] = useState({ title: emptyLocalized(), description: emptyLocalized() });
+  const [changed, setChanged] = useState<Record<string, Set<"fa" | "en">>>({});
+  const [files, setFiles] = useState<Partial<Record<SiteSettingsMediaField, File>>>({});
+  const [removePending, setRemovePending] = useState<Partial<Record<SiteSettingsMediaField, boolean>>>({});
+  const [mediaErrors, setMediaErrors] = useState<Partial<Record<SiteSettingsMediaField, string>>>({});
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [mediaBusy, setMediaBusy] = useState<SiteSettingsMediaField | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let active = true;
+    void api("/api/admin/site-settings")
+      .then((result) => {
+        if (!active) return;
+        const data = result.data || {};
+        setSettings(data);
+        setDraft({ title: localized(data.title), description: localized(data.description) });
+      })
+      .catch((error) => notify(localizedError(error, locale), true))
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [locale, notify]);
+
+  const updateLocalized = (field: "title" | "description", next: Localized) => {
+    setDraft((current) => ({ ...current, [field]: next }));
+    setChanged((current) => {
+      const locales = new Set(current[field] || []);
+      if (next.fa !== draft[field].fa) locales.add("fa");
+      if (next.en !== draft[field].en) locales.add("en");
+      return { ...current, [field]: locales };
+    });
+    setErrors((current) => ({ ...current, [field]: "" }));
+  };
+
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    const nextErrors: Record<string, string> = {};
+    const patch: Record<string, unknown> = {};
+    for (const field of ["title", "description"] as const) {
+      const locales = changed[field];
+      if (!locales?.size) continue;
+      const value: Partial<Localized> = {};
+      for (const language of locales) {
+        if (!draft[field][language].trim())
+          nextErrors[field] = fa ? "مقدار واردشده نمی‌تواند خالی باشد." : "Changed values cannot be empty.";
+        else value[language] = draft[field][language];
+      }
+      patch[field] = value;
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      notify(fa ? "لطفاً خطاهای فرم را برطرف کنید." : "Please correct the form errors.", true);
+      return;
+    }
+
+    setSaving(true);
+    let currentMedia: SiteSettingsMediaField | null = null;
+    try {
+      if (Object.keys(patch).length) {
+        const result = await api("/api/admin/site-settings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+        const next = result.data || {};
+        setSettings(next);
+        setDraft({ title: localized(next.title), description: localized(next.description) });
+        setChanged({});
+      }
+
+      for (const { key } of siteSettingsMediaFields) {
+        const selected = files[key];
+        const shouldRemove = removePending[key] && Boolean(settings[key]);
+        if (!selected && !shouldRemove) continue;
+        currentMedia = key;
+        setMediaBusy(key);
+        setMediaErrors((current) => ({ ...current, [key]: "" }));
+        if (selected) {
+          const form = new FormData();
+          form.append("file", selected);
+          const result = await api(`/api/admin/site-settings/${key}`, {
+            method: settings[key] ? "PUT" : "POST",
+            body: form,
+          });
+          setSettings((current) => ({ ...current, [key]: result.data }));
+          setFiles((current) => ({ ...current, [key]: undefined }));
+          setRemovePending((current) => ({ ...current, [key]: false }));
+        } else if (shouldRemove) {
+          const result = await api(`/api/admin/site-settings/${key}`, { method: "DELETE" });
+          setSettings(result.data || {});
+          setRemovePending((current) => ({ ...current, [key]: false }));
+        }
+      }
+      notify(messages[fa ? "fa" : "en"].saved);
+    } catch (error) {
+      const message = localizedError(error, locale, true);
+      if (currentMedia) setMediaErrors((current) => ({ ...current, [currentMedia!]: message }));
+      else setErrors(localizedServerErrors(error, locale));
+      notify(localizedError(error, locale), true);
+    } finally {
+      setMediaBusy(null);
+      setSaving(false);
+    }
+  }
+
+  if (loading)
+    return <div className="h-72 animate-pulse rounded-3xl bg-slate-200 dark:bg-white/10" />;
+
+  return (
+    <form onSubmit={save} className="mx-auto max-w-5xl space-y-6">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#101820] sm:p-7">
+        <div className="mb-6">
+          <h2 className="text-lg font-black">{fa ? "تنظیمات وب‌سایت" : "Website settings"}</h2>
+          <p className="mt-1 text-sm text-slate-500">{fa ? "عنوان و توضیحات سایت را به هر دو زبان مدیریت کنید." : "Manage the website title and description in both languages."}</p>
+        </div>
+        <div className="space-y-5">
+          <LocalizedField label={fa ? "عنوان سایت" : "Site title"} name="site-title" value={draft.title} onChange={(value) => updateLocalized("title", value)} error={errors.title} />
+          <LocalizedField label={fa ? "توضیحات سایت" : "Site description"} name="site-description" value={draft.description} onChange={(value) => updateLocalized("description", value)} multiline error={errors.description} />
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#101820] sm:p-7">
+        <div className="mb-6">
+          <h2 className="text-lg font-black">{fa ? "رسانه‌های سایت" : "Site media"}</h2>
+          <p className="mt-1 text-sm text-slate-500">{fa ? "تصاویر در ImageKit ذخیره و از همین بخش مدیریت می‌شوند." : "Images are stored in ImageKit and managed here."}</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {siteSettingsMediaFields.map(({ key, en, fa: faLabel }) => {
+            const mediaItem = settings[key] as MediaItem | null | undefined;
+            const selected = files[key];
+            const removing = Boolean(removePending[key]);
+            return (
+              <div key={key} className="rounded-2xl border border-slate-200 p-4 dark:border-white/10">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold">{fa ? faLabel : en}</h3>
+                  {mediaBusy === key && <span role="status" className="text-xs text-emerald-600">{fa ? "در حال ذخیره…" : "Saving…"}</span>}
+                </div>
+                <div className="mb-4 flex h-36 items-center justify-center overflow-hidden rounded-xl bg-slate-50 dark:bg-white/[0.04]">
+                  {selected ? (
+                    <LocalImagePreview file={selected} alt={fa ? faLabel : en} className="max-h-full max-w-full object-contain" />
+                  ) : !removing && mediaItem?.url ? (
+                    <img src={mediaItem.url} alt={text(mediaItem.alt, locale) || (fa ? faLabel : en)} className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <span className="text-xs text-slate-400">{fa ? "تصویری انتخاب نشده" : "No image selected"}</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="cursor-pointer rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-white/10">
+                    {mediaItem?.url || selected ? (fa ? "جایگزینی تصویر" : "Choose or replace") : (fa ? "انتخاب تصویر" : "Choose image")}
+                    <input
+                      className="sr-only"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      disabled={saving}
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = "";
+                        if (!file) return;
+                        if (!imageTypes.includes(file.type) || file.size <= 0 || file.size > maxImageSize) {
+                          setMediaErrors((current) => ({ ...current, [key]: fa ? "فرمت یا حجم تصویر معتبر نیست. حداکثر حجم ۴ مگابایت است." : "Use JPEG, PNG, WebP, or AVIF images up to 4 MB." }));
+                          return;
+                        }
+                        setMediaErrors((current) => ({ ...current, [key]: "" }));
+                        setFiles((current) => ({ ...current, [key]: file }));
+                        setRemovePending((current) => ({ ...current, [key]: false }));
+                      }}
+                    />
+                  </label>
+                  {(mediaItem?.url || selected) && !removing && (
+                    <button type="button" disabled={saving} onClick={() => {
+                      setFiles((current) => ({ ...current, [key]: undefined }));
+                      if (mediaItem?.url) setRemovePending((current) => ({ ...current, [key]: true }));
+                    }} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-500 disabled:opacity-50 dark:border-red-400/30">
+                      {fa ? "حذف تصویر" : "Remove image"}
+                    </button>
+                  )}
+                  {removing && (
+                    <button type="button" disabled={saving} onClick={() => setRemovePending((current) => ({ ...current, [key]: false }))} className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 disabled:opacity-50">
+                      {fa ? "لغو حذف" : "Undo removal"}
+                    </button>
+                  )}
+                </div>
+                {removing && <p role="status" className="mt-3 text-xs text-slate-500">{fa ? "تصویر پس از ذخیره حذف می‌شود." : "The image will be removed when you save."}</p>}
+                {mediaErrors[key] && <p role="alert" className="mt-3 text-xs text-red-500">{mediaErrors[key]}</p>}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="flex justify-end">
+        <button type="submit" disabled={saving} className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-wait disabled:opacity-60">
+          {saving ? (fa ? "در حال ذخیره…" : "Saving…") : (fa ? "ذخیره تنظیمات" : "Save settings")}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -2362,7 +2979,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
                 <BarChart3 size={20} />
               </div>
               <div>
-                <p className="font-black">Kamyar CMS</p>
+                <p className="font-black">Hamidreza Babazamani CMS</p>
                 <p className="text-[10px] uppercase tracking-widest text-slate-400">
                   Workspace
                 </p>
@@ -2392,7 +3009,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
             <p className="px-3 pb-2 pt-7 text-[10px] font-black uppercase tracking-[.2em] text-slate-400">
               {fa ? "تنظیمات سایت" : "Site settings"}
             </p>
-            {["hero", "profile", "resume"].map(nav)}
+            {["hero", "profile", "resume", "site-settings"].map(nav)}
           </nav>
           <div className="mt-3 shrink-0 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/[0.04]">
             <div className="flex items-center gap-3">
@@ -2496,6 +3113,8 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
               />
             ) : active === "messages" ? (
               <MessagesView locale={locale} notify={notify} />
+            ) : active === "site-settings" ? (
+              <SiteSettingsView locale={locale} notify={notify} />
             ) : ["hero", "profile", "resume"].includes(active) ? (
               <SingletonView
                 type={active as "hero" | "profile" | "resume"}

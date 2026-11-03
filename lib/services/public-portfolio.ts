@@ -10,6 +10,7 @@ import {
   Project,
   Resume,
   Service,
+  SiteSettings,
   Technology,
 } from "@/lib/server/models";
 
@@ -29,9 +30,23 @@ const safeExternalUrl = (value: unknown) => {
 };
 const safeMedia = (value: unknown): PublicMedia | undefined => {
   if (!value || typeof value !== "object") return undefined;
-  const media = value as { url?: unknown; alt?: Partial<LocalizedValue> };
+  const media = value as { url?: unknown; alt?: unknown };
   if (typeof media.url !== "string" || !media.url.trim()) return undefined;
-  return { url: media.url, ...(media.alt ? { alt: media.alt } : {}) };
+  const sourceAlt = media.alt;
+  const alt =
+    sourceAlt && typeof sourceAlt === "object" && !Array.isArray(sourceAlt)
+      ? sourceAlt as Record<string, unknown>
+      : undefined;
+  const safeAlt: Partial<LocalizedValue> | undefined = alt
+    ? {
+        ...(typeof alt.fa === "string" ? { fa: alt.fa } : {}),
+        ...(typeof alt.en === "string" ? { en: alt.en } : {}),
+      }
+    : undefined;
+  return {
+    url: media.url,
+    ...(safeAlt && Object.keys(safeAlt).length > 0 ? { alt: safeAlt } : {}),
+  };
 };
 
 export type PublicHero = {
@@ -66,6 +81,7 @@ export type PublicService = {
   title: LocalizedValue;
   description: LocalizedValue;
   icon?: string;
+  image?: PublicMedia;
 };
 
 export type PublicTechnology = {
@@ -73,6 +89,7 @@ export type PublicTechnology = {
   name: LocalizedValue;
   category?: string;
   icon?: string;
+  iconMedia?: PublicMedia;
   proficiency?: number;
 };
 
@@ -98,6 +115,7 @@ export type PublicContactMethod = {
 
 export type PublicPortfolio = {
   hero: PublicHero | null;
+  fallbackImage?: PublicMedia;
   profile: PublicProfile | null;
   experiences: PublicExperience[];
   services: PublicService[];
@@ -111,7 +129,7 @@ export async function getPublicPortfolio(): Promise<PublicPortfolio> {
   noStore();
   await connectDatabase();
 
-  const [hero, profile, experiences, services, technologies, projects, contactMethods, resume] =
+  const [hero, profile, experiences, services, technologies, projects, contactMethods, resume, siteSettings] =
     await Promise.all([
       Hero.findOne({ key: "default", isVisible: true })
         .select("jobTitle headline description primaryCta primaryCtaUrl image")
@@ -131,7 +149,16 @@ export async function getPublicPortfolio(): Promise<PublicPortfolio> {
         .sort({ order: 1 })
         .lean<PublicContactMethod[]>(),
       Resume.findOne({ key: "default" }).select("file.url").lean(),
+      SiteSettings.findOne({ key: "default" }).select("fallbackImage").lean(),
     ]);
+
+  const settingsFallback = siteSettings?.fallbackImage as
+    | { url?: unknown; alt?: unknown }
+    | undefined;
+  const fallbackUrl = safeExternalUrl(settingsFallback?.url);
+  const fallbackImage = fallbackUrl
+    ? safeMedia({ ...settingsFallback, url: fallbackUrl })
+    : undefined;
 
   return {
     hero: hero
@@ -141,12 +168,27 @@ export async function getPublicPortfolio(): Promise<PublicPortfolio> {
           image: safeMedia(hero.image),
         }
       : null,
+    ...(fallbackImage ? { fallbackImage } : {}),
     profile: profile
       ? { ...profile, image: safeMedia(profile.image) }
       : null,
     experiences: experiences.map((item) => ({ ...item, _id: item._id.toString() })),
-    services: services.map((item) => ({ ...item, _id: item._id.toString() })),
-    technologies: technologies.map((item) => ({ ...item, _id: item._id.toString() })),
+    services: services.map(({ image, ...item }) => {
+      const safeImage = safeMedia(image);
+      return {
+        ...item,
+        _id: item._id.toString(),
+        ...(safeImage ? { image: safeImage } : {}),
+      };
+    }),
+    technologies: technologies.map(({ iconMedia, ...item }) => {
+      const safeIconMedia = safeMedia(iconMedia);
+      return {
+        ...item,
+        _id: item._id.toString(),
+        ...(safeIconMedia ? { iconMedia: safeIconMedia } : {}),
+      };
+    }),
     projects: projects.map((item) => ({
       ...item,
       _id: item._id.toString(),

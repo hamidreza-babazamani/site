@@ -4,14 +4,42 @@ import type { HeroImageProps } from "@/types/type";
 import Image from "next/image";
 import { useState } from "react";
 
-const FALLBACK_IMAGE = "/images/kamyar.jpg";
+const isValidImageSource = (value?: string): value is string => {
+  if (!value || !value.trim() || value.trim() !== value) return false;
+  if (value.startsWith("/") && !value.startsWith("//")) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
 
-function Portrait({ src, alt }: { src: string; alt: string }) {
-  const [failed, setFailed] = useState(false);
+function Portrait({
+  src,
+  fallbackSrc,
+  alt,
+}: {
+  src?: string;
+  fallbackSrc?: string;
+  alt: string;
+}) {
+  const [failedSource, setFailedSource] = useState(false);
+  const [failedFallback, setFailedFallback] = useState(false);
+  const hasSource = isValidImageSource(src);
+  const hasFallback = isValidImageSource(fallbackSrc);
 
-  const imageSource = failed ? FALLBACK_IMAGE : src;
+  const imageSource = failedSource
+    ? hasFallback && !failedFallback
+      ? fallbackSrc
+      : undefined
+    : hasSource
+      ? src
+      : hasFallback && !failedFallback
+        ? fallbackSrc
+        : undefined;
 
-  return (
+  return imageSource ? (
     <Image
       src={imageSource}
       alt={alt}
@@ -29,17 +57,24 @@ function Portrait({ src, alt }: { src: string; alt: string }) {
         motion-reduce:transition-none
       "
       onError={() => {
-        if (imageSource !== FALLBACK_IMAGE) {
-          setFailed(true);
-        }
+        if (!failedSource && hasSource) setFailedSource(true);
+        else setFailedFallback(true);
       }}
+    />
+  ) : (
+    <div
+      role="img"
+      aria-label={alt}
+      className="absolute inset-0 bg-gradient-to-br from-slate-100 via-emerald-50 to-cyan-100 dark:from-slate-800 dark:via-slate-900 dark:to-emerald-950"
     />
   );
 }
 
-export default function HeroImage({ src, alt }: HeroImageProps) {
-  const imageSource = src || FALLBACK_IMAGE;
-
+export default function HeroImage({
+  src,
+  fallbackSrc,
+  alt,
+}: HeroImageProps & { fallbackSrc?: string }) {
   return (
     <div
       className="
@@ -175,7 +210,12 @@ export default function HeroImage({ src, alt }: HeroImageProps) {
               dark:bg-slate-900
             "
           >
-            <Portrait key={imageSource} src={imageSource} alt={alt} />
+            <Portrait
+              key={`${src || ""}|${fallbackSrc || ""}`}
+              src={src}
+              fallbackSrc={fallbackSrc}
+              alt={alt}
+            />
 
             {/* Subtle depth overlay */}
             <div

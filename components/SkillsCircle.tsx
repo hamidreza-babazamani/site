@@ -1,109 +1,22 @@
-import {
-  siHtml5,
-  siCss,
-  siJavascript,
-  siTypescript,
-  siReact,
-  siNextdotjs,
-  siRedux,
-  siTailwindcss,
-  siMui,
-  siShadcnui,
-  siBootstrap,
-  siReacthookform,
-  siNodedotjs,
-  siExpress,
-  siGraphql,
-  siMongodb,
-  siPostgresql,
-  siGit,
-  siGithub,
-  siDocker,
-  siPostman,
-  siVercel,
-  siClaude,
-  siDeepseek,
-  SimpleIcon,
-  siVscodium,
-} from "simple-icons";
-import { siChatbot } from "simple-icons";
+import type { PublicTechnology } from "@/lib/services/public-portfolio";
 
-type Skill = {
-  name: string;
-  icon: SimpleIcon;
-  category: string;
-  lightColor?: string;
-  darkColor?: string;
-};
+const text = (
+  value: { fa?: string; en?: string } | undefined,
+  locale: string,
+) =>
+  (locale === "fa" ? value?.fa : value?.en)?.trim() ||
+  value?.en?.trim() ||
+  value?.fa?.trim() ||
+  "";
 
-const skills: Skill[] = [
-  { name: "HTML5", icon: siHtml5, category: "Frontend" },
-  { name: "CSS3", icon: siCss, category: "Frontend" },
-  { name: "JavaScript", icon: siJavascript, category: "Frontend" },
-  { name: "TypeScript", icon: siTypescript, category: "Frontend" },
-  { name: "React", icon: siReact, category: "Frontend" },
-  {
-    name: "Next.js",
-    icon: siNextdotjs,
-    category: "Frontend",
-    lightColor: "#111827",
-    darkColor: "#F8FAFC",
-  },
-  { name: "Redux", icon: siRedux, category: "Frontend" },
-  { name: "Tailwind CSS", icon: siTailwindcss, category: "Frontend" },
-  { name: "Material UI", icon: siMui, category: "Frontend" },
-  {
-    name: "shadcn/ui",
-    icon: siShadcnui,
-    category: "Frontend",
-    lightColor: "#111827",
-    darkColor: "#F8FAFC",
-  },
-  { name: "Bootstrap", icon: siBootstrap, category: "Frontend" },
-  { name: "React Hook Form", icon: siReacthookform, category: "Frontend" },
-  { name: "Node.js", icon: siNodedotjs, category: "Backend" },
-  {
-    name: "Express",
-    icon: siExpress,
-    category: "Backend",
-    lightColor: "#374151",
-    darkColor: "#E2E8F0",
-  },
-  { name: "GraphQL", icon: siGraphql, category: "Backend" },
-  { name: "MongoDB", icon: siMongodb, category: "Database" },
-  { name: "PostgreSQL", icon: siPostgresql, category: "Database" },
-  { name: "Git", icon: siGit, category: "Dev Tools" },
-  {
-    name: "GitHub",
-    icon: siGithub,
-    category: "Dev Tools",
-    lightColor: "#24292F",
-    darkColor: "#F8FAFC",
-  },
-  { name: "VS Code", icon: siVscodium, category: "Dev Tools" },
-  { name: "Docker", icon: siDocker, category: "Dev Tools" },
-  { name: "Postman", icon: siPostman, category: "Dev Tools" },
-  {
-    name: "Vercel",
-    icon: siVercel,
-    category: "Dev Tools",
-    lightColor: "#111827",
-    darkColor: "#F8FAFC",
-  },
-  {
-    name: "ChatGPT",
-    icon: siChatbot,
-    category: "AI Tools",
-    lightColor: "#10A37F",
-    darkColor: "#5EE9BA",
-  },
-  { name: "Claude", icon: siClaude, category: "AI Tools" },
-  { name: "DeepSeek", icon: siDeepseek, category: "AI Tools" },
-];
-
-function SkillCard({ skill }: { skill: Skill }) {
-  const light = skill.lightColor ?? `#${skill.icon.hex}`;
-  const dark = skill.darkColor ?? light;
+function SkillCard({
+  skill,
+  locale,
+}: {
+  skill: PublicTechnology;
+  locale: string;
+}) {
+  const name = text(skill.name, locale);
 
   return (
     <div
@@ -123,53 +36,40 @@ function SkillCard({ skill }: { skill: Skill }) {
         sm:w-[148px]
       "
     >
-      <div
-        className="
-          flex h-14 w-14 items-center justify-center
-          rounded-xl bg-slate-100/70
-          dark:bg-white/[0.04]
-          sm:h-16 sm:w-16
-        "
-      >
-        <svg
-          role="img"
-          aria-label={skill.name}
-          viewBox="0 0 24 24"
-          className="
-            h-10 w-10
-            transition-transform duration-300
-            motion-safe:group-hover/card:scale-110
-            sm:h-12 sm:w-12
-          "
-          style={
-            {
-              "--skill-light": light,
-              "--skill-dark": dark,
-            } as React.CSSProperties
-          }
-        >
-          <path
-            className="fill-[var(--skill-light)] dark:fill-[var(--skill-dark)]"
-            d={skill.icon.path}
-          />
-        </svg>
-      </div>
-
+      {skill.iconMedia?.url?.trim() && (
+        <img
+          src={skill.iconMedia.url.trim()}
+          alt={text(skill.iconMedia.alt, locale) || name}
+          className="size-12 object-contain"
+          loading="lazy"
+          decoding="async"
+        />
+      )}
       <span className="text-center text-xs font-semibold text-slate-800 dark:text-slate-100 sm:text-sm">
-        {skill.name}
+        {name}
       </span>
 
-      <span className="text-[10px] font-medium text-emerald-700/80 dark:text-emerald-300/70">
-        {skill.category}
-      </span>
+      {skill.category && (
+        <span className="text-[10px] font-medium text-emerald-700/80 dark:text-emerald-300/70">
+          {skill.category}
+        </span>
+      )}
     </div>
   );
 }
 
-export default function SkillsCircle() {
+export default function SkillsCircle({
+  skills,
+  locale,
+}: {
+  skills: PublicTechnology[];
+  locale: string;
+}) {
+  if (skills.length === 0) return null;
+
   return (
     <section
-      aria-label="Technologies and tools"
+      aria-label={locale === "fa" ? "فناوری‌ها و ابزارها" : "Technologies and tools"}
       className="relative overflow-hidden py-12 sm:py-16"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,7 +77,7 @@ export default function SkillsCircle() {
           <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
 
           <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-emerald-700 dark:text-emerald-300">
-            Technologies & Tools
+            {locale === "fa" ? "فناوری‌ها و ابزارها" : "Technologies & Tools"}
           </h2>
 
           <div className="h-px flex-1 bg-gradient-to-r from-emerald-500/25 to-transparent" />
@@ -198,7 +98,11 @@ export default function SkillsCircle() {
                 className="flex shrink-0 gap-4 pr-4"
               >
                 {skills.map((skill) => (
-                  <SkillCard key={`${copy}-${skill.name}`} skill={skill} />
+                  <SkillCard
+                    key={`${copy}-${skill._id}`}
+                    skill={skill}
+                    locale={locale}
+                  />
                 ))}
               </div>
             ))}

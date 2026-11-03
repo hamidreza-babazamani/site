@@ -1,19 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { ChevronDown, Code2 } from "lucide-react";
-
-import {
-  FaCss3,
-  FaFigma,
-  FaGitAlt,
-  FaHtml5,
-  FaJs,
-  FaNodeJs,
-  FaReact,
-} from "react-icons/fa";
-
-import { RiNextjsLine, RiTailwindCssFill } from "react-icons/ri";
-
-import { SiExpress, SiMongodb, SiRedux, SiTypescript } from "react-icons/si";
+import { ChevronDown } from "lucide-react";
 
 import {
   getPublicPortfolio,
@@ -49,22 +35,6 @@ const text = (value: Localized | undefined, locale: string) =>
   value?.en?.trim() ||
   value?.fa?.trim() ||
   "";
-
-const icons = {
-  html: FaHtml5,
-  css: FaCss3,
-  javascript: FaJs,
-  react: FaReact,
-  node: FaNodeJs,
-  next: RiNextjsLine,
-  tailwind: RiTailwindCssFill,
-  typescript: SiTypescript,
-  redux: SiRedux,
-  express: SiExpress,
-  mongodb: SiMongodb,
-  figma: FaFigma,
-  git: FaGitAlt,
-} as const;
 
 // -------------------------------------
 // Empty State
@@ -108,21 +78,6 @@ function Heading({
 }
 
 // -------------------------------------
-// Technology Icon
-// -------------------------------------
-
-function TechIcon({ item }: { item: PublicTechnology }) {
-  const key = `${item.icon ?? ""} ${item.name.en ?? ""}`
-    .toLowerCase()
-    .replace(/[^a-z]/g, "");
-
-  const Icon =
-    Object.entries(icons).find(([name]) => key.includes(name))?.[1] ?? Code2;
-
-  return <Icon aria-hidden="true" />;
-}
-
-// -------------------------------------
 // Compact Skill Card
 // -------------------------------------
 
@@ -149,17 +104,22 @@ function SkillCard({
           "motion-reduce:transition-none",
         )}
       >
-        <span
-          className={cn(
-            "flex size-9 shrink-0 items-center justify-center",
-            "rounded-lg bg-emerald-500/[0.07]",
-            "text-xl text-emerald-700",
-            "dark:text-emerald-300",
-          )}
-        >
-          <TechIcon item={item} />
-        </span>
-
+        {item.iconMedia?.url?.trim() && (
+          <span
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center",
+              "rounded-lg bg-emerald-500/[0.07]",
+            )}
+          >
+            <img
+              src={item.iconMedia.url.trim()}
+              alt={
+                text(item.iconMedia.alt, locale) || text(item.name, locale)
+              }
+              className="size-full object-contain p-1"
+            />
+          </span>
+        )}
         <span className="min-w-0 break-words text-xs font-semibold leading-5 text-slate-700 dark:text-slate-200 sm:text-sm">
           {text(item.name, locale)}
         </span>

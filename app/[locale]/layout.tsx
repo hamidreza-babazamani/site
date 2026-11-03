@@ -45,14 +45,14 @@ const englishFont = localFont({
 const seo = {
   fa: {
     title:
-      "کامیار کمالی | مهندس نرم‌افزار، Next.js و اپلیکیشن‌های هوش مصنوعی",
+      "حمیدرضا بابازمانی | مهندس نرم‌افزار، Next.js و اپلیکیشن‌های هوش مصنوعی",
 
     description:
-      "وب‌سایت رسمی کامیار کمالی، توسعه‌دهنده نرم‌افزار متخصص در React، Next.js، TypeScript و Node.js با تمرکز بر توسعه وب‌اپلیکیشن‌های مدرن، اپلیکیشن‌های هوش مصنوعی، عملکرد، امنیت و سئو.",
+      "وب‌سایت رسمی حمیدرضا بابازمانی، توسعه‌دهنده نرم‌افزار متخصص در React، Next.js، TypeScript و Node.js با تمرکز بر توسعه وب‌اپلیکیشن‌های مدرن، اپلیکیشن‌های هوش مصنوعی، عملکرد، امنیت و سئو.",
 
     keywords: [
-      "کامیار کمالی",
-      "Kamyar Kamali",
+      "حمیدرضا بابازمانی",
+      "Hamidreza Babazamani",
       "مهندس نرم افزار",
       "توسعه دهنده فرانت اند",
       "توسعه دهنده فول استک",
@@ -70,13 +70,13 @@ const seo = {
 
   en: {
     title:
-      "Kamyar Kamali | Software Engineer · Next.js & AI Applications",
+      "Hamidreza Babazamani | Software Engineer · Next.js & AI Applications",
 
     description:
-      "Official portfolio of Kamyar Kamali, a software developer specializing in React, Next.js, TypeScript, Node.js, modern web applications, AI integrations, performance, security, and technical SEO.",
+      "Official portfolio of Hamidreza Babazamani, a software developer specializing in React, Next.js, TypeScript, Node.js, modern web applications, AI integrations, performance, security, and technical SEO.",
 
     keywords: [
-      "Kamyar Kamali",
+      "Hamidreza Babazamani",
       "Software Engineer",
       "Frontend Developer",
       "Full Stack Developer",
@@ -102,8 +102,8 @@ function getPersonSchema(locale: SupportedLocale) {
     "@type": "Person",
     "@id": `${siteUrl}/#person`,
 
-    name: "Kamyar Kamali",
-    alternateName: "کامیار کمالی",
+    name: "Hamidreza Babazamani",
+    alternateName: "حمیدرضا بابازمانی",
 
     url: `${siteUrl}/${locale}`,
 
@@ -158,13 +158,13 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(siteUrl),
 
-    applicationName: "Kamyar Kamali Portfolio",
+    applicationName: "Hamidreza Babazamani Portfolio",
 
     title: {
       default: content.title,
       template: isFA
-        ? "%s | کامیار کمالی"
-        : "%s | Kamyar Kamali",
+        ? "%s | حمیدرضا بابازمانی"
+        : "%s | Hamidreza Babazamani",
     },
 
     description: content.description,
@@ -173,13 +173,13 @@ export async function generateMetadata({
 
     authors: [
       {
-        name: "Kamyar Kamali",
+        name: "Hamidreza Babazamani",
         url: siteUrl,
       },
     ],
 
-    creator: "Kamyar Kamali",
-    publisher: "Kamyar Kamali",
+    creator: "Hamidreza Babazamani",
+    publisher: "Hamidreza Babazamani",
 
     robots: {
       index: true,
@@ -203,7 +203,7 @@ export async function generateMetadata({
         ? ["en_US"]
         : ["fa_IR"],
 
-      siteName: "Kamyar Kamali",
+      siteName: "Hamidreza Babazamani",
 
       title: content.title,
       description: content.description,
@@ -215,8 +215,8 @@ export async function generateMetadata({
           height: 630,
 
           alt: isFA
-            ? "کامیار کمالی - توسعه‌دهنده نرم‌افزار"
-            : "Kamyar Kamali - Software Developer",
+            ? "حمیدرضا بابازمانی - توسعه‌دهنده نرم‌افزار"
+            : "Hamidreza Babazamani - Software Developer",
         },
       ],
     },
