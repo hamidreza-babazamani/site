@@ -1,4 +1,9 @@
 import { model, models, Schema } from "mongoose";
+import {
+  HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT,
+  HERO_TECHNOLOGY_HEX_COLOR_PATTERN,
+  HERO_TECHNOLOGY_LIMITS,
+} from "./hero-technology-config";
 
 const localized = new Schema(
   { fa: { type: String, default: "" }, en: { type: String, default: "" } },
@@ -18,6 +23,99 @@ const media = new Schema(
   { _id: false },
 );
 const opts = { timestamps: true, versionKey: false } as const;
+
+const heroTechnologyPosition = new Schema(
+  {
+    horizontalAnchor: { type: String, enum: ["left", "right"], required: true },
+    horizontalOffsetPercent: {
+      type: Number,
+      min: HERO_TECHNOLOGY_LIMITS.minPositionOffsetPercent,
+      max: HERO_TECHNOLOGY_LIMITS.maxPositionOffsetPercent,
+      required: true,
+    },
+    verticalAnchor: { type: String, enum: ["top", "bottom"], required: true },
+    verticalOffsetPercent: {
+      type: Number,
+      min: HERO_TECHNOLOGY_LIMITS.minPositionOffsetPercent,
+      max: HERO_TECHNOLOGY_LIMITS.maxPositionOffsetPercent,
+      required: true,
+    },
+  },
+  { _id: false },
+);
+
+const heroTechnologyBreakpoint = new Schema(
+  {
+    isVisible: { type: Boolean, required: true },
+    position: { type: heroTechnologyPosition, required: true },
+  },
+  { _id: false },
+);
+
+const heroTechnologyItem = new Schema(
+  {
+    technologyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Technology",
+      required: true,
+    },
+    isVisible: { type: Boolean, default: true, required: true },
+    order: {
+      type: Number,
+      min: 0,
+      max: HERO_TECHNOLOGY_LIMITS.maxOrder,
+      required: true,
+    },
+    color: {
+      light: { type: String, match: HERO_TECHNOLOGY_HEX_COLOR_PATTERN, required: true },
+      dark: { type: String, match: HERO_TECHNOLOGY_HEX_COLOR_PATTERN, required: true },
+    },
+    iconSize: {
+      type: Number,
+      min: HERO_TECHNOLOGY_LIMITS.minIconSize,
+      max: HERO_TECHNOLOGY_LIMITS.maxIconSize,
+      required: true,
+    },
+    responsive: {
+      desktop: { type: heroTechnologyBreakpoint, required: true },
+      tablet: { type: heroTechnologyBreakpoint, required: true },
+      mobile: { type: heroTechnologyBreakpoint, required: true },
+    },
+    animation: {
+      isEnabled: { type: Boolean, required: true },
+      durationMs: {
+        type: Number,
+        min: HERO_TECHNOLOGY_LIMITS.minAnimationDurationMs,
+        max: HERO_TECHNOLOGY_LIMITS.maxAnimationDurationMs,
+        required: true,
+      },
+      delayMs: {
+        type: Number,
+        min: HERO_TECHNOLOGY_LIMITS.minAnimationDelayMs,
+        max: HERO_TECHNOLOGY_LIMITS.maxAnimationDelayMs,
+        required: true,
+      },
+    },
+  },
+  { _id: false },
+);
+
+const heroTechnologyEcosystem = new Schema(
+  {
+    isVisible: { type: Boolean, default: true, required: true },
+    items: {
+      type: [heroTechnologyItem],
+      default: [],
+      validate: {
+        validator: (items: Array<{ technologyId?: unknown }>) =>
+          items.length <= HERO_TECHNOLOGY_LIMITS.maxItems &&
+          new Set(items.map((item) => String(item.technologyId))).size === items.length,
+        message: "Hero technology items must be unique and within the item limit",
+      },
+    },
+  },
+  { _id: false },
+);
 
 export const Admin =
   models.Admin ??
@@ -52,6 +150,13 @@ export const Hero =
         primaryCta: localized,
         primaryCtaUrl: String,
         isVisible: { type: Boolean, default: true },
+        technologyEcosystem: {
+          type: heroTechnologyEcosystem,
+          default: () => ({
+            isVisible: HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT.isVisible,
+            items: [],
+          }),
+        },
       },
       opts,
     ),

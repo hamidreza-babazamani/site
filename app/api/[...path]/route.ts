@@ -34,6 +34,8 @@ import {
   validate,
 } from "@/lib/server/api";
 import { removeMedia, saveMedia } from "@/lib/server/storage";
+import type { HeroTechnologyEcosystemConfig } from "@/lib/server/hero-technology-config";
+import { HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT } from "@/lib/server/hero-technology-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -111,6 +113,7 @@ const singleton: Record<string, { model: any; key: string; fields: string[] }> =
         "primaryCta",
         "primaryCtaUrl",
         "isVisible",
+        "technologyEcosystem",
       ],
     },
     profile: {
@@ -145,6 +148,63 @@ const publicProfileFields = (item: any) => {
   if (!value || typeof value !== "object") return value;
   const { email: _email, ...safe } = value;
   return safe;
+};
+const safePublicMedia = (mediaValue: any) => {
+  if (!mediaValue || typeof mediaValue.url !== "string") return undefined;
+  try {
+    const url = new URL(mediaValue.url);
+    if (
+      (url.protocol !== "http:" && url.protocol !== "https:") ||
+      url.username ||
+      url.password
+    )
+      return undefined;
+    return publicMedia({ ...mediaValue, url: url.href });
+  } catch {
+    return undefined;
+  }
+};
+const publicHeroContent = async (hero: any, availableTechnologies?: any[]) => {
+  if (!hero) return null;
+  const ecosystem = hero.technologyEcosystem ?? HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT;
+  const technologyIds = Array.isArray(ecosystem.items)
+    ? ecosystem.items.map((item: any) => item.technologyId)
+    : [];
+  const technologies = availableTechnologies ?? (technologyIds.length
+    ? await Technology.find({ _id: { $in: technologyIds }, isVisible: true })
+        .select("name iconMedia")
+        .lean()
+    : []);
+  const technologyById = new Map(
+    technologies.map((technology: any) => [technology._id.toString(), technology]),
+  );
+  const items = Array.isArray(ecosystem.items)
+    ? ecosystem.items.flatMap((item: any) => {
+        const technologyId = String(item.technologyId);
+        const technology = technologyById.get(technologyId);
+        if (!technology) return [];
+        const iconMedia = safePublicMedia(technology.iconMedia);
+        return [{
+          technologyId,
+          isVisible: item.isVisible,
+          order: item.order,
+          color: item.color,
+          iconSize: item.iconSize,
+          responsive: item.responsive,
+          animation: item.animation,
+          name: technology.name,
+          ...(iconMedia ? { iconMedia } : {}),
+        }];
+      })
+    : [];
+  const { technologyEcosystem: _privateConfig, ...publicHero } = hero;
+  return {
+    ...publicContent(publicHero),
+    technologyEcosystem: {
+      isVisible: ecosystem.isVisible !== false,
+      items,
+    },
+  };
 };
 const escapeRegex = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -377,10 +437,22 @@ async function publicGet(parts: string[], url: URL) {
   if (parts[0] === "site-settings" && parts.length === 1) {
     const settings = await SiteSettings.findOne({ key: "default" }).lean();
     if (!settings) return ok(null);
-    const safeMedia = (value: any) =>
-      value && typeof value.url === "string"
-        ? { url: value.url, ...(value.alt ? { alt: value.alt } : {}) }
-        : null;
+    const safeMedia = (value: any) => {
+      if (!value || typeof value.url !== "string") return null;
+      let url: URL;
+      try {
+        url = new URL(value.url);
+      } catch {
+        return null;
+      }
+      if (
+        (url.protocol !== "http:" && url.protocol !== "https:") ||
+        url.username ||
+        url.password
+      )
+        return null;
+      return { url: url.href, ...(value.alt ? { alt: value.alt } : {}) };
+    };
     return ok({
       siteName: settings.siteName,
       title: settings.title,
@@ -440,7 +512,7 @@ async function publicGet(parts: string[], url: URL) {
       ContactMethod.find({ isVisible: true }).sort({ order: 1 }).lean(),
     ]);
     return ok({
-      hero: publicContent(hero),
+      hero: await publicHeroContent(hero, technologies),
       profile: publicProfileFields(profile),
       experiences: experiences.map(publicContent),
       services: services.map(publicContent),
@@ -452,13 +524,18 @@ async function publicGet(parts: string[], url: URL) {
     });
   }
   if (singleton[parts[0]]) {
-    const item = await singleton[parts[0]].model
-      .findOne({
-        key: "default",
-        ...(parts[0] === "hero" ? { isVisible: true } : {}),
-      })
-      .lean();
-    return ok(parts[0] === "profile" ? publicProfileFields(item) : publicContent(item));
+    const query = singleton[parts[0]].model.findOne({
+      key: "default",
+      ...(parts[0] === "hero" ? { isVisible: true } : {}),
+    });
+    const item = await query.lean();
+    return ok(
+      parts[0] === "hero"
+        ? await publicHeroContent(item)
+        : parts[0] === "profile"
+          ? publicProfileFields(item)
+          : publicContent(item),
+    );
   }
   const resource = resources[parts[0]];
   if (!resource || parts.length !== 1)
@@ -492,8 +569,15 @@ async function adminGet(parts: string[], url: URL) {
     return ok(await Stat.find({}).sort({ order: 1 }).lean());
   if (name === "site-settings" && parts.length === 1)
     return ok(await SiteSettings.findOne({ key: "default" }).lean());
-  if (singleton[name] && parts.length === 1)
-    return ok(await singleton[name].model.findOne({ key: "default" }).lean());
+  if (singleton[name] && parts.length === 1) {
+    const item = await singleton[name].model.findOne({ key: "default" }).lean();
+    if (name !== "hero") return ok(item);
+    return ok({
+      ...(item ?? {}),
+      technologyEcosystem:
+        item?.technologyEcosystem ?? HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT,
+    });
+  }
   if (name === "contact-messages" || name === "messages") {
     const filter = url.searchParams.get("status")
       ? { status: url.searchParams.get("status") }
@@ -762,6 +846,19 @@ async function adminWrite(parts: string[], request: Request, method: string) {
       await body(request),
       method === "PATCH",
     );
+    if (name === "hero" && input.technologyEcosystem !== undefined) {
+      const ecosystem = input.technologyEcosystem as HeroTechnologyEcosystemConfig;
+      const technologyIds = ecosystem.items.map((item) => item.technologyId);
+      const existingTechnologies = await Technology.find({
+        _id: { $in: technologyIds },
+      })
+        .select("_id")
+        .lean();
+      if (existingTechnologies.length !== technologyIds.length)
+        throw new ApiError(400, "One or more Technology references do not exist", {
+          "technologyEcosystem.items": "Every item must reference an existing Technology",
+        });
+    }
     const item = await singleton[name].model
       .findOneAndUpdate(
         { key: "default" },
@@ -772,13 +869,32 @@ async function adminWrite(parts: string[], request: Request, method: string) {
         { upsert: true, new: true, runValidators: true },
       )
       .lean();
-    return ok(item);
+    return ok(
+      name === "hero"
+        ? {
+            ...item,
+            technologyEcosystem:
+              item?.technologyEcosystem ?? HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT,
+          }
+        : item,
+    );
   }
   const resource = resources[name];
   if (!resource) throw new ApiError(404, "Route not found");
   if (parts[1]) {
     ensureId(parts[1]);
     if (method === "DELETE") {
+      if (
+        name === "technologies" &&
+        (await Hero.exists({
+          "technologyEcosystem.items.technologyId": parts[1],
+        }))
+      )
+        throw new ApiError(
+          409,
+          "Technology is used by the Hero ecosystem",
+          { technologyId: "Remove it from the Hero ecosystem before deleting it" },
+        );
       const item = await resource.model.findByIdAndDelete(parts[1]);
       if (!item) throw new ApiError(404, "Resource not found");
       if (name === "projects")
@@ -999,6 +1115,25 @@ async function mediaWrite(parts: string[], request: Request, method: string) {
   const settings = settingsField
     ? await SiteSettings.findOne({ key: "default" }).select(settingsField).lean()
     : null;
+  if (settingsField === "favicon") {
+    if (file.type !== "image/png")
+      throw new ApiError(400, "Favicon must be a square PNG image");
+    const png = Buffer.from(await file.arrayBuffer());
+    const hasPngSignature = png.subarray(0, 8).equals(
+      Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    );
+    if (
+      !hasPngSignature ||
+      png.length < 33 ||
+      png.readUInt32BE(8) !== 13 ||
+      png.subarray(12, 16).toString("ascii") !== "IHDR"
+    )
+      throw new ApiError(400, "Favicon must be a valid square PNG image");
+    const width = png.readUInt32BE(16);
+    const height = png.readUInt32BE(20);
+    if (!width || width !== height)
+      throw new ApiError(400, "Favicon must be a square PNG image");
+  }
   const saved = await saveMedia(file, allowed);
   const image = {
     url: saved.url,

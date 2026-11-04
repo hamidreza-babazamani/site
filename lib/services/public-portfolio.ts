@@ -13,6 +13,10 @@ import {
   SiteSettings,
   Technology,
 } from "@/lib/server/models";
+import {
+  HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT,
+  type HeroTechnologyItemConfig,
+} from "@/lib/server/hero-technology-config";
 
 export type LocalizedValue = { fa: string; en: string };
 export type PublicMedia = {
@@ -23,7 +27,11 @@ const safeExternalUrl = (value: unknown) => {
   if (typeof value !== "string" || !value.trim()) return undefined;
   try {
     const url = new URL(value.trim());
-    return url.protocol === "http:" || url.protocol === "https:" ? url.href : undefined;
+    return (url.protocol === "http:" || url.protocol === "https:") &&
+      !url.username &&
+      !url.password
+      ? url.href
+      : undefined;
   } catch {
     return undefined;
   }
@@ -49,6 +57,34 @@ const safeMedia = (value: unknown): PublicMedia | undefined => {
   };
 };
 
+export type PublicSiteBranding = {
+  logo?: PublicMedia;
+  favicon?: PublicMedia;
+};
+
+/** Read only the public-safe brand media used by the shared site layout and metadata. */
+export async function getPublicSiteBranding(): Promise<PublicSiteBranding> {
+  noStore();
+  await connectDatabase();
+  const settings = await SiteSettings.findOne({ key: "default" })
+    .select("logo favicon")
+    .lean();
+
+  const safeBrandMedia = (value: unknown): PublicMedia | undefined => {
+    if (!value || typeof value !== "object") return undefined;
+    const media = value as { url?: unknown; alt?: unknown };
+    const url = safeExternalUrl(media.url);
+    return url ? safeMedia({ url, alt: media.alt }) : undefined;
+  };
+
+  const logo = safeBrandMedia(settings?.logo);
+  const favicon = safeBrandMedia(settings?.favicon);
+  return {
+    ...(logo ? { logo } : {}),
+    ...(favicon ? { favicon } : {}),
+  };
+}
+
 export type PublicHero = {
   jobTitle: LocalizedValue;
   headline: LocalizedValue;
@@ -56,6 +92,17 @@ export type PublicHero = {
   primaryCta?: Partial<LocalizedValue>;
   primaryCtaUrl?: string;
   image?: PublicMedia | null;
+  technologyEcosystem: PublicHeroTechnologyEcosystem;
+};
+
+export type PublicHeroTechnologyItem = HeroTechnologyItemConfig & {
+  name: LocalizedValue;
+  iconMedia?: PublicMedia;
+};
+
+export type PublicHeroTechnologyEcosystem = {
+  isVisible: boolean;
+  items: PublicHeroTechnologyItem[];
 };
 
 export type PublicProfile = {
@@ -132,7 +179,7 @@ export async function getPublicPortfolio(): Promise<PublicPortfolio> {
   const [hero, profile, experiences, services, technologies, projects, contactMethods, resume, siteSettings] =
     await Promise.all([
       Hero.findOne({ key: "default", isVisible: true })
-        .select("jobTitle headline description primaryCta primaryCtaUrl image")
+        .select("jobTitle headline description primaryCta primaryCtaUrl image technologyEcosystem")
         .lean<PublicHero | null>(),
       Profile.findOne({ key: "default" })
         .select("name bio location availability image")
@@ -160,12 +207,38 @@ export async function getPublicPortfolio(): Promise<PublicPortfolio> {
     ? safeMedia({ ...settingsFallback, url: fallbackUrl })
     : undefined;
 
+  const technologyById = new Map(
+    technologies.map((technology) => [technology._id.toString(), technology]),
+  );
+  const ecosystem = hero?.technologyEcosystem ?? HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT;
+  const publicEcosystem: PublicHeroTechnologyEcosystem = {
+    isVisible: ecosystem.isVisible !== false,
+    items: Array.isArray(ecosystem.items)
+      ? ecosystem.items.flatMap((item) => {
+          const technologyId = String(item.technologyId);
+          const technology = technologyById.get(technologyId);
+          if (!technology) return [];
+          const iconUrl = safeExternalUrl(technology.iconMedia?.url);
+          const iconMedia = iconUrl
+            ? safeMedia({ ...technology.iconMedia, url: iconUrl })
+            : undefined;
+          return [{
+            ...item,
+            technologyId,
+            name: technology.name,
+            ...(iconMedia ? { iconMedia } : {}),
+          }];
+        })
+      : [],
+  };
+
   return {
     hero: hero
       ? {
           ...hero,
           primaryCtaUrl: safeExternalUrl(hero.primaryCtaUrl),
           image: safeMedia(hero.image),
+          technologyEcosystem: publicEcosystem,
         }
       : null,
     ...(fallbackImage ? { fallbackImage } : {}),

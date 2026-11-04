@@ -6,20 +6,23 @@ import { usePathname } from "next/navigation";
 import Header from "./Header";
 import Footer from "./Footer";
 import ContactButton from "@/components/ContactButton";
+import type { PublicMedia } from "@/lib/services/public-portfolio";
 
-const Layout: FC<Props> = ({ children }) => {
+type LayoutProps = Props & { siteLogo?: PublicMedia };
+
+const Layout: FC<LayoutProps> = ({ children, siteLogo }) => {
   const pathname = usePathname();
   if (pathname.includes("/admin")) return <>{children}</>;
   return (
     <>
       <header>
-        <Header />
+        <Header siteLogo={siteLogo} />
       </header>
 
       <main className="h-fit">{children}</main>
 
       <footer>
-        <Footer />
+        <Footer siteLogo={siteLogo} />
       </footer>
       <div>
         <ContactButton />

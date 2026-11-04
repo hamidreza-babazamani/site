@@ -593,6 +593,65 @@ html.dark body {
   animation-iteration-count: infinite;
 }
 
+.hero-tech-configured-item {
+  position: absolute;
+  left: var(--hero-tech-left-desktop);
+  right: var(--hero-tech-right-desktop);
+  top: var(--hero-tech-top-desktop);
+  bottom: var(--hero-tech-bottom-desktop);
+  display: var(--hero-tech-display-desktop);
+}
+
+.hero-tech-configured-icon-fallback {
+  color: var(--hero-tech-color-light);
+  border: 1px solid color-mix(in srgb, var(--hero-tech-color-light) 55%, transparent);
+  background-color: color-mix(in srgb, var(--hero-tech-color-light) 14%, transparent);
+}
+
+.hero-tech-configured-image-wrap {
+  border: 1px solid color-mix(in srgb, var(--hero-tech-color-light) 55%, transparent);
+  background-color: color-mix(in srgb, var(--hero-tech-color-light) 10%, transparent);
+}
+
+.dark .hero-tech-configured-image-wrap {
+  border-color: color-mix(in srgb, var(--hero-tech-color-dark) 55%, transparent);
+  background-color: color-mix(in srgb, var(--hero-tech-color-dark) 10%, transparent);
+}
+
+.hero-tech-configured-label {
+  color: var(--hero-tech-color-light);
+}
+
+.dark .hero-tech-configured-label {
+  color: var(--hero-tech-color-dark);
+}
+
+.dark .hero-tech-configured-icon-fallback {
+  color: var(--hero-tech-color-dark);
+  border-color: color-mix(in srgb, var(--hero-tech-color-dark) 55%, transparent);
+  background-color: color-mix(in srgb, var(--hero-tech-color-dark) 14%, transparent);
+}
+
+@media (max-width: 639px) {
+  .hero-tech-configured-item {
+    left: var(--hero-tech-left-mobile);
+    right: var(--hero-tech-right-mobile);
+    top: var(--hero-tech-top-mobile);
+    bottom: var(--hero-tech-bottom-mobile);
+    display: var(--hero-tech-display-mobile);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-tech-configured-item {
+    left: var(--hero-tech-left-tablet);
+    right: var(--hero-tech-right-tablet);
+    top: var(--hero-tech-top-tablet);
+    bottom: var(--hero-tech-bottom-tablet);
+    display: var(--hero-tech-display-tablet);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-tech-float {
     animation: none !important;

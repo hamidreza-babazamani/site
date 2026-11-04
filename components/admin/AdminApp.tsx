@@ -40,7 +40,9 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
+import HeroTechnologyEcosystemEditor from "@/components/admin/HeroTechnologyEcosystemEditor";
 import { requestAdmin } from "@/lib/api/requests/admin";
+import type { HeroTechnologyEcosystemConfig } from "@/lib/server/hero-technology-config";
 
 type Localized = { fa: string; en: string };
 type ResourceKey =
@@ -2245,12 +2247,28 @@ function SiteSettingsView({
                     <input
                       className="sr-only"
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      accept={key === "favicon" ? "image/png" : "image/jpeg,image/png,image/webp,image/avif"}
                       disabled={saving}
-                      onChange={(event) => {
+                      onChange={async (event) => {
                         const file = event.currentTarget.files?.[0];
                         event.currentTarget.value = "";
                         if (!file) return;
+                        if (key === "favicon") {
+                          let squarePng = file.type === "image/png" && file.size > 0 && file.size <= maxImageSize;
+                          if (squarePng) {
+                            try {
+                              const bitmap = await createImageBitmap(file);
+                              squarePng = bitmap.width === bitmap.height;
+                              bitmap.close();
+                            } catch {
+                              squarePng = false;
+                            }
+                          }
+                          if (!squarePng) {
+                            setMediaErrors((current) => ({ ...current, [key]: fa ? "فاوآیکون باید PNG مربعی تا حجم ۴ مگابایت باشد." : "Choose a square PNG favicon up to 4 MB." }));
+                            return;
+                          }
+                        }
                         if (!imageTypes.includes(file.type) || file.size <= 0 || file.size > maxImageSize) {
                           setMediaErrors((current) => ({ ...current, [key]: fa ? "فرمت یا حجم تصویر معتبر نیست. حداکثر حجم ۴ مگابایت است." : "Use JPEG, PNG, WebP, or AVIF images up to 4 MB." }));
                           return;
@@ -2544,6 +2562,14 @@ function SingletonView({
               label={fa ? "نمایش بخش" : "Visible"}
               value={data.isVisible !== false}
               onChange={(v) => set("isVisible", v)}
+            />
+            <HeroTechnologyEcosystemEditor
+              value={(data.technologyEcosystem as HeroTechnologyEcosystemConfig) || {
+                isVisible: true,
+                items: [],
+              }}
+              locale={locale}
+              onChange={(value) => set("technologyEcosystem", value)}
             />
           </>
         )}

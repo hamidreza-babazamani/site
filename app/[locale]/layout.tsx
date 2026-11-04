@@ -10,6 +10,7 @@ import { ThemeProvider } from "next-themes";
 import { routing } from "@/i18n/routing";
 import Layout from "@/layouts/Layout";
 import { DarkModeProvider } from "@/context/DarkModeContext";
+import { getPublicSiteBranding } from "@/lib/services/public-portfolio";
 
 import "./globals.css";
 
@@ -154,6 +155,8 @@ export async function generateMetadata({
   const currentLocale = locale as SupportedLocale;
   const isFA = currentLocale === "fa";
   const content = seo[currentLocale];
+  const branding = await getPublicSiteBranding();
+  const faviconUrl = branding.favicon?.url || "/favicon.ico";
 
   return {
     metadataBase: new URL(siteUrl),
@@ -231,25 +234,13 @@ export async function generateMetadata({
     },
 
     icons: {
-      icon: [
-        {
-          url: "/favicon.ico",
-          sizes: "any",
-        },
-        {
-          url: "/icon.png",
-          type: "image/png",
-          sizes: "512x512",
-        },
-      ],
-
-      apple: [
-        {
-          url: "/apple-touch-icon.png",
-          sizes: "180x180",
-          type: "image/png",
-        },
-      ],
+      icon: [{
+        url: faviconUrl,
+        ...(!branding.favicon ? { type: "image/x-icon" } : {}),
+      }],
+      ...(branding.favicon
+        ? { apple: [{ url: faviconUrl }] }
+        : {}),
     },
 
     category: "technology",
@@ -274,6 +265,7 @@ export default async function LocaleLayout({
   const fontClassName = isFA
     ? iranYekan.className
     : englishFont.className;
+  const branding = await getPublicSiteBranding();
 
   return (
     <html
@@ -300,7 +292,7 @@ export default async function LocaleLayout({
               defaultTheme="system"
               enableSystem
             >
-              <Layout>{children}</Layout>
+              <Layout siteLogo={branding.logo}>{children}</Layout>
             </ThemeProvider>
           </NextIntlClientProvider>
         </DarkModeProvider>

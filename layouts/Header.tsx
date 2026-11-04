@@ -8,8 +8,9 @@ import MobileNavbar from "@/components/MobileNavbar";
 import NavDecks from "@/components/NavDecks";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import type { PublicMedia } from "@/lib/services/public-portfolio";
 
-function Header() {
+function Header({ siteLogo }: { siteLogo?: PublicMedia }) {
   const locale = useLocale();
   const t = useTranslations("HomePage");
 
@@ -37,35 +38,37 @@ function Header() {
           <ThemeToggle />
         </div>
 
-        <Link
-          href="/"
-          aria-label="Hamidreza Babazamani - Home"
-          className="
-            flex min-w-0 items-center justify-center
-            justify-self-center
-            transition-transform duration-300
-            hover:scale-[1.03]
-            focus-visible:outline-2
-            focus-visible:outline-offset-4
-            focus-visible:outline-emerald-500
-          "
-        >
-          <Image
-            src="/images/logok.png"
-            alt="Hamidreza Babazamani - Developer"
-            width={220}
-            height={110}
-            priority
-            sizes="(max-width: 640px) 110px, (max-width: 1280px) 150px, 180px"
+        {siteLogo?.url && (
+          <Link
+            href="/"
+            aria-label="Hamidreza Babazamani - Home"
             className="
-              h-auto w-[105px]
-              max-w-full object-contain
-              sm:w-[145px]
-              xl:w-[180px]
-              dark:brightness-110
+              flex min-w-0 items-center justify-center
+              justify-self-center
+              transition-transform duration-300
+              hover:scale-[1.03]
+              focus-visible:outline-2
+              focus-visible:outline-offset-4
+              focus-visible:outline-emerald-500
             "
-          />
-        </Link>
+          >
+            <Image
+              src={siteLogo.url}
+              alt={siteLogo.alt?.[locale as "fa" | "en"] || "Website logo"}
+              width={220}
+              height={110}
+              priority
+              sizes="(max-width: 640px) 110px, (max-width: 1280px) 150px, 180px"
+              className="
+                h-auto w-[105px]
+                max-w-full object-contain
+                sm:w-[145px]
+                xl:w-[180px]
+                dark:brightness-110
+              "
+            />
+          </Link>
+        )}
 
         {/* Mobile Navigation */}
         <div className="shrink-0 justify-self-end xl:hidden">

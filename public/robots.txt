@@ -6,7 +6,7 @@ Disallow: /fa/admin
 Disallow: /en/admin
 
 # Host
-Host: https://kamyarkamali.ir
+Host: https://your-domain.example
 
 # Sitemaps
-Sitemap: https://kamyarkamali.ir/sitemap.xml
+Sitemap: https://your-domain.example/sitemap.xml

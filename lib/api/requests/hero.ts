@@ -1,5 +1,6 @@
 import { publicApiClient } from "@/lib/api/axios";
 import type { ApiEnvelope, LocalizedText } from "@/lib/api/types";
+import type { HeroTechnologyEcosystemConfig } from "@/lib/server/hero-technology-config";
 
 export type PublicHero = {
   jobTitle?: Partial<LocalizedText>;
@@ -7,6 +8,14 @@ export type PublicHero = {
   description?: Partial<LocalizedText>;
   image?: { url: string; alt?: Partial<LocalizedText> } | null;
   isVisible?: boolean;
+  technologyEcosystem?: HeroTechnologyEcosystemConfig & {
+    items: Array<
+      HeroTechnologyEcosystemConfig["items"][number] & {
+        name: LocalizedText;
+        iconMedia?: { url: string; alt?: Partial<LocalizedText> };
+      }
+    >;
+  };
 };
 
 /** دریافت Hero عمومی؛ این درخواست فقط برای اجرای مرورگر است و کوکی مدیر نمی‌خواهد. */

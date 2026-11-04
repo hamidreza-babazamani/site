@@ -6,6 +6,7 @@ import { isValidObjectId } from "mongoose";
 import { env, requiredEnv } from "./env";
 import { Admin } from "./models";
 import { connectDatabase } from "./db-core";
+import { validateHeroTechnologyEcosystem } from "./hero-technology-config";
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -289,6 +290,9 @@ export const validate = (
     !isEmail(input.value.trim())
   )
     errors.value = "value must be a valid email";
+  if (resource === "hero" && input.technologyEcosystem !== undefined) {
+    Object.assign(errors, validateHeroTechnologyEcosystem(input.technologyEcosystem));
+  }
   for (const key of ["company", "type", "value"])
     if (
       resource === "contactMethod"

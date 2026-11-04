@@ -43,7 +43,10 @@ export default async function Photo({
         "
       />
 
-      <HeroTechEcosystem />
+      <HeroTechEcosystem
+        ecosystem={hero?.technologyEcosystem}
+        locale={locale}
+      />
     </div>
   );
 }

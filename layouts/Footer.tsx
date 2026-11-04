@@ -8,6 +8,8 @@ import {
 } from "react-icons/fa";
 import { ArrowUpRight, Heart } from "lucide-react";
 import Image from "next/image";
+import { useLocale } from "next-intl";
+import type { PublicMedia } from "@/lib/services/public-portfolio";
 
 const socialLinks = [
   {
@@ -36,8 +38,9 @@ const socialLinks = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
   const t = useTranslations("HomePage");
+  const locale = useLocale();
 
   const footerLinks = [
     {
@@ -121,45 +124,33 @@ export default function Footer() {
         >
           {/* Brand */}
           <div className="max-w-md">
-            <Link
-              href="/"
-              className="
-                group inline-flex items-center gap-3
-                rounded-xl
-                focus-visible:outline-2
-                focus-visible:outline-offset-4
-                focus-visible:outline-emerald-500
-              "
-            >
+            {siteLogo?.url && (
               <Link
                 href="/"
                 aria-label="Hamidreza Babazamani - Home"
                 className="
-            flex min-w-0 items-center justify-center
-            justify-self-center
-            transition-transform duration-300
-            hover:scale-[1.03]
-            focus-visible:outline-2
-            focus-visible:outline-offset-4
-            focus-visible:outline-emerald-500
-          "
+                  group inline-flex items-center gap-3
+                  rounded-xl
+                  focus-visible:outline-2
+                  focus-visible:outline-offset-4
+                  focus-visible:outline-emerald-500
+                "
               >
                 <Image
-                  src="/images/logok.png"
-                  alt="Hamidreza Babazamani - Developer"
+                  src={siteLogo.url}
+                  alt={siteLogo.alt?.[locale as "fa" | "en"] || "Website logo"}
                   width={220}
                   height={110}
                   priority
                   sizes="(max-width: 640px) 110px, (max-width: 1280px) 150px, 180px"
                   className="
-              h-auto w-[105px]
-              max-w-full object-contain
-              sm:w-[145px]
-              xl:w-[180px]
-              dark:brightness-110
-            "
+                    h-auto w-[105px]
+                    max-w-full object-contain
+                    sm:w-[145px]
+                    xl:w-[180px]
+                    dark:brightness-110
+                  "
                 />
-              </Link>
 
               <h2
                 className="
@@ -174,7 +165,8 @@ export default function Footer() {
               >
                 {t("footer.name")}
               </h2>
-            </Link>
+              </Link>
+            )}
 
             <p
               className="
