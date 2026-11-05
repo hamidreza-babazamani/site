@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://hamidrezababazamani.ir",
 
   generateRobotsTxt: true,
 
@@ -10,11 +10,11 @@ module.exports = {
 
   alternateRefs: [
     {
-      href: "https://kamyarkamali.ir/fa",
+      href: "https://hamidrezababazamani.ir/fa",
       hreflang: "fa",
     },
     {
-      href: "https://kamyarkamali.ir/en",
+      href: "https://hamidrezababazamani.ir/en",
       hreflang: "en",
     },
   ],
@@ -27,6 +27,5 @@ module.exports = {
         disallow: ["/api/", "/fa/admin", "/en/admin"],
       },
     ],
-
   },
 };

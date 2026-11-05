@@ -6,7 +6,7 @@ Disallow: /fa/admin
 Disallow: /en/admin
 
 # Host
-Host: https://your-domain.example
+Host: https://hamidrezababazamani.ir
 
 # Sitemaps
-Sitemap: https://your-domain.example/sitemap.xml
+Sitemap: https://hamidrezababazamani.ir/sitemap.xml
