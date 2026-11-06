@@ -1,7 +1,8 @@
+
 import type { MetadataRoute } from "next";
 
 const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://hamidrezababazamani.ir"
 ).replace(/\/+$/, "");
 
 const pages = [
@@ -11,7 +12,7 @@ const pages = [
     changeFrequency: "weekly" as const,
   },
   {
-    path: "/projects",
+    path: "/work",
     priority: 0.9,
     changeFrequency: "weekly" as const,
   },
