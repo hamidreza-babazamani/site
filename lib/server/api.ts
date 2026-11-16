@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { isValidObjectId } from "mongoose";
 import { env, requiredEnv } from "./env";
-import { Admin } from "./models";
+import { Admin, RESUME_SECTION_KEYS } from "./models";
 import { connectDatabase } from "./db-core";
 import { validateHeroTechnologyEcosystem } from "./hero-technology-config";
 export class ApiError extends Error {
@@ -172,6 +172,7 @@ export const validate = (
       project: ["title", "shortDescription", "description"],
       contactMethod: ["label"],
       resume: ["title"],
+      education: ["institution", "degree", "fieldOfStudy", "location", "description"],
     }[resource] ?? [];
   const requiredLocalized = new Set(
     (
@@ -183,6 +184,7 @@ export const validate = (
         technology: ["name"],
         language: ["name", "level"],
         project: ["title"],
+        education: ["institution", "degree"],
         contactMethod: [],
       } as Record<string, string[]>
     )[resource] ?? [],
@@ -277,6 +279,28 @@ export const validate = (
     if (input.current === true && input.endDate)
       errors.endDate = "endDate must be empty for a current experience";
   }
+  if (resource === "education") {
+    for (const key of ["startDate", "endDate"] as const) {
+      const value = input[key];
+      if (
+        value !== undefined && value !== null && value !== "" &&
+        (typeof value !== "string" || Number.isNaN(Date.parse(value)))
+      )
+        errors[key] = `${key} must be a valid date`;
+    }
+    if (input.current !== undefined && typeof input.current !== "boolean")
+      errors.current = "current must be a boolean";
+    if (
+      typeof input.startDate === "string" &&
+      typeof input.endDate === "string" &&
+      Date.parse(input.endDate) < Date.parse(input.startDate)
+    )
+      errors.endDate = "endDate must not be before startDate";
+    if (input.current === true && input.endDate)
+      errors.endDate = "endDate must be empty for current education";
+    if (input.isVisible !== undefined && typeof input.isVisible !== "boolean")
+      errors.isVisible = "isVisible must be a boolean";
+  }
   if (
     resource === "contactMethod" &&
     input.type !== undefined &&
@@ -308,6 +332,86 @@ export const validate = (
       !isUrl(input[key])
     )
       errors[key] = `${key} must be an http(s) URL`;
+  if (Object.keys(errors).length)
+    throw new ApiError(400, "Validation failed", errors);
+  return input;
+};
+
+const resumeReferenceFields = [
+  "experienceIds",
+  "projectIds",
+  "technologyIds",
+  "educationIds",
+  "languageIds",
+  "contactMethodIds",
+] as const;
+
+export const validateResumeComposition = (value: unknown) => {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new ApiError(400, "Invalid resume composition");
+
+  const input = value as Record<string, unknown>;
+  const allowed = new Set([
+    "professionalSummary",
+    "sectionOrder",
+    "sectionVisibility",
+    ...resumeReferenceFields,
+  ]);
+  const errors: Record<string, string> = {};
+  for (const key of Object.keys(input))
+    if (!allowed.has(key)) errors[key] = "Field is not permitted";
+
+  const summary = input.professionalSummary;
+  if (
+    !summary || typeof summary !== "object" || Array.isArray(summary) ||
+    Object.keys(summary).some((key) => key !== "fa" && key !== "en") ||
+    ["fa", "en"].some((key) => typeof (summary as Record<string, unknown>)[key] !== "string")
+  ) {
+    errors.professionalSummary = "professionalSummary must contain fa and en strings";
+  } else {
+    const localizedSummary = summary as { fa: string; en: string };
+    if (
+      Boolean(localizedSummary.fa.trim()) !== Boolean(localizedSummary.en.trim())
+    )
+      errors.professionalSummary = "Enter both locales or leave both empty";
+  }
+
+  const sectionOrder = input.sectionOrder;
+  if (
+    !Array.isArray(sectionOrder) ||
+    sectionOrder.length !== RESUME_SECTION_KEYS.length ||
+    new Set(sectionOrder).size !== RESUME_SECTION_KEYS.length ||
+    !RESUME_SECTION_KEYS.every((key) =>
+      (sectionOrder as unknown[]).includes(key),
+    )
+  )
+    errors.sectionOrder = "sectionOrder must contain every section exactly once";
+
+  const visibility = input.sectionVisibility;
+  if (!visibility || typeof visibility !== "object" || Array.isArray(visibility)) {
+    errors.sectionVisibility = "sectionVisibility must define every section";
+  } else {
+    const values = visibility as Record<string, unknown>;
+    for (const key of Object.keys(values))
+      if (!(RESUME_SECTION_KEYS as readonly string[]).includes(key))
+        errors[`sectionVisibility.${key}`] = "Section is not permitted";
+    for (const key of RESUME_SECTION_KEYS)
+      if (typeof values[key] !== "boolean")
+        errors[`sectionVisibility.${key}`] = "Must be a boolean";
+  }
+
+  for (const field of resumeReferenceFields) {
+    const ids = input[field];
+    if (!Array.isArray(ids)) {
+      errors[field] = `${field} must be an array of record IDs`;
+      continue;
+    }
+    if (ids.some((id) => typeof id !== "string" || !isValidObjectId(id)))
+      errors[field] = `${field} must contain valid record IDs`;
+    else if (new Set(ids).size !== ids.length)
+      errors[field] = `${field} must not contain duplicate IDs`;
+  }
+
   if (Object.keys(errors).length)
     throw new ApiError(400, "Validation failed", errors);
   return input;

@@ -9,6 +9,49 @@ const localized = new Schema(
   { fa: { type: String, default: "" }, en: { type: String, default: "" } },
   { _id: false },
 );
+export const RESUME_SECTION_KEYS = [
+  "summary",
+  "experience",
+  "projects",
+  "skills",
+  "education",
+  "languages",
+] as const;
+
+const resumeSectionVisibility = new Schema(
+  Object.fromEntries(
+    RESUME_SECTION_KEYS.map((key) => [key, { type: Boolean, default: true }]),
+  ),
+  { _id: false },
+);
+
+const resumeComposition = new Schema(
+  {
+    professionalSummary: { type: localized, default: () => ({}) },
+    sectionOrder: {
+      type: [{ type: String, enum: RESUME_SECTION_KEYS }],
+      default: [...RESUME_SECTION_KEYS],
+      validate: {
+        validator: (items: string[]) =>
+          items.length === RESUME_SECTION_KEYS.length &&
+          new Set(items).size === RESUME_SECTION_KEYS.length &&
+          RESUME_SECTION_KEYS.every((key) => items.includes(key)),
+        message: "Resume section order must contain every section exactly once",
+      },
+    },
+    sectionVisibility: {
+      type: resumeSectionVisibility,
+      default: () => ({}),
+    },
+    experienceIds: [{ type: Schema.Types.ObjectId, ref: "Experience" }],
+    projectIds: [{ type: Schema.Types.ObjectId, ref: "Project" }],
+    technologyIds: [{ type: Schema.Types.ObjectId, ref: "Technology" }],
+    educationIds: [{ type: Schema.Types.ObjectId, ref: "Education" }],
+    languageIds: [{ type: Schema.Types.ObjectId, ref: "Language" }],
+    contactMethodIds: [{ type: Schema.Types.ObjectId, ref: "ContactMethod" }],
+  },
+  { _id: false },
+);
 // const media = new Schema(
 //   { url: { type: String, required: true }, key: String, alt: localized },
 //   { _id: false },
@@ -269,6 +312,26 @@ export const Language =
       opts,
     ),
   );
+export const Education =
+  models.Education ??
+  model(
+    "Education",
+    new Schema(
+      {
+        institution: { type: localized, required: true },
+        degree: { type: localized, required: true },
+        fieldOfStudy: localized,
+        location: localized,
+        startDate: Date,
+        endDate: Date,
+        current: { type: Boolean, default: false },
+        description: localized,
+        order: { type: Number, default: 0, min: 0 },
+        isVisible: { type: Boolean, default: true },
+      },
+      opts,
+    ),
+  );
 export const Project =
   models.Project ??
   model(
@@ -304,6 +367,15 @@ export const Resume =
       {
         key: { type: String, unique: true, default: "default" },
         title: localized,
+        draft: { type: resumeComposition, default: () => ({}) },
+        published: { type: resumeComposition, default: null },
+        status: {
+          type: String,
+          enum: ["draft", "published"],
+          default: "draft",
+          required: true,
+        },
+        publishedAt: Date,
         file: { type: media, default: null },
         updatedBy: String,
       },

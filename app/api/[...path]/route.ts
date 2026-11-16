@@ -7,6 +7,7 @@ import {
   Admin,
   ContactMessage,
   ContactMethod,
+  Education,
   Experience,
   Hero,
   Language,
@@ -32,6 +33,7 @@ import {
   tokenFor,
   validateSameOrigin,
   validate,
+  validateResumeComposition,
 } from "@/lib/server/api";
 import { removeMedia, saveMedia } from "@/lib/server/storage";
 import type { HeroTechnologyEcosystemConfig } from "@/lib/server/hero-technology-config";
@@ -76,6 +78,23 @@ const resources: Record<
     key: "language",
     fields: ["name", "level", "order", "isVisible"],
     search: ["name.fa", "name.en", "level.fa", "level.en"],
+  },
+  education: {
+    model: Education,
+    key: "education",
+    fields: [
+      "institution",
+      "degree",
+      "fieldOfStudy",
+      "location",
+      "startDate",
+      "endDate",
+      "current",
+      "description",
+      "order",
+      "isVisible",
+    ],
+    search: ["institution.fa", "institution.en", "degree.fa", "degree.en"],
   },
   projects: {
     model: Project,
@@ -141,6 +160,13 @@ const publicContent = (item: any): any => {
   if (value.iconMedia) value.iconMedia = publicMedia(value.iconMedia);
   if (value.file) value.file = publicMedia(value.file);
   if (Array.isArray(value.images)) value.images = value.images.map(publicMedia);
+  return value;
+};
+const publicResumeContent = (item: any) => {
+  const value = publicContent(item);
+  if (!value || typeof value !== "object") return value;
+  delete value.draft;
+  if (value.status !== "published") delete value.published;
   return value;
 };
 const publicProfileFields = (item: any) => {
@@ -519,11 +545,13 @@ async function publicGet(parts: string[], url: URL) {
       technologies: technologies.map(publicContent),
       languages: languages.map(publicFields),
       projects: projects.map(publicContent),
-      resume: publicContent(resume),
+      resume: publicResumeContent(resume),
       contactMethods: contactMethods.map(publicContent),
     });
   }
   if (singleton[parts[0]]) {
+    if (parts[0] === "resume" && parts.length !== 1)
+      throw new ApiError(404, "Route not found");
     const query = singleton[parts[0]].model.findOne({
       key: "default",
       ...(parts[0] === "hero" ? { isVisible: true } : {}),
@@ -534,7 +562,9 @@ async function publicGet(parts: string[], url: URL) {
         ? await publicHeroContent(item)
         : parts[0] === "profile"
           ? publicProfileFields(item)
-          : publicContent(item),
+          : parts[0] === "resume"
+            ? publicResumeContent(item)
+            : publicContent(item),
     );
   }
   const resource = resources[parts[0]];
@@ -565,6 +595,16 @@ async function publicGet(parts: string[], url: URL) {
 async function adminGet(parts: string[], url: URL) {
   await requireAdmin();
   const name = parts[0];
+  if (
+    name === "resume" &&
+    parts.length === 2 &&
+    ["draft", "published"].includes(parts[1])
+  ) {
+    const item = await Resume.findOne({ key: "default" })
+      .select(parts[1])
+      .lean();
+    return ok(item?.[parts[1]] ?? null);
+  }
   if (name === "stats" && parts.length === 1)
     return ok(await Stat.find({}).sort({ order: 1 }).lean());
   if (name === "site-settings" && parts.length === 1)
@@ -639,10 +679,73 @@ async function publicPost(parts: string[], request: Request) {
   );
   return json({ success: true, data: { id: item._id.toString() } }, 201);
 }
+
+async function validateResumeReferences(composition: Record<string, unknown>) {
+  const references = [
+    ["experienceIds", Experience],
+    ["projectIds", Project],
+    ["technologyIds", Technology],
+    ["educationIds", Education],
+    ["languageIds", Language],
+    ["contactMethodIds", ContactMethod],
+  ] as const;
+  const errors: Record<string, string> = {};
+  await Promise.all(
+    references.map(async ([field, model]) => {
+      const ids = composition[field] as string[];
+      if (ids.length && (await model.countDocuments({ _id: { $in: ids } })) !== ids.length)
+        errors[field] = "One or more referenced records do not exist";
+    }),
+  );
+  if (Object.keys(errors).length)
+    throw new ApiError(400, "Invalid resume references", errors);
+}
+
 async function adminWrite(parts: string[], request: Request, method: string) {
   validateSameOrigin(request, { requireOrigin: true });
   await requireAdmin();
   const name = parts[0];
+  if (name === "resume" && parts.length === 2) {
+    if (parts[1] === "draft" && ["PUT", "PATCH"].includes(method)) {
+      const composition = validateResumeComposition(await body(request));
+      await validateResumeReferences(composition);
+      const item = await Resume.findOneAndUpdate(
+        { key: "default" },
+        { $set: { draft: composition }, $setOnInsert: { key: "default" } },
+        { upsert: true, new: true, runValidators: true },
+      ).lean();
+      return ok(item);
+    }
+    if (parts[1] === "publish" && method === "POST") {
+      const record = await Resume.findOne({ key: "default" });
+      if (!record?.draft)
+        throw new ApiError(400, "Save a resume draft before publishing");
+      const stored = record.toObject().draft;
+      const composition = validateResumeComposition(stored);
+      await validateResumeReferences(composition);
+      const summary = composition.professionalSummary as { fa: string; en: string };
+      const visibility = composition.sectionVisibility as Record<string, boolean>;
+      if (visibility.summary && (!summary.fa.trim() || !summary.en.trim()))
+        throw new ApiError(400, "Both professional summary locales are required to publish", {
+          professionalSummary: "Enter Persian and English summaries",
+        });
+      const item = await Resume.findOneAndUpdate(
+        { key: "default" },
+        { $set: { published: composition, status: "published", publishedAt: new Date() } },
+        { new: true, runValidators: true },
+      ).lean();
+      return ok(item);
+    }
+    if (parts[1] === "unpublish" && method === "POST") {
+      const item = await Resume.findOneAndUpdate(
+        { key: "default" },
+        { $set: { status: "draft" }, $setOnInsert: { key: "default" } },
+        { upsert: true, new: true, runValidators: true },
+      ).lean();
+      return ok(item);
+    }
+    throw new ApiError(405, "Method not allowed");
+  }
   if (name === "contact-messages" || name === "messages") {
     ensureId(parts[1], "message");
     if (method === "DELETE") {
