@@ -6,22 +6,18 @@ import { useLocale } from "next-intl";
 import {
   ArrowUpRight,
   MessageCircle,
-  Phone,
-  Send,
   X,
 } from "lucide-react";
 import { publicApiClient } from "@/lib/api/axios";
 import type { ApiListEnvelope } from "@/lib/api/types";
+import {
+  DEFAULT_CONTACT_METHODS,
+  getContactIcon,
+  getContactIconBadgeClass,
+  resolveContactHref,
+} from "@/lib/contact-methods";
 
 type PublicContactMethod = { _id?: string; type: string; label?: { fa?: string; en?: string }; value: string; url?: string };
-const safeHref = (item: PublicContactMethod): string | null => {
-  if (item.url) {
-    try { const url = new URL(item.url); return ["http:", "https:"].includes(url.protocol) ? url.href : null; } catch { return null; }
-  }
-  if (item.type === "email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(item.value)) return `mailto:${item.value}`;
-  if (item.type === "phone" && /^[+\d][\d\s()-]{5,}$/.test(item.value)) return `tel:${item.value.replace(/\s/g, "")}`;
-  return null;
-};
 
 export default function ContactButton() {
   const [open, setOpen] = useState(false);
@@ -31,12 +27,18 @@ export default function ContactButton() {
   const menuId = "floating-contact-menu";
 
   const isPersian = locale === "fa";
-  const [methods, setMethods] = useState<PublicContactMethod[]>([]);
+  const [methods, setMethods] = useState<PublicContactMethod[]>(DEFAULT_CONTACT_METHODS);
 
   useEffect(() => {
     void publicApiClient.get<ApiListEnvelope<PublicContactMethod>>("/api/public/contact-methods", { params: { visible: true, limit: 20 } })
-      .then(({ data }) => setMethods(Array.isArray(data.data) ? data.data : []))
-      .catch(() => setMethods([]));
+      .then(({ data }) => {
+        if (Array.isArray(data.data) && data.data.length > 0) {
+          setMethods(data.data);
+        }
+      })
+      .catch(() => {
+        // Keep built-in contact methods if public endpoint fails
+      });
   }, []);
 
   useEffect(() => {
@@ -68,11 +70,13 @@ export default function ContactButton() {
   }, [open]);
 
   const contactLinks = methods.map((item) => ({
+    id: item._id || `${item.type}-${item.value}`,
+    type: item.type,
     name: item.label?.[locale as "fa" | "en"] || item.label?.en || item.value,
     detail: item.value,
-    href: safeHref(item),
-    icon: item.type === "phone" ? Phone : item.type === "email" ? Send : MessageCircle,
-    external: Boolean(item.url),
+    href: resolveContactHref(item),
+    icon: getContactIcon(item.type),
+    external: Boolean(item.url || !["email", "phone"].includes(item.type.toLowerCase())),
   })).filter((item): item is typeof item & { href: string } => Boolean(item.href));
   /* const contactLinks = [
     {
@@ -85,7 +89,7 @@ export default function ContactButton() {
     {
       name: t("call.tel"),
       detail: "Telegram",
-      href: "https://t.me/KamdevJs",
+      href: "https://t.me/hamidrezababazamani",
       icon: Send,
       external: true,
     },
@@ -202,13 +206,13 @@ export default function ContactButton() {
         </div>
 
         {/* Links */}
-        <div className="space-y-1.5 p-2.5">
+        <div className="max-h-[60vh] space-y-1.5 overflow-y-auto p-2.5">
           {contactLinks.map((item) => {
             const Icon = item.icon;
 
             return (
               <a
-                key={item.href}
+                key={item.id}
                 href={item.href}
                 target={item.external ? "_blank" : undefined}
                 rel={
@@ -218,7 +222,7 @@ export default function ContactButton() {
                 }
                 onClick={() => setOpen(false)}
                 className="
-                  group flex min-h-15
+                  group flex min-h-14
                   items-center gap-3
                   rounded-2xl
                   border border-transparent
@@ -234,19 +238,13 @@ export default function ContactButton() {
                 "
               >
                 <span
-                  className="
+                  className={`
                     flex size-10 shrink-0
                     items-center justify-center
                     rounded-xl
-                    bg-slate-900/[0.04]
-                    text-slate-600
                     transition-colors
-                    group-hover:bg-emerald-500/10
-                    group-hover:text-emerald-700
-                    dark:bg-white/[0.06]
-                    dark:text-slate-300
-                    dark:group-hover:text-emerald-300
-                  "
+                    ${getContactIconBadgeClass(item.type)}
+                  `}
                 >
                   <Icon size={19} aria-hidden="true" />
                 </span>

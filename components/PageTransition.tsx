@@ -18,7 +18,7 @@ const PageTransition: FC<{ children: React.ReactNode }> = ({ children }) => {
         {isVisible && (
           <motion.div
             key={pathname}
-            className="fixed inset-0 z-50 bg-white dark:bg-black"
+            className="pointer-events-none fixed inset-0 z-50 bg-white dark:bg-black"
             initial={{ opacity: 1 }}
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import bcrypt from "bcrypt";
 import { connectDatabase } from "@/lib/server/db";
 import {
@@ -36,6 +36,7 @@ import {
   validateResumeComposition,
 } from "@/lib/server/api";
 import { removeMedia, saveMedia } from "@/lib/server/storage";
+import { importPdfSeedToResumeDraft } from "@/lib/server/resume-pdf-seed";
 import type { HeroTechnologyEcosystemConfig } from "@/lib/server/hero-technology-config";
 import { HERO_TECHNOLOGY_ECOSYSTEM_DEFAULT } from "@/lib/server/hero-technology-config";
 
@@ -422,11 +423,21 @@ const localizedText = (value: unknown) =>
     (value as { fa: string; en: string }).fa.trim() &&
     (value as { fa: string; en: string }).en.trim(),
   );
+const pruneRateMap = (
+  map: Map<string, { count: number; resetAt: number }>,
+  now: number,
+) => {
+  if (map.size < 500) return;
+  for (const [entryKey, entry] of map.entries()) {
+    if (entry.resetAt <= now) map.delete(entryKey);
+  }
+};
 const contactRate = new Map<string, { count: number; resetAt: number }>();
 const checkContactRate = (request: Request) => {
   const key =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const now = Date.now();
+  pruneRateMap(contactRate, now);
   const current = contactRate.get(key);
   if (!current || current.resetAt <= now) {
     contactRate.set(key, { count: 1, resetAt: now + 15 * 60_000 });
@@ -441,6 +452,7 @@ const checkLoginRate = (request: Request, _email?: string) => {
   const key =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const now = Date.now();
+  pruneRateMap(loginRate, now);
   const current = loginRate.get(key);
   if (!current || current.resetAt <= now) {
     loginRate.set(key, { count: 1, resetAt: now + 15 * 60_000 });
@@ -674,9 +686,22 @@ async function publicPost(parts: string[], request: Request) {
     throw new ApiError(404, "Route not found");
   checkContactRate(request);
   const input = validate("contactMessage", await body(request));
-  const item = await ContactMessage.create(
-    clean(input, ["name", "email", "subject", "message", "locale"]),
-  );
+  const payload = clean(input, [
+    "name",
+    "email",
+    "phone",
+    "subject",
+    "projectType",
+    "budget",
+    "timeline",
+    "source",
+    "message",
+    "locale",
+  ]);
+  for (const optionalKey of ["email", "phone", "subject", "projectType", "budget", "timeline"]) {
+    if (payload[optionalKey] === "") delete payload[optionalKey];
+  }
+  const item = await ContactMessage.create(payload);
   return json({ success: true, data: { id: item._id.toString() } }, 201);
 }
 
@@ -742,6 +767,10 @@ async function adminWrite(parts: string[], request: Request, method: string) {
         { $set: { status: "draft" }, $setOnInsert: { key: "default" } },
         { upsert: true, new: true, runValidators: true },
       ).lean();
+      return ok(item);
+    }
+    if (parts[1] === "import-pdf-seed" && method === "POST") {
+      const item = await importPdfSeedToResumeDraft();
       return ok(item);
     }
     throw new ApiError(405, "Method not allowed");
@@ -1142,6 +1171,7 @@ async function mediaWrite(parts: string[], request: Request, method: string) {
       return ok(item);
     }
     if (isProject) {
+      ensureId(parts[1], "project");
       const item = await Project.findById(parts[1]);
       if (!item) throw new ApiError(404, "Project not found");
       const index = item.images.findIndex((x: any) => x.key === parts[3]);
@@ -1164,6 +1194,7 @@ async function mediaWrite(parts: string[], request: Request, method: string) {
   if (method === "PATCH") {
     const values = await body(request);
     if (isProject) {
+      ensureId(parts[1], "project");
       const item = await Project.findById(parts[1]);
       if (!item) throw new ApiError(404, "Project not found");
       const image = item.images.find((x: any) => x.key === parts[3]);
@@ -1203,6 +1234,8 @@ async function mediaWrite(parts: string[], request: Request, method: string) {
   if (isProject && !localizedText(values.alt))
     throw new ApiError(400, "Persian and English alt text are required");
   const allowed = isResume ? { "application/pdf": ".pdf" } : media;
+  if (isProject) ensureId(parts[1], "project");
+  if (isRecordMedia) ensureId(parts[1], isServiceMedia ? "service" : "technology");
   const item = isProject ? await Project.findById(parts[1]) : null;
   if (isProject && !item) throw new ApiError(404, "Project not found");
   const recordModel = isServiceMedia ? Service : Technology;
@@ -1403,6 +1436,8 @@ const wrap =
       if (path[0] === "admin" && request.method !== "GET") {
         // محتوای عمومی پس از تغییر موفق پنل باید در مسیرهای فارسی و انگلیسی تازه شود.
         // این invalidation فقط هنگام mutation اجرا می‌شود و caching عمومی را خاموش نمی‌کند.
+        revalidateTag("portfolio");
+        revalidateTag("site-settings");
         revalidatePath("/fa", "layout");
         revalidatePath("/en", "layout");
       }

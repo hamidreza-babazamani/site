@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import localFont from "next/font/local";
-import { ThemeProvider } from "next-themes";
 
 import { routing } from "@/i18n/routing";
 import Layout from "@/layouts/Layout";
@@ -14,11 +13,11 @@ import { getPublicSiteBranding } from "@/lib/services/public-portfolio";
 
 import "./globals.css";
 
-
+export const dynamic = "force-dynamic";
 
 const siteUrl = (
   process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://kamyarkamali.ir"
+  "https://hamidrezababazamani.ir"
 ).replace(/\/+$/, "");
 
 type SupportedLocale = "fa" | "en";
@@ -30,13 +29,24 @@ type LocaleLayoutProps = {
 
 
 const iranYekan = localFont({
-  src: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
+  src: [
+    {
+      path: "../fonts/persian/woff2/IRANSansX-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/persian/woff2/IRANSansX-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-iran",
   display: "swap",
 });
 
 const englishFont = localFont({
-  src: "../fonts/en/JetBrainsMono-Regular.ttf",
+  src: "../fonts/en/JetBrainsMono-VariableFont_wght.ttf",
   variable: "--font-en",
   display: "swap",
 });
@@ -46,50 +56,53 @@ const englishFont = localFont({
 const seo = {
   fa: {
     title:
-      "حمیدرضا بابازمانی | مهندس نرم‌افزار، Next.js و اپلیکیشن‌های هوش مصنوعی",
+      "حمیدرضا بابازمانی | توسعه‌دهنده بک‌اند و فول‌استک (Node.js & Next.js)",
 
     description:
-      "وب‌سایت رسمی حمیدرضا بابازمانی، توسعه‌دهنده نرم‌افزار متخصص در React، Next.js، TypeScript و Node.js با تمرکز بر توسعه وب‌اپلیکیشن‌های مدرن، اپلیکیشن‌های هوش مصنوعی، عملکرد، امنیت و سئو.",
+      "وب‌سایت رسمی حمیدرضا بابازمانی، توسعه‌دهنده بک‌اند و فول‌استک متخصص در Node.js، Express.js، TypeScript، MongoDB، PostgreSQL و Next.js با تمرکز بر طراحی APIهای امن، سیستم‌های بلادرنگ و اپلیکیشن‌های مدرن.",
 
     keywords: [
       "حمیدرضا بابازمانی",
       "Hamidreza Babazamani",
-      "مهندس نرم افزار",
-      "توسعه دهنده فرانت اند",
+      "توسعه دهنده بک اند",
+      "برنامه نویس بک اند",
+      "برنامه نویس Node.js",
       "توسعه دهنده فول استک",
-      "طراحی سایت",
-      "طراحی سایت با Next.js",
-      "برنامه نویس React",
-      "اپلیکیشن هوش مصنوعی",
-      "React",
-      "Next.js",
-      "TypeScript",
+      "طراحی API",
+      "مهندس نرم افزار",
       "Node.js",
-      "LLM",
+      "Express.js",
+      "TypeScript",
+      "MongoDB",
+      "PostgreSQL",
+      "Next.js",
+      "Docker",
+      "Socket.IO",
     ],
   },
 
   en: {
     title:
-      "Hamidreza Babazamani | Software Engineer · Next.js & AI Applications",
+      "Hamidreza Babazamani | Backend & Full-Stack Developer · Node.js & Next.js",
 
     description:
-      "Official portfolio of Hamidreza Babazamani, a software developer specializing in React, Next.js, TypeScript, Node.js, modern web applications, AI integrations, performance, security, and technical SEO.",
+      "Official portfolio of Hamidreza Babazamani, a Backend & Full-Stack Developer specializing in Node.js, Express.js, TypeScript, MongoDB, PostgreSQL, Docker, real-time systems, and Next.js.",
 
     keywords: [
       "Hamidreza Babazamani",
-      "Software Engineer",
-      "Frontend Developer",
+      "Backend Developer",
+      "Node.js Developer",
       "Full Stack Developer",
-      "React Developer",
-      "Next.js Developer",
+      "Software Engineer",
+      "Express.js",
       "TypeScript",
-      "Node.js",
-      "AI Applications",
-      "LLM Integration",
-      "Web Performance",
+      "MongoDB",
+      "PostgreSQL",
+      "REST API",
+      "Next.js",
+      "Docker",
+      "Socket.IO",
       "Web Security",
-      "Technical SEO",
     ],
   },
 } as const;
@@ -109,33 +122,35 @@ function getPersonSchema(locale: SupportedLocale) {
     url: `${siteUrl}/${locale}`,
 
     jobTitle: isFA
-      ? "توسعه‌دهنده نرم‌افزار و اپلیکیشن‌های هوش مصنوعی"
-      : "Software Developer and AI Application Developer",
+      ? "توسعه‌دهنده بک‌اند و فول‌استک (Node.js & Next.js)"
+      : "Backend & Full-Stack Developer (Node.js & Next.js)",
 
     description: seo[locale].description,
 
     knowsAbout: [
-      "HTML",
-      "CSS",
-      "JavaScript",
-      "TypeScript",
-      "React",
-      "Next.js",
       "Node.js",
       "Express.js",
+      "TypeScript",
+      "JavaScript",
       "MongoDB",
-      "Frontend Development",
+      "PostgreSQL",
+      "Prisma",
+      "Mongoose",
+      "REST API",
+      "JWT Authentication",
+      "Socket.IO",
+      "Docker",
+      "Next.js",
+      "React",
       "Backend Development",
-      "Web Performance",
-      "Web Security",
-      "Technical SEO",
-      "AI Applications",
-      "Large Language Models",
+      "Full-Stack Development",
+      "API Security",
     ],
 
     sameAs: [
-      "https://github.com/Kamyarkamali",
-      "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
+      "https://github.com/hamidreza-babazamani",
+      "https://www.linkedin.com/in/hamidreza-babazamani-49b7aa248",
+      "https://www.instagram.com/hamidreza_babazamani/",
     ],
   };
 }
@@ -157,22 +172,35 @@ export async function generateMetadata({
   const content = seo[currentLocale];
   const branding = await getPublicSiteBranding();
   const faviconUrl = branding.favicon?.url || "/favicon.ico";
+  const resolvedTitle = branding.title?.[currentLocale] || content.title;
+  const resolvedDescription =
+    branding.description?.[currentLocale] || content.description;
+  const resolvedSiteName =
+    branding.siteName?.[currentLocale] || "Hamidreza Babazamani";
+  const resolvedKeywords =
+    branding.keywords?.[currentLocale]?.length
+      ? branding.keywords[currentLocale]
+      : [...content.keywords];
+  const robotsIndex = branding.robots?.index ?? true;
+  const robotsFollow = branding.robots?.follow ?? true;
+  const ogImageUrl =
+    branding.openGraphImage?.url || branding.logo?.url || "/images/logo.png";
 
   return {
     metadataBase: new URL(siteUrl),
 
-    applicationName: "Hamidreza Babazamani Portfolio",
+    applicationName: `${resolvedSiteName} Portfolio`,
 
     title: {
-      default: content.title,
+      default: resolvedTitle,
       template: isFA
-        ? "%s | حمیدرضا بابازمانی"
-        : "%s | Hamidreza Babazamani",
+        ? `%s | ${resolvedSiteName === "Hamidreza Babazamani" ? "حمیدرضا بابازمانی" : resolvedSiteName}`
+        : `%s | ${resolvedSiteName}`,
     },
 
-    description: content.description,
+    description: resolvedDescription,
 
-    keywords: [...content.keywords],
+    keywords: resolvedKeywords,
 
     authors: [
       {
@@ -185,12 +213,12 @@ export async function generateMetadata({
     publisher: "Hamidreza Babazamani",
 
     robots: {
-      index: true,
-      follow: true,
+      index: robotsIndex,
+      follow: robotsFollow,
 
       googleBot: {
-        index: true,
-        follow: true,
+        index: robotsIndex,
+        follow: robotsFollow,
         "max-image-preview": "large",
         "max-snippet": -1,
         "max-video-preview": -1,
@@ -206,20 +234,22 @@ export async function generateMetadata({
         ? ["en_US"]
         : ["fa_IR"],
 
-      siteName: "Hamidreza Babazamani",
+      siteName: resolvedSiteName,
 
-      title: content.title,
-      description: content.description,
+      title: resolvedTitle,
+      description: resolvedDescription,
 
       images: [
         {
-          url: "/images/og-cover.jpg",
+          url: ogImageUrl,
           width: 1200,
           height: 630,
 
-          alt: isFA
-            ? "حمیدرضا بابازمانی - توسعه‌دهنده نرم‌افزار"
-            : "Hamidreza Babazamani - Software Developer",
+          alt:
+            branding.openGraphImage?.alt?.[currentLocale] ||
+            (isFA
+              ? "حمیدرضا بابازمانی - توسعه‌دهنده نرم‌افزار"
+              : "Hamidreza Babazamani - Software Developer"),
         },
       ],
     },
@@ -227,10 +257,10 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
 
-      title: content.title,
-      description: content.description,
+      title: resolvedTitle,
+      description: resolvedDescription,
 
-      images: ["/images/og-cover.jpg"],
+      images: [ogImageUrl],
     },
 
     icons: {
@@ -271,7 +301,7 @@ export default async function LocaleLayout({
     <html
       lang={currentLocale}
       dir={isFA ? "rtl" : "ltr"}
-      className={fontClassName}
+      className={`${fontClassName} ${iranYekan.variable} ${englishFont.variable}`}
       suppressHydrationWarning
     >
       <body>
@@ -287,13 +317,7 @@ export default async function LocaleLayout({
 
         <DarkModeProvider>
           <NextIntlClientProvider locale={currentLocale}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-            >
-              <Layout siteLogo={branding.logo}>{children}</Layout>
-            </ThemeProvider>
+            <Layout siteLogo={branding.logo}>{children}</Layout>
           </NextIntlClientProvider>
         </DarkModeProvider>
       </body>

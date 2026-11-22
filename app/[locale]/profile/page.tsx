@@ -38,7 +38,7 @@ const localize = (
 export default async function ProfilePage() {
   const locale = await getLocale();
   const fa = locale === "fa";
-  const profile = (await getPublicPortfolio()).profile;
+  const { profile, hero } = await getPublicPortfolio();
 
   if (!profile) {
     return (
@@ -56,6 +56,9 @@ export default async function ProfilePage() {
   const bio = localize(profile.bio, locale);
   const location = localize(profile.location, locale);
   const availability = localize(profile.availability, locale);
+  const jobTitle =
+    localize(hero?.jobTitle, locale) ||
+    (fa ? "توسعه‌دهنده بک‌اند و فول‌استک" : "Backend & Full-Stack Developer");
   const imageUrl = profile.image?.url;
 
   return (
@@ -96,7 +99,7 @@ export default async function ProfilePage() {
           {/* Profile Card */}
           <aside className="relative overflow-hidden rounded-[32px] border border-emerald-500/10 bg-gradient-to-b from-emerald-50 via-cyan-50/50 to-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)] dark:border-white/10 dark:from-emerald-500/[0.08] dark:via-cyan-500/[0.03] dark:to-white/[0.03] sm:p-8">
             <div className="absolute start-5 top-5 z-10 rounded-full border border-emerald-500/15 bg-white/90 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-900/90 dark:text-emerald-300">
-              {fa ? "توسعه‌دهنده وب" : "Web Developer"}
+              {fa ? "توسعه‌دهنده بک‌اند و فول‌استک" : "Backend Developer"}
             </div>
 
             {/* Profile Image */}
@@ -127,7 +130,7 @@ export default async function ProfilePage() {
               </h2>
 
               <p className="mt-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                Front-End Developer
+                {jobTitle}
               </p>
 
               {location && (

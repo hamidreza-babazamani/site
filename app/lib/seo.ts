@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export type SiteLocale = "fa" | "en";
 
 const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://hamidrezababazamani.ir"
 ).replace(/\/+$/, "");
 
 export function getLocalizedAlternates(

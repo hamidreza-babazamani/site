@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://kamyarkamali.ir"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://hamidrezababazamani.ir"
 ).replace(/\/+$/, "");
 
 export default function robots(): MetadataRoute.Robots {
@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/admin/", "/fa/admin/", "/en/admin/"],
+      disallow: ["/api/", "/admin", "/admin/", "/fa/admin/", "/en/admin/"],
     },
 
     sitemap: `${siteUrl}/sitemap.xml`,

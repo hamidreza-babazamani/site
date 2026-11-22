@@ -9,6 +9,12 @@ import { z } from "zod";
 import toast from "react-hot-toast";
 import { createContactMessage } from "@/lib/api/requests/contact";
 import type { PublicContactMethod } from "@/lib/services/public-portfolio";
+import {
+  DEFAULT_CONTACT_METHODS,
+  getContactIcon,
+  getContactIconBadgeClass,
+  resolveContactHref,
+} from "@/lib/contact-methods";
 
 import {
   ArrowUpRight,
@@ -17,15 +23,9 @@ import {
   LoaderCircle,
   Mail,
   MessageCircle,
-  Phone,
   Send,
   Sparkles,
 } from "lucide-react";
-
-import {
-  FaTelegramPlane,
-  FaWhatsapp,
-} from "react-icons/fa";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,18 +38,6 @@ import {
 } from "@/components/ui/select";
 
 import { cn } from "@/lib/utils";
-
-const safeContactHref = (item: PublicContactMethod): string | undefined => {
-  if (item.url) {
-    try {
-      const url = new URL(item.url);
-      return url.protocol === "http:" || url.protocol === "https:" ? url.href : undefined;
-    } catch { return undefined; }
-  }
-  if (item.type === "email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(item.value)) return `mailto:${item.value}`;
-  if (item.type === "phone" && /^[+\d][\d\s()-]{5,}$/.test(item.value)) return `tel:${item.value.replace(/\s/g, "")}`;
-  return undefined;
-};
 
 const SERVICE_OPTIONS = [
   {
@@ -170,11 +158,13 @@ const panelClass = cn(
 function Field({
   label,
   error,
+  errorId,
   htmlFor,
   children,
 }: {
   label: string;
   error?: string;
+  errorId?: string;
   htmlFor: string;
   children: React.ReactNode;
 }) {
@@ -195,6 +185,7 @@ function Field({
 
       {error && (
         <p
+          id={errorId}
           role="alert"
           className="text-xs text-rose-600 dark:text-rose-400"
         >
@@ -287,48 +278,28 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
     }
   };
 
-  const contactItems = initialContactMethods.map((item) => ({
+  const resolvedMethods =
+    initialContactMethods.length > 0
+      ? initialContactMethods
+      : DEFAULT_CONTACT_METHODS;
+
+  const contactItems = resolvedMethods
+    .map((item) => ({
       id: item._id,
+      type: item.type,
       title: item.label?.[locale as "fa" | "en"] || item.label?.en || item.value,
       value: item.value,
-      href: safeContactHref(item),
-      icon: item.type === "email" ? Mail : item.type === "phone" ? Phone : item.type === "telegram" ? FaTelegramPlane : item.type === "whatsapp" ? FaWhatsapp : MessageCircle,
-      external: Boolean(item.url),
-    })).filter((item): item is typeof item & { href: string } => Boolean(item.href));
-  /* const contactItems = [
-    {
-      id: "email",
-      title: t("contact.email"),
-      value: "kamyarkamali021@gmail.com",
-      href: "mailto:kamyarkamali021@gmail.com",
-      icon: Mail,
-      external: false,
-    },
-    {
-      id: "phone",
-      title: t("contact.title1"),
-      value: "+98 935 437 8110",
-      href: "tel:+989354378110",
-      icon: Phone,
-      external: false,
-    },
-    {
-      id: "telegram",
-      title: t("contact.telegram"),
-      value: "@KamDevJs",
-      href: "https://t.me/KamDevJs",
-      icon: FaTelegramPlane,
-      external: true,
-    },
-    {
-      id: "whatsapp",
-      title: t("contact.WhatsApp"),
-      value: "WhatsApp",
-      href: "https://wa.me/989354378110",
-      icon: FaWhatsapp,
-      external: true,
-    },
-  ]; */
+      href: resolveContactHref(item),
+      icon: getContactIcon(item.type),
+      external: Boolean(
+        item.url || !["email", "phone"].includes(item.type.toLowerCase()),
+      ),
+    }))
+    .filter((item): item is typeof item & { href: string } => Boolean(item.href));
+
+  const directEmail =
+    resolvedMethods.find((item) => item.type === "email" && item.value)?.value ||
+    "hamidrezababazamani@gmail.com";
 
   return (
     <section
@@ -481,6 +452,7 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
                   label={t("contact.name")}
                   htmlFor="contact-firstname"
                   error={errors.firstname?.message}
+                  errorId="contact-firstname-error"
                 >
                   <Input
                     id="contact-firstname"
@@ -787,19 +759,13 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
                         "
                       >
                         <span
-                          className="
+                          className={`
                             flex size-11 shrink-0
                             items-center justify-center
                             rounded-xl
-                            bg-slate-900/[0.04]
-                            text-slate-600
                             transition-colors
-                            group-hover:bg-emerald-500/10
-                            group-hover:text-emerald-700
-                            dark:bg-white/[0.06]
-                            dark:text-slate-300
-                            dark:group-hover:text-emerald-300
-                          "
+                            ${getContactIconBadgeClass(item.type)}
+                          `}
                         >
                           <Icon size={19} aria-hidden="true" />
                         </span>
@@ -892,7 +858,7 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
                 </p>
 
                 <a
-                  href="mailto:kamyarkamali021@gmail.com"
+                  href={`mailto:${directEmail}`}
                   className="
                     mt-5 inline-flex items-center gap-2
                     text-sm font-semibold

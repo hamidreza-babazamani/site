@@ -522,15 +522,6 @@ html.dark body {
     opacity: 0;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
 
 @keyframes skills-marquee {
   from {
@@ -548,29 +539,6 @@ html.dark body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-skills-marquee {
-    animation: none;
-  }
-}
-
-@keyframes heroTechFloating {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  50% {
-    transform: translate3d(0, -10px, 0);
-  }
-}
-
-.hero-tech-float {
-  animation-name: heroTechFloating;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-tech-float {
     animation: none;
   }
 }
@@ -655,5 +623,19 @@ html.dark body {
 @media (prefers-reduced-motion: reduce) {
   .hero-tech-float {
     animation: none !important;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
   }
 }

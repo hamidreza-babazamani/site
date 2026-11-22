@@ -6,8 +6,10 @@ export type ResourceKey =
   | "projects"
   | "technologies"
   | "experiences"
+  | "education"
   | "services"
   | "languages"
+  | "stats"
   | "contact-methods";
 export type Section = string;
 export type Item = Record<string, unknown> & { _id?: string };
@@ -56,11 +58,26 @@ export const defaultFor = (key: ResourceKey): Item => ({
         current: false,
       }
     : {}),
+  ...(key === "education"
+    ? {
+        institution: emptyLocalized(),
+        degree: emptyLocalized(),
+        fieldOfStudy: emptyLocalized(),
+        location: emptyLocalized(),
+        startDate: "",
+        endDate: "",
+        current: false,
+        description: emptyLocalized(),
+      }
+    : {}),
   ...(key === "services"
     ? { title: emptyLocalized(), description: emptyLocalized(), icon: "" }
     : {}),
   ...(key === "languages"
     ? { name: emptyLocalized(), level: emptyLocalized() }
+    : {}),
+  ...(key === "stats"
+    ? { label: emptyLocalized(), value: 0 }
     : {}),
   ...(key === "contact-methods"
     ? { type: "email", label: emptyLocalized(), value: "", url: "", icon: "" }

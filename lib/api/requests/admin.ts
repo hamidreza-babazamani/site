@@ -5,8 +5,10 @@ export type AdminResource =
   | "projects"
   | "technologies"
   | "experiences"
+  | "education"
   | "services"
   | "languages"
+  | "stats"
   | "contact-methods";
 
 export type AdminRequestInit = {

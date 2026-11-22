@@ -23,6 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { StartCollaborationButton } from "@/components/CollaborationModal";
 
 const navItems = [
   {
@@ -182,7 +183,7 @@ export default function MobileNavbar() {
                   dark:text-emerald-300
                 "
               >
-                K.
+                H.
               </span>
             </div>
 
@@ -364,6 +365,13 @@ export default function MobileNavbar() {
               );
             })}
           </ul>
+
+          <div className="mt-6">
+            <StartCollaborationButton
+              onAfterClick={closeMenu}
+              className="w-full"
+            />
+          </div>
         </nav>
 
         {/* Bottom */}

@@ -1,5 +1,9 @@
-import { FaGithub, FaLinkedinIn } from "react-icons/fa";
-
+import {
+  DEFAULT_CONTACT_METHODS,
+  getContactHoverClass,
+  getContactIcon,
+  resolveContactHref,
+} from "@/lib/contact-methods";
 import { cn } from "@/lib/utils";
 
 interface SocialProps {
@@ -7,18 +11,19 @@ interface SocialProps {
   iconStyle?: string;
 }
 
-const socialLinks = [
-  {
-    name: "GitHub",
-    href: "https://github.com/Kamyarkamali",
-    icon: FaGithub,
-  },
-  {
-    name: "LinkedIn",
-    href: "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
-    icon: FaLinkedinIn,
-  },
-] as const;
+const socialLinks = DEFAULT_CONTACT_METHODS.flatMap((item) => {
+  const href = resolveContactHref(item);
+  if (!href) return [];
+  return [
+    {
+      name: item.label?.en || item.type,
+      type: item.type,
+      href,
+      icon: getContactIcon(item.type),
+      external: !href.startsWith("mailto:") && !href.startsWith("tel:"),
+    },
+  ];
+});
 
 export default function Social({ containerStyle, iconStyle }: SocialProps) {
   return (
@@ -26,12 +31,12 @@ export default function Social({ containerStyle, iconStyle }: SocialProps) {
       aria-label="Social media profiles"
       className={cn("flex flex-wrap items-center gap-3", containerStyle)}
     >
-      {socialLinks.map(({ name, href, icon: Icon }) => (
+      {socialLinks.map(({ name, type, href, icon: Icon, external }) => (
         <a
           key={name}
           href={href}
-          target="_blank"
-          rel="noopener noreferrer"
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
           aria-label={`Visit my ${name} profile`}
           title={name}
           className={cn(
@@ -52,7 +57,6 @@ export default function Social({ containerStyle, iconStyle }: SocialProps) {
               hover:-translate-y-1
               hover:border-emerald-500/35
               hover:bg-emerald-500/10
-              hover:text-emerald-700
               hover:shadow-[0_8px_24px_rgba(16,185,129,0.12)]
 
               focus-visible:outline-none
@@ -68,13 +72,13 @@ export default function Social({ containerStyle, iconStyle }: SocialProps) {
 
               dark:hover:border-emerald-400/35
               dark:hover:bg-emerald-400/10
-              dark:hover:text-emerald-300
               dark:hover:shadow-[0_8px_25px_rgba(16,185,129,0.10)]
               dark:focus-visible:ring-offset-[#0c1118]
 
               motion-reduce:transform-none
               motion-reduce:transition-none
             `,
+            getContactHoverClass(type),
             iconStyle,
           )}
         >

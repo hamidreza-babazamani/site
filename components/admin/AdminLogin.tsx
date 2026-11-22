@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import type { ComponentType } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
 
 import {
   ArrowLeft,

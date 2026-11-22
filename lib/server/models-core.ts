@@ -406,8 +406,17 @@ export const ContactMessage =
     new Schema(
       {
         name: { type: String, required: true, trim: true, maxlength: 120 },
-        email: { type: String, required: true, trim: true, lowercase: true },
+        email: { type: String, trim: true, lowercase: true },
+        phone: { type: String, trim: true, maxlength: 40 },
         subject: { type: String, maxlength: 200 },
+        projectType: { type: String, trim: true, maxlength: 120 },
+        budget: { type: String, trim: true, maxlength: 120 },
+        timeline: { type: String, trim: true, maxlength: 120 },
+        source: {
+          type: String,
+          enum: ["contact_form", "collaboration_modal"],
+          default: "contact_form",
+        },
         message: { type: String, required: true, maxlength: 5000 },
         locale: { type: String, enum: ["fa", "en"], default: "en" },
         status: {

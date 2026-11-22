@@ -1,7 +1,9 @@
+import { Link } from "@/i18n/navigation";
 import Photo from "@/components/Photo";
 import Sochial from "@/components/Sochial";
 import Stats from "@/components/Stats";
 import { Button } from "@/components/ui/button";
+import { StartCollaborationButton } from "@/components/CollaborationModal";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPublicPortfolio } from "@/lib/services/public-portfolio";
 import { TfiDownload } from "react-icons/tfi";
@@ -31,7 +33,7 @@ async function HomePageTemplate() {
                 order-2 xl:order-1
                 w-full max-w-2xl
                 text-center
-                ${isPersian ? "text-right" : "xl:text-left"}
+                ${isPersian ? "xl:text-right" : "xl:text-left"}
               `}
             >
               {/* عنوان اصلی و نام */}
@@ -168,52 +170,84 @@ async function HomePageTemplate() {
                 </p>
               </div>
 
-              {/* دکمه دانلود و شبکه‌های اجتماعی */}
-              {(portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl) && (
-                <div
-                  className="
+              {/* دکمه دانلود، شروع همکاری و شبکه‌های اجتماعی */}
+              <div
+                className="
                   flex flex-col
                   xl:flex-row
+                  flex-wrap
                   items-center
-                  gap-8
+                  gap-4 sm:gap-6
                   mt-8
                 "
-                >
-                  <a
-                    href={
-                      portfolio.resumeAvailable
-                        ? "/api/public/resume/download"
-                        : portfolio.hero?.primaryCtaUrl
-                    }
-                    target={portfolio.resumeAvailable ? undefined : "_blank"}
-                    rel={
-                      portfolio.resumeAvailable
-                        ? undefined
-                        : "noopener noreferrer"
-                    }
-                    download={portfolio.resumeAvailable ? true : undefined}
-                  >
-                    <Button
-                      variant="default"
-                      size="lg"
-                      className="uppercase flex items-center gap-2"
-                    >
-                      <span>
-                        {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
-                          t("me.download")}
-                      </span>
-                      <TfiDownload className="text-xl" />
-                    </Button>
-                  </a>
+              >
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <StartCollaborationButton
+                    size="lg"
+                    variant={portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl ? "outline" : "default"}
+                  />
 
-                  <div className="mb-8 xl:mb-0 flex">
-                    <Sochial
-                      containerStyle="flex gap-6 items-center"
-                      iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-full flex justify-center items-center hover:bg-green-600 text-center text-base p-2 transition-all duration-500"
-                    />
-                  </div>
+                  {(portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl) && (
+                    portfolio.hasResumeFile ? (
+                      <a
+                        href="/api/public/resume/download"
+                        download
+                      >
+                        <Button
+                          variant="default"
+                          size="lg"
+                          className="uppercase flex items-center gap-2"
+                        >
+                          <span>
+                            {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
+                              t("me.download")}
+                          </span>
+                          <TfiDownload className="text-xl" />
+                        </Button>
+                      </a>
+                    ) : portfolio.publishedResume ? (
+                      <Link href="/resume/print?autoprint=1">
+                        <Button
+                          variant="default"
+                          size="lg"
+                          className="uppercase flex items-center gap-2"
+                        >
+                          <span>
+                            {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
+                              t("me.download")}
+                          </span>
+                          <TfiDownload className="text-xl" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <a
+                        href={portfolio.hero?.primaryCtaUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          variant="default"
+                          size="lg"
+                          className="uppercase flex items-center gap-2"
+                        >
+                          <span>
+                            {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
+                              t("me.download")}
+                          </span>
+                          <TfiDownload className="text-xl" />
+                        </Button>
+                      </a>
+                    )
+                  )}
                 </div>
-              )}
+
+                <div className="mb-8 xl:mb-0 flex">
+                  <Sochial
+                    containerStyle="flex gap-6 items-center"
+                    iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-full flex justify-center items-center hover:bg-green-600 text-center text-base p-2 transition-all duration-500"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* تصویر پروفایل - بدون تغییر */}
@@ -225,7 +259,7 @@ async function HomePageTemplate() {
       </div>
 
       {/* بخش‌های دیگر خارج از محدوده افکت */}
-      <Stats />
+      <Stats items={portfolio.stats} />
       <SkillsCircle skills={portfolio.technologies} locale={locale} />
     </section>
   );

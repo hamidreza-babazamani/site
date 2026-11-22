@@ -2,18 +2,38 @@ import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import HomePageTemplate from "@/templates/HomePageTemplate";
 import PageTransition from "@/components/PageTransition";
-// import StairTransition from "@/components/StairTransition";
+import { getPublicSiteBranding } from "@/lib/services/public-portfolio";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function generateMetadata({ params }: any): Promise<Metadata> {
-  const t = await getTranslations({
-    locale: params.locale,
-    namespace: "HomePage",
-  });
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const currentLocale = locale === "fa" ? "fa" : "en";
+  const [t, branding] = await Promise.all([
+    getTranslations({
+      locale: currentLocale,
+      namespace: "HomePage",
+    }),
+    getPublicSiteBranding(),
+  ]);
+
+  const title = branding.title?.[currentLocale] || t("meta.title");
+  const description =
+    branding.description?.[currentLocale] || t("meta.description");
 
   return {
-    title: t("meta.title"),
-    description: t("meta.description"),
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title,
+      description,
+    },
+    twitter: {
+      title,
+      description,
+    },
   };
 }
 

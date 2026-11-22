@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "admin:create": "tsx scripts/create-admin.ts",
-    "postbuild": "next-sitemap",
     "lint": "next lint"
   },
   "dependencies": {

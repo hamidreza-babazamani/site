@@ -22,6 +22,16 @@ const pages = [
     changeFrequency: "monthly" as const,
   },
   {
+    path: "/resume",
+    priority: 0.8,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/profile",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
+  {
     path: "/contact",
     priority: 0.6,
     changeFrequency: "monthly" as const,

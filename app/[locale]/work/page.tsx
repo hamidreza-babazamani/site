@@ -1,11 +1,9 @@
 import WorkePage from "@/components/WorkePage";
+import { getPublicPortfolio } from "@/lib/services/public-portfolio";
 
-function Work() {
-  return (
-    <>
-      <WorkePage />
-    </>
-  );
+async function Work() {
+  const { projects } = await getPublicPortfolio();
+  return <WorkePage initialProjects={projects} />;
 }
 
 export default Work;

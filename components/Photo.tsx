@@ -16,8 +16,8 @@ export default async function Photo({
     hero?.image?.alt?.[locale as "fa" | "en"] ||
     hero?.image?.alt?.en ||
     (locale === "fa"
-      ? "تصویر حمیدرضا بابازمانی، توسعه‌دهنده فرانت‌اند"
-      : "Portrait of Hamidreza Babazamani, Front-end Developer");
+      ? "تصویر حمیدرضا بابازمانی، توسعه‌دهنده بک‌اند و فول‌استک"
+      : "Portrait of Hamidreza Babazamani, Backend & Full-Stack Developer");
 
   return (
     <div

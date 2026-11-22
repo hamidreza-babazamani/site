@@ -1,8 +1,8 @@
 {
   "HomePage": {
     "meta": {
-      "title": "حمیدرضا بابازمانی | توسعه‌دهنده فرانت‌اند",
-      "description": "وب‌سایت رسمی حمیدرضا بابازمانی. توسعه‌دهنده حرفه‌ای فرانت‌اند با تمرکز بر React، Next.js و وردپرس."
+      "title": "حمیدرضا بابازمانی | توسعه‌دهنده بک‌اند و فول‌استک (Node.js & Next.js)",
+      "description": "وب‌سایت رسمی حمیدرضا بابازمانی، توسعه‌دهنده بک‌اند و فول‌استک متخصص در Node.js، Express.js، TypeScript، MongoDB، PostgreSQL و Next.js با تمرکز بر طراحی APIهای امن و سیستم‌های بلادرنگ."
     },
     "title": "سلام دنیا",
     "about": "برو به صفحه درباره ما",
@@ -12,7 +12,7 @@
       "light": "روشن",
       "system": "سیستم"
     },
-    "worke": "همکاری",
+    "worke": "شروع همکاری",
     "links": {
       "home": "صفحه اصلی",
       "services": "خدمات",
@@ -22,10 +22,10 @@
       "contact": "تماس"
     },
     "me": {
-      "how": "برنامه نویس فرانت اند",
+      "how": "توسعه‌دهنده بک‌اند و فول‌استک (Node.js & Next.js)",
       "me": "من",
       "name": "حمیدرضا بابازمانی",
-      "skill": "من یک توسعه‌دهنده فرانت‌اند هستم با تخصص در جاوااسکریپت، ری‌اکت، نکست جی‌اس، نود جی‌اس و اکسپرس. وب‌سایت‌ها و اپلیکیشن‌هایی سریع، واکنش‌گرا و بهینه برای موتورهای جستجو طراحی و توسعه می‌کنم تا تجربه کاربری حرفه‌ای ارائه دهند.",
+      "skill": "توسعه‌دهنده بک‌اند و فول‌استک با تمرکز بر طراحی REST APIهای امن و مقیاس‌پذیر، سیستم‌های احراز هویت (JWT، OTP)، ارتباطات بلادرنگ (Socket.IO) و وب‌اپلیکیشن‌های مدرن با Node.js، Express.js، TypeScript، MongoDB، PostgreSQL و Next.js.",
       "download": "دانلود رزومه"
     },
     "stats": {
@@ -77,13 +77,13 @@
         "fullName": "نام کامل",
         "fullNameValue": "حمیدرضا بابازمانی",
         "email": "ایمیل",
-        "emailValue": "kamyarkamali021@gmail.com",
+        "emailValue": "hamidrezababazamani@gmail.com",
         "phone": "شماره تماس",
-        "phoneValue": "09354378110",
+        "phoneValue": "09306691916",
         "telegram": "تلگرام",
-        "telegramValue": "@kamyar_k",
+        "telegramValue": "09306691916",
         "linkedin": "لینکدین",
-        "linkedinValue": "linkedin.com/in/kamyar-kamali",
+        "linkedinValue": "linkedin.com/in/hamidreza-babazamani-49b7aa248",
         "languages": "زبان‌ها",
         "languagesValue": "انگلیسی، فارسی",
         "location": "موقعیت مکانی",
@@ -179,7 +179,7 @@
       "contact": "تماس با من",
       "project": "پروژه ها",
       "name": "حمیدرضا بابازمانی",
-      "desc": "Front-End Engineer | React.js & Next.js | TypeScript | AI Enthusiast",
+      "desc": "Backend & Full-Stack Developer | Node.js & Express.js | TypeScript | MongoDB & PostgreSQL | Next.js",
       "end": "نوشته شده با ❤️ توسط حمیدرضا بابازمانی"
     }
   }

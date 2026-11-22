@@ -34,6 +34,8 @@ export const fail = (error: unknown) => {
     return json({ success: false, message: "Resource already exists" }, 409);
   if ((error as { name?: string })?.name === "ValidationError")
     return json({ success: false, message: "Validation failed" }, 400);
+  if ((error as { name?: string })?.name === "CastError")
+    return json({ success: false, message: "Invalid resource identifier" }, 400);
   console.error(error);
   return json({ success: false, message: "Internal server error" }, 500);
 };
@@ -65,7 +67,15 @@ export const validateSameOrigin = (
   let expected: string;
   let received: string;
   try {
-    expected = new URL(request.url).origin;
+    const requestUrl = new URL(request.url);
+    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = forwardedHost || request.headers.get("host")?.split(",")[0]?.trim();
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const protocol =
+      forwardedProto === "http" || forwardedProto === "https"
+        ? `${forwardedProto}:`
+        : requestUrl.protocol;
+    expected = host ? new URL(`${protocol}//${host}`).origin : requestUrl.origin;
     received = new URL(origin).origin;
   } catch {
     throw new ApiError(403, "Invalid origin");
@@ -205,10 +215,42 @@ export const validate = (
     )
       errors[key] = `${key} must contain non-empty fa and en strings`;
   if (resource === "contactMessage") {
-    if (typeof input.name !== "string" || !input.name.trim())
+    if (
+      typeof input.name !== "string" ||
+      !input.name.trim() ||
+      input.name.trim().length > 120
+    )
       errors.name = "name is required";
-    if (!isEmail(input.email)) errors.email = "email must be valid";
-    if (typeof input.message !== "string" || !input.message.trim())
+    const hasEmail = typeof input.email === "string" && input.email.trim() !== "";
+    const hasPhone = typeof input.phone === "string" && input.phone.trim() !== "";
+    if (!hasEmail && !hasPhone)
+      errors.email = "email or phone is required";
+    if (hasEmail && !isEmail(String(input.email).trim()))
+      errors.email = "email must be valid";
+    if (
+      hasPhone &&
+      !/^[+\d][\d\s().-]{5,30}$/.test(String(input.phone).trim())
+    )
+      errors.phone = "phone must be valid";
+    for (const key of ["projectType", "budget", "timeline", "subject"] as const) {
+      if (
+        input[key] !== undefined &&
+        input[key] !== null &&
+        (typeof input[key] !== "string" || input[key].trim().length > 200)
+      )
+        errors[key] = `${key} must be a valid string`;
+    }
+    if (
+      input.source !== undefined &&
+      input.source !== "contact_form" &&
+      input.source !== "collaboration_modal"
+    )
+      errors.source = "invalid message source";
+    if (
+      typeof input.message !== "string" ||
+      !input.message.trim() ||
+      input.message.trim().length > 5000
+    )
       errors.message = "message is required";
     if (
       input.locale !== undefined &&
@@ -260,7 +302,21 @@ export const validate = (
       !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug.trim())
     )
       errors.slug = "slug must contain lowercase letters, numbers, and hyphens";
+    if (
+      input.technologies !== undefined &&
+      (!Array.isArray(input.technologies) ||
+        input.technologies.some((item) => typeof item !== "string"))
+    )
+      errors.technologies = "technologies must be an array of strings";
+    if (input.featured !== undefined && typeof input.featured !== "boolean")
+      errors.featured = "featured must be a boolean";
   }
+  if (
+    input.isVisible !== undefined &&
+    typeof input.isVisible !== "boolean" &&
+    resource !== "contactMessage"
+  )
+    errors.isVisible = "isVisible must be a boolean";
   if (resource === "experience") {
     if (
       required("startDate") &&
@@ -276,6 +332,13 @@ export const validate = (
         Number.isNaN(Date.parse(input.endDate)))
     )
       errors.endDate = "endDate must be a valid date";
+    if (
+      typeof input.startDate === "string" &&
+      typeof input.endDate === "string" &&
+      input.endDate.trim() !== "" &&
+      Date.parse(input.endDate) < Date.parse(input.startDate)
+    )
+      errors.endDate = "endDate must not be before startDate";
     if (input.current === true && input.endDate)
       errors.endDate = "endDate must be empty for a current experience";
   }

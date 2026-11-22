@@ -1,13 +1,13 @@
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import MobileNavbar from "@/components/MobileNavbar";
 import NavDecks from "@/components/NavDecks";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
+import { StartCollaborationButton } from "@/components/CollaborationModal";
 import type { PublicMedia } from "@/lib/services/public-portfolio";
 
 function Header({ siteLogo }: { siteLogo?: PublicMedia }) {
@@ -76,13 +76,14 @@ function Header({ siteLogo }: { siteLogo?: PublicMedia }) {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden min-w-0 items-center gap-6 xl:flex 2xl:gap-8">
+        <div className="hidden min-w-0 items-center gap-6 xl:flex 2xl:gap-8">
           <NavDecks />
 
-          <Link href="/contact" className="shrink-0">
-            <Button>{t("worke")}</Button>
-          </Link>
-        </nav>
+          <StartCollaborationButton
+            label={t("worke")}
+            className="shrink-0"
+          />
+        </div>
       </div>
     </header>
   );

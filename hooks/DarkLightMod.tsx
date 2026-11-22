@@ -4,12 +4,7 @@ import { Mode } from "@/types/type";
 import { useCallback, useEffect, useState } from "react";
 
 function useDarkMode() {
-  const [mode, setMode] = useState<Mode>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("theme") as Mode) || "system";
-    }
-    return "system";
-  });
+  const [mode, setMode] = useState<Mode>("system");
 
   const applyTheme = useCallback((isDark: boolean) => {
     if (isDark) {
@@ -19,32 +14,41 @@ function useDarkMode() {
     }
   }, []);
 
-  const changeMode = useCallback(
-    (newMode: Mode) => {
-      setMode(newMode);
-      localStorage.setItem("theme", newMode);
-      if (newMode === "system") {
+  const syncMode = useCallback(
+    (targetMode: Mode) => {
+      if (targetMode === "system") {
         const systemPrefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)"
         ).matches;
         applyTheme(systemPrefersDark);
       } else {
-        applyTheme(newMode === "dark");
+        applyTheme(targetMode === "dark");
       }
     },
     [applyTheme]
   );
 
+  const changeMode = useCallback(
+    (newMode: Mode) => {
+      setMode(newMode);
+      localStorage.setItem("theme", newMode);
+      syncMode(newMode);
+    },
+    [syncMode]
+  );
+
   useEffect(() => {
-    // وقتی کامپوننت mount میشه تم رو اعمال کن
-    if (mode === "system") {
-      const systemPrefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      applyTheme(systemPrefersDark);
-    } else {
-      applyTheme(mode === "dark");
-    }
+    const saved = localStorage.getItem("theme");
+    const resolved: Mode =
+      saved === "light" || saved === "dark" || saved === "system"
+        ? saved
+        : "system";
+    setMode(resolved);
+    syncMode(resolved);
+  }, [syncMode]);
+
+  useEffect(() => {
+    syncMode(mode);
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -59,7 +63,7 @@ function useDarkMode() {
     return () => {
       mediaQuery.removeEventListener("change", handleSystemThemeChange);
     };
-  }, [mode, applyTheme]);
+  }, [mode, applyTheme, syncMode]);
 
   return { mode, changeMode };
 }

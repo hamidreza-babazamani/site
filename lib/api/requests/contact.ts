@@ -3,8 +3,13 @@ import type { ApiEnvelope } from "@/lib/api/types";
 
 export type ContactMessagePayload = {
   name: string;
-  email: string;
+  email?: string;
+  phone?: string;
   subject?: string;
+  projectType?: string;
+  budget?: string;
+  timeline?: string;
+  source?: "contact_form" | "collaboration_modal";
   message: string;
   locale?: "fa" | "en";
 };

@@ -244,7 +244,7 @@ export default async function ServicesComponent() {
                     </div>
 
                     <Link
-                      href="/services"
+                      href="/contact"
                       aria-label={title}
                       className="
                       relative flex size-11

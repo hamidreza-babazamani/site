@@ -1,42 +1,29 @@
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import {
-  FaGithub,
-  FaInstagram,
-  FaLinkedinIn,
-  FaTelegramPlane,
-} from "react-icons/fa";
-import { ArrowUpRight, Heart } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import type { PublicMedia } from "@/lib/services/public-portfolio";
+import {
+  DEFAULT_CONTACT_METHODS,
+  getContactHoverClass,
+  getContactIcon,
+  resolveContactHref,
+} from "@/lib/contact-methods";
 
-const socialLinks = [
-  {
-    name: "GitHub",
-    href: "https://github.com/Kamyarkamali",
-    icon: FaGithub,
-    hover: "hover:text-slate-900 dark:hover:text-white",
-  },
-  {
-    name: "LinkedIn",
-    href: "https://www.linkedin.com/in/kamyar-kamali-671a5822b/",
-    icon: FaLinkedinIn,
-    hover: "hover:text-[#0A66C2] dark:hover:text-[#70B5F9]",
-  },
-  {
-    name: "Telegram",
-    href: "https://t.me/KamDevJs",
-    icon: FaTelegramPlane,
-    hover: "hover:text-[#229ED9] dark:hover:text-[#55BDEA]",
-  },
-  {
-    name: "Instagram",
-    href: "https://www.instagram.com/kamyar_parsi0211/",
-    icon: FaInstagram,
-    hover: "hover:text-[#E1306C] dark:hover:text-[#F472B6]",
-  },
-];
+const socialLinks = DEFAULT_CONTACT_METHODS.flatMap((item) => {
+  const href = resolveContactHref(item);
+  if (!href) return [];
+  return [
+    {
+      name: item.label?.en || item.type,
+      href,
+      icon: getContactIcon(item.type),
+      hover: getContactHoverClass(item.type),
+      external: !href.startsWith("mailto:") && !href.startsWith("tel:"),
+    },
+  ];
+});
 
 export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
   const t = useTranslations("HomePage");
@@ -124,18 +111,18 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
         >
           {/* Brand */}
           <div className="max-w-md">
-            {siteLogo?.url && (
-              <Link
-                href="/"
-                aria-label="Hamidreza Babazamani - Home"
-                className="
-                  group inline-flex items-center gap-3
-                  rounded-xl
-                  focus-visible:outline-2
-                  focus-visible:outline-offset-4
-                  focus-visible:outline-emerald-500
-                "
-              >
+            <Link
+              href="/"
+              aria-label="Hamidreza Babazamani - Home"
+              className="
+                group inline-flex items-center gap-3
+                rounded-xl
+                focus-visible:outline-2
+                focus-visible:outline-offset-4
+                focus-visible:outline-emerald-500
+              "
+            >
+              {siteLogo?.url && (
                 <Image
                   src={siteLogo.url}
                   alt={siteLogo.alt?.[locale as "fa" | "en"] || "Website logo"}
@@ -151,6 +138,7 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
                     dark:brightness-110
                   "
                 />
+              )}
 
               <h2
                 className="
@@ -165,8 +153,7 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
               >
                 {t("footer.name")}
               </h2>
-              </Link>
-            )}
+            </Link>
 
             <p
               className="
@@ -267,8 +254,8 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
                   <a
                     key={social.name}
                     href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target={social.external ? "_blank" : undefined}
+                    rel={social.external ? "noopener noreferrer" : undefined}
                     aria-label={social.name}
                     title={social.name}
                     className={`
@@ -306,7 +293,7 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
             </div>
 
             <a
-              href="https://github.com/Kamyarkamali"
+              href="https://github.com/hamidreza-babazamani"
               target="_blank"
               rel="noopener noreferrer"
               className="
@@ -319,7 +306,7 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
                 dark:hover:text-emerald-300
               "
             >
-              <span>github.com/Kamyarkamali</span>
+              <span>github.com/hamidreza-babazamani</span>
               <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           </div>

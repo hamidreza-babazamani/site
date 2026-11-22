@@ -1,8 +1,8 @@
 {
   "HomePage": {
     "meta": {
-      "title": "Hamidreza Babazamani | Front-end Developer",
-      "description": "Official website of Hamidreza Babazamani. A professional front-end developer focused on React, Next.js, and WordPress."
+      "title": "Hamidreza Babazamani | Backend & Full-Stack Developer (Node.js & Next.js)",
+      "description": "Official portfolio of Hamidreza Babazamani, a Backend & Full-Stack Developer specializing in Node.js, Express.js, TypeScript, MongoDB, PostgreSQL, Docker, and Next.js."
     },
     "title": "Hello world",
     "about": "Go to the About page",
@@ -12,20 +12,20 @@
       "light": "Light",
       "system": "System"
     },
-    "worke": "Collaboration",
+    "worke": "Start Collaboration",
     "links": {
       "home": "Home",
       "services": "Services",
       "resume": "Skills",
-      "profile": "Aboute Me",
+      "profile": "About Me",
       "work": "Portfolio",
       "contact": "Contact"
     },
     "me": {
-      "how": "Front-end Developer",
+      "how": "Backend & Full-Stack Developer (Node.js & Next.js)",
       "me": "I'm",
       "name": "Hamidreza Babazamani",
-      "skill": "I am a front-end developer specializing in JavaScript, React, Next.js, Node.js, and Express. I build fast, responsive, and SEO-optimized websites and applications to deliver a professional and smooth user experience.",
+      "skill": "Backend & Full-Stack Developer specializing in reliable REST APIs, secure authentication systems, real-time messaging (Socket.IO, Ably), and modern web apps using Node.js, Express.js, TypeScript, MongoDB, PostgreSQL, Docker, and Next.js.",
       "download": "Download Resume"
     },
     "stats": {
@@ -76,13 +76,13 @@
         "fullName": "Full Name",
         "fullNameValue": "Hamidreza Babazamani",
         "email": "Email",
-        "emailValue": "kamyarkamali021@gmail.com",
+        "emailValue": "hamidrezababazamani@gmail.com",
         "phone": "Phone",
-        "phoneValue": "09354378110",
+        "phoneValue": "09306691916",
         "telegram": "Telegram",
-        "telegramValue": "@kamyar_k",
+        "telegramValue": "09306691916",
         "linkedin": "LinkedIn",
-        "linkedinValue": "linkedin.com/in/kamyar-kamali",
+        "linkedinValue": "linkedin.com/in/hamidreza-babazamani-49b7aa248",
         "languages": "Languages",
         "languagesValue": "English, Persian",
         "location": "Location",
@@ -93,14 +93,14 @@
         "experienceValue": "4 years",
         "techStack": "Tech Stack",
         "techStackValue": "React, Next.js, JavaScript, WordPress, Tailwind",
-        "title": "My Ecperience",
+        "title": "My Experience",
         "desc": "I’m Hamidreza Babazamani, a front-end developer specialized in JavaScript, React, Next.js, WordPress, and Elementor. I create fast, responsive, and user-friendly websites that deliver exceptional user experiences.",
         "company1": "Habibi Hello",
         "position1": "Front-End Developer and Designer",
         "company2": "Arkam",
         "position2": "Front-End Developer",
         "company3": "Freelancer",
-        "position3": "Front-End Developer - Wordprees Developer",
+        "position3": "Front-End Developer - WordPress Developer",
         "myskills": "My skills include front-end development using JavaScript, React, and Next.js, designing and developing WordPress websites with Elementor, and optimizing user interfaces for better user experience.",
         "About": "About Me",
         "Education": "Education",
@@ -137,8 +137,8 @@
       "telegram": "Telegram",
       "WhatsApp": "WhatsApp",
       "work": "Let's work together",
-      "name": "FristName",
-      "last": "LastName",
+      "name": "First Name",
+      "last": "Last Name",
       "service": "My Services",
       "front": "Front-end development (HTML, CSS, JavaScript, React)",
       "shoping": "Design and implementation of e-commerce websites (front-end)",
@@ -147,9 +147,9 @@
       "messege": "Type Your message Here",
       "send": "Send",
       "moshaver": "Free Consultation, Your Key to Success",
-      "sucsend": "successMessage",
-      "errorMessage": "errorMessage",
-      "sending": "sending...",
+      "sucsend": "Message sent successfully!",
+      "errorMessage": "An error occurred. Please try again.",
+      "sending": "Sending...",
       "validname": "Please enter the name."
     },
     "validations": {
@@ -175,7 +175,7 @@
       "contact": "Contact Me",
       "project": "Projects",
       "name": "Hamidreza Babazamani",
-      "desc": "Front-End Engineer | React.js & Next.js | TypeScript | AI Enthusiast",
+      "desc": "Backend & Full-Stack Developer | Node.js & Express.js | TypeScript | MongoDB & PostgreSQL | Next.js",
       "end": "Written with ❤️ by Hamidreza Babazamani"
     }
   }

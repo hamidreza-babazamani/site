@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
@@ -19,6 +19,9 @@ import {
   ClipboardList,
   ExternalLink,
   FileText,
+  GraduationCap,
+  Hash,
+  HelpCircle,
   Languages,
   LayoutDashboard,
   LibraryBig,
@@ -41,6 +44,7 @@ import toast, { Toaster } from "react-hot-toast";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 import HeroTechnologyEcosystemEditor from "@/components/admin/HeroTechnologyEcosystemEditor";
+import ResumeBuilder from "@/components/admin/ResumeBuilder";
 import { requestAdmin } from "@/lib/api/requests/admin";
 import type { HeroTechnologyEcosystemConfig } from "@/lib/server/hero-technology-config";
 
@@ -49,8 +53,10 @@ type ResourceKey =
   | "projects"
   | "technologies"
   | "experiences"
+  | "education"
   | "services"
   | "languages"
+  | "stats"
   | "contact-methods";
 type Section = string;
 type MediaItem = {
@@ -64,30 +70,102 @@ type DynamicValue = ReturnType<JSON["parse"]>;
 type Item = Record<string, DynamicValue> & { _id?: string };
 
 const labels: Record<string, { en: string; fa: string; icon: LucideIcon }> = {
-  "site-settings": { en: "Site settings", fa: "تنظیمات سایت", icon: Settings2 },
+  "site-settings": { en: "Site & SEO settings", fa: "تنظیمات سایت و سئو", icon: Settings2 },
   overview: { en: "Overview", fa: "نمای کلی", icon: LayoutDashboard },
   projects: { en: "Projects", fa: "پروژه‌ها", icon: BriefcaseBusiness },
   technologies: { en: "Technologies", fa: "مهارت‌ها", icon: Zap },
   experiences: { en: "Experience", fa: "سوابق کاری", icon: ClipboardList },
+  education: { en: "Education", fa: "تحصیلات", icon: GraduationCap },
   services: { en: "Services", fa: "خدمات", icon: Sparkles },
   languages: { en: "Languages", fa: "زبان‌ها", icon: Languages },
+  stats: { en: "Stats", fa: "آمارها", icon: Hash },
   "contact-methods": {
     en: "Contact methods",
     fa: "راه‌های ارتباطی",
     icon: Send,
   },
-  hero: { en: "Hero section", fa: "بخش معرفی", icon: LibraryBig },
-  profile: { en: "Profile", fa: "پروفایل", icon: UserRound },
-  resume: { en: "Resume", fa: "رزومه", icon: FileText },
-  messages: { en: "Messages", fa: "پیام‌ها", icon: Mail },
+  hero: { en: "Hero & Intro", fa: "بخش معرفی اصلی (Hero)", icon: LibraryBig },
+  profile: { en: "My Profile", fa: "پروفایل و درباره من", icon: UserRound },
+  resume: { en: "Resume Builder & PDF", fa: "رزومه‌ساز و PDF", icon: FileText },
+  messages: { en: "Messages & Requests", fa: "پیام‌ها و درخواست‌های همکاری", icon: Mail },
+};
+const sectionHelp: Record<string, { fa: string; en: string }> = {
+  overview: {
+    fa: "نمای کلی آمار محتواهای ثبت‌شده و دسترسی سریع به بخش‌های پرکاربرد سایت.",
+    en: "Overview of your stored content counts and quick shortcuts to the main sections.",
+  },
+  messages: {
+    fa: "پیام‌های ارسال‌شده از صفحه «تماس با من» و درخواست‌های «شروع همکاری» در اینجا نمایش داده می‌شوند.",
+    en: "Messages from the Contact page and Start Collaboration modal appear here.",
+  },
+  hero: {
+    fa: "بخش اول صفحه اصلی سایت: تیتر شغلی، عنوان اصلی، توضیح کوتاه، دکمه دانلود/CTA، عکس اصلی و آیکون‌های شناور اطراف عکس.",
+    en: "Controls the first screen of your Home page: headline, job title, intro description, CTA button, portrait, and floating tech icons.",
+  },
+  profile: {
+    fa: "اطلاعات هویتی و صفحه «درباره من» (/profile): نام شما، بیوگرافی کامل، شهر، وضعیت همکاری و عکس پروفایل.",
+    en: "Controls your personal identity and About Me (/profile) page: name, full bio, location, availability, and portrait.",
+  },
+  resume: {
+    fa: "عنوان و فایل PDF رزومه قابل دانلود از دکمه صفحه اصلی و صفحه /resume.",
+    en: "Sets the resume title and downloadable PDF file used on the Home and /resume pages.",
+  },
+  "contact-methods": {
+    fa: "شماره تماس، ایمیل، تلگرام، واتساپ و سایر لینک‌ها که در صفحه «تماس با من» و دکمه شناور پایین صفحه نمایش داده می‌شوند.",
+    en: "Phone, email, Telegram, WhatsApp, and links shown on the Contact page and floating contact button.",
+  },
+  projects: {
+    fa: "نمونه‌کارها و پروژه‌هایی که در صفحه «نمونه‌کارها» (/work) نمایش داده می‌شوند (پروژه منتخب در بالای صفحه قرار می‌گیرد).",
+    en: "Portfolio projects displayed on the /work page (featured items appear at the top).",
+  },
+  technologies: {
+    fa: "مهارت‌ها و ابزارهای فنی که در نوار متحرک صفحه اصلی، بخش مهارت‌های رزومه (/resume) و اکوسیستم Hero استفاده می‌شوند.",
+    en: "Skills and tools shown in the Home page marquee, /resume skills grid, and Hero tech ecosystem.",
+  },
+  services: {
+    fa: "لیست خدماتی که ارائه می‌دهید و در صفحه «خدمات» (/services) نمایش داده می‌شوند.",
+    en: "Services you offer, displayed on the /services page.",
+  },
+  experiences: {
+    fa: "سوابق کاری و شرکت‌هایی که در آن فعالیت داشته‌اید (در صفحه /resume نمایش داده می‌شود).",
+    en: "Your work history and roles displayed on the /resume page.",
+  },
+  education: {
+    fa: "مدارک و سوابق تحصیلی شما که در صفحه /resume نمایش داده می‌شوند.",
+    en: "Your academic background and degrees displayed on the /resume page.",
+  },
+  languages: {
+    fa: "زبان‌هایی که مسلط هستید و سطح آن‌ها در صفحه /resume.",
+    en: "Spoken languages and proficiency levels shown on the /resume page.",
+  },
+  stats: {
+    fa: "کارت‌های آماری شمارنده‌دار صفحه اصلی (مثل سال تجربه، تعداد پروژه‌ها و ...).",
+    en: "Animated counter statistics cards shown on the Home page.",
+  },
+  "site-settings": {
+    fa: "تنظیمات عمومی، سئو (عنوان تب مرورگر، توضیحات گوگل، کلمات کلیدی، اجازه ایندکس) و برندینگ ظاهری سایت (لوگو، فاوآیکون، تصویر شبکه‌های اجتماعی و تصویر جایگزین).",
+    en: "Global website & SEO settings (browser title, meta description, keywords, robots) plus branding assets (logo, favicon, OG image, fallback image).",
+  },
 };
 const resourceKeys: ResourceKey[] = [
   "projects",
   "technologies",
   "experiences",
+  "education",
   "services",
   "languages",
+  "stats",
   "contact-methods",
+];
+const personalSections: Section[] = ["hero", "profile", "resume", "contact-methods"];
+const portfolioResourceSections: ResourceKey[] = [
+  "projects",
+  "technologies",
+  "services",
+  "experiences",
+  "education",
+  "languages",
+  "stats",
 ];
 const emptyLocalized = (): Localized => ({ fa: "", en: "" });
 const localized = (value: unknown): Localized => ({
@@ -131,11 +209,26 @@ const defaultFor = (key: ResourceKey): Item => ({
         current: false,
       }
     : {}),
+  ...(key === "education"
+    ? {
+        institution: emptyLocalized(),
+        degree: emptyLocalized(),
+        fieldOfStudy: emptyLocalized(),
+        location: emptyLocalized(),
+        startDate: "",
+        endDate: "",
+        current: false,
+        description: emptyLocalized(),
+      }
+    : {}),
   ...(key === "services"
     ? { title: emptyLocalized(), description: emptyLocalized(), icon: "" }
     : {}),
   ...(key === "languages"
     ? { name: emptyLocalized(), level: emptyLocalized() }
+    : {}),
+  ...(key === "stats"
+    ? { label: emptyLocalized(), value: 0 }
     : {}),
   ...(key === "contact-methods"
     ? { type: "email", label: emptyLocalized(), value: "", url: "", icon: "" }
@@ -444,6 +537,77 @@ function ImageDropzone({
   );
 }
 
+function HelpTip({
+  text: helpText,
+  label,
+  placement = "top",
+  align = "center",
+}: {
+  text: string;
+  label?: string;
+  placement?: "top" | "bottom";
+  align?: "center" | "end";
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const positionClass = [
+    placement === "bottom" ? "top-full mt-2" : "bottom-full mb-2",
+    align === "end"
+      ? "end-0 w-56"
+      : "start-1/2 w-64 -translate-x-1/2 rtl:translate-x-1/2",
+  ].join(" ");
+
+  return (
+    <span
+      ref={wrapRef}
+      className="relative inline-flex items-center align-middle"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((current) => !current);
+        }}
+        aria-label={label || helpText}
+        aria-expanded={open}
+        className="inline-flex size-5 items-center justify-center rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-600 transition hover:bg-emerald-500/20 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:text-emerald-300"
+      >
+        <HelpCircle size={12} aria-hidden="true" />
+      </button>
+      {open && (
+        <span
+          role="tooltip"
+          className={`absolute z-50 rounded-xl border border-emerald-500/20 bg-slate-900 px-3 py-2 text-start text-xs font-normal leading-5 text-slate-100 shadow-xl dark:border-white/15 dark:bg-[#192432] ${positionClass}`}
+        >
+          {helpText}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function LocalizedField({
   label,
   value,
@@ -451,6 +615,7 @@ function LocalizedField({
   multiline = false,
   error,
   name,
+  help,
 }: {
   label: string;
   value: Localized;
@@ -458,13 +623,17 @@ function LocalizedField({
   multiline?: boolean;
   error?: string;
   name?: string;
+  help?: string;
 }) {
   const Control = multiline ? "textarea" : "input";
   return (
     <div className="space-y-2">
-      <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
+      <div className="flex items-center gap-1.5">
+        <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+          {label}
+        </label>
+        {help && <HelpTip text={help} />}
+      </div>
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="relative">
           <span className="absolute end-3 top-3 text-[10px] font-bold uppercase text-slate-400">
@@ -518,6 +687,7 @@ function Field({
   placeholder = "",
   error,
   name,
+  help,
 }: {
   label: string;
   value: string | number | undefined;
@@ -526,11 +696,13 @@ function Field({
   placeholder?: string;
   error?: string;
   name?: string;
+  help?: string;
 }) {
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
+      <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+        <span>{label}</span>
+        {help && <HelpTip text={help} />}
       </span>
       <input
         id={name}
@@ -561,10 +733,12 @@ function Toggle({
   label,
   value,
   onChange,
+  help,
 }: {
   label: string;
   value: boolean;
   onChange: (value: boolean) => void;
+  help?: string;
 }) {
   return (
     <button
@@ -572,9 +746,12 @@ function Toggle({
       onClick={() => onChange(!value)}
       role="switch"
       aria-checked={value}
-      className="flex min-h-11 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-start text-sm transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-white/10 dark:bg-white/[0.04]"
+      className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-start text-sm transition-colors focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-white/10 dark:bg-white/[0.04]"
     >
-      <span>{label}</span>
+      <span className="flex items-center gap-1.5">
+        <span>{label}</span>
+        {help && <HelpTip text={help} />}
+      </span>
       <span
         className={`relative h-6 w-11 rounded-full transition ${value ? "bg-emerald-400" : "bg-slate-300 dark:bg-slate-700"}`}
       >
@@ -1364,11 +1541,101 @@ function ResourceEditor({
           />
         </>
       );
+    if (resource === "education")
+      return (
+        <>
+          <LocalizedField
+            label={fa ? "موسسه / دانشگاه" : "Institution"}
+            value={localized(form.institution)}
+            onChange={(v) => set("institution", v)}
+            name="institution"
+            error={fieldError("institution")}
+          />
+          <LocalizedField
+            label={fa ? "مقطع تحصیلی" : "Degree"}
+            value={localized(form.degree)}
+            onChange={(v) => set("degree", v)}
+            name="degree"
+            error={fieldError("degree")}
+          />
+          <LocalizedField
+            label={fa ? "رشته تحصیلی (اختیاری)" : "Field of study (optional)"}
+            value={localized(form.fieldOfStudy)}
+            onChange={(v) => set("fieldOfStudy", v)}
+            name="fieldOfStudy"
+            error={fieldError("fieldOfStudy")}
+          />
+          <LocalizedField
+            label={fa ? "مکان (اختیاری)" : "Location (optional)"}
+            value={localized(form.location)}
+            onChange={(v) => set("location", v)}
+            name="location"
+            error={fieldError("location")}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label={fa ? "شروع" : "Start date"}
+              type="date"
+              value={String(form.startDate || "").slice(0, 10)}
+              onChange={(v) => set("startDate", v)}
+              name="startDate"
+              error={fieldError("startDate")}
+            />
+            <Field
+              label={fa ? "پایان" : "End date"}
+              type="date"
+              value={String(form.endDate || "").slice(0, 10)}
+              onChange={(v) => set("endDate", v)}
+              name="endDate"
+              error={fieldError("endDate")}
+            />
+          </div>
+          <Toggle
+            label={fa ? "در حال تحصیل" : "Currently studying"}
+            value={!!form.current}
+            onChange={(v) => set("current", v)}
+          />
+          <LocalizedField
+            label={fa ? "توضیحات (اختیاری)" : "Description (optional)"}
+            value={localized(form.description)}
+            onChange={(v) => set("description", v)}
+            multiline
+            name="description"
+            error={fieldError("description")}
+          />
+        </>
+      );
+    if (resource === "stats")
+      return (
+        <>
+          <LocalizedField
+            label={fa ? "عنوان آمار" : "Stat label"}
+            value={localized(form.label)}
+            onChange={(v) => set("label", v)}
+            name="label"
+            error={fieldError("label")}
+          />
+          <Field
+            label={fa ? "مقدار عددی" : "Value"}
+            type="number"
+            value={form.value}
+            onChange={(v) => set("value", v === "" ? "" : Number(v))}
+            name="value"
+            error={fieldError("value")}
+          />
+        </>
+      );
     return (
       <>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
             label={fa ? "نوع" : "Type"}
+            help={
+              fa
+                ? "یکی از مقادیر: whatsapp، telegram، linkedin، github، instagram، email یا phone تا آیکون و رنگ اختصاصی آن خودکار نمایش داده شود."
+                : "Use: whatsapp, telegram, linkedin, github, instagram, email, or phone for automatic brand icons."
+            }
+            placeholder="whatsapp | telegram | linkedin | github | instagram | email | phone"
             value={form.type}
             onChange={(v) => set("type", v)}
             name="type"
@@ -1466,6 +1733,26 @@ function ResourceEditor({
     if (resource === "technologies" || resource === "languages")
       requiredLocalized("name");
     if (resource === "languages") requiredLocalized("level");
+    if (resource === "education") {
+      requiredLocalized("institution");
+      requiredLocalized("degree");
+      optionalLocalized("fieldOfStudy");
+      optionalLocalized("location");
+      optionalLocalized("description");
+      if (form.current && form.endDate)
+        next.endDate = fa
+          ? "برای تحصیل در حال انجام تاریخ پایان وارد نکنید."
+          : "Leave end date empty for current education.";
+    }
+    if (resource === "stats") {
+      requiredLocalized("label");
+      if (
+        form.value === undefined ||
+        form.value === "" ||
+        !Number.isFinite(Number(form.value))
+      )
+        next.value = fa ? "عدد معتبر وارد کنید." : "Enter a valid number.";
+    }
     if (resource === "services") {
       requiredLocalized("title");
       requiredLocalized("description");
@@ -1547,7 +1834,16 @@ function ResourceEditor({
         {
           method: resourceId ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(
+            resource === "stats"
+              ? {
+                  label: form.label,
+                  value: Number(form.value),
+                  order: Number(form.order ?? 0),
+                  isVisible: form.isVisible !== false,
+                }
+              : form,
+          ),
         },
       );
       let saved = result.data;
@@ -1832,8 +2128,9 @@ function ResourceView({
         const result = await api(
           `/api/admin/${resource}?page=${page}&limit=10${search ? `&search=${encodeURIComponent(search)}` : ""}`,
         );
-        setItems(result.data);
-        setMeta(result.meta);
+        const list = Array.isArray(result.data) ? result.data : [];
+        setItems(list);
+        setMeta(result.meta || { page: 1, pages: 1, total: list.length });
       } catch (e) {
         notify(localizedError(e, locale), true);
       } finally {
@@ -1871,6 +2168,8 @@ function ResourceView({
       item.title ||
         item.name ||
         item.role ||
+        item.degree ||
+        item.institution ||
         item.label ||
         item.company ||
         item.type,
@@ -1881,9 +2180,20 @@ function ResourceView({
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="mb-2 text-sm font-semibold text-emerald-500">
-            {fa ? "مدیریت محتوا" : "Content management"}
+            {resource === "contact-methods"
+              ? fa
+                ? "اطلاعات شخصی من"
+                : "My personal info"
+              : fa
+                ? "محتوای پورتفولیو"
+                : "Portfolio content"}
           </p>
-          <h1 className="text-3xl font-black tracking-tight">{title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tight">{title}</h1>
+            {sectionHelp[resource] && (
+              <HelpTip text={sectionHelp[resource][fa ? "fa" : "en"]} />
+            )}
+          </div>
           <p className="mt-2 text-sm text-slate-500">
             {meta.total} {fa ? "رکورد" : "records"}
           </p>
@@ -2073,11 +2383,37 @@ const siteSettingsMediaFields: {
   key: SiteSettingsMediaField;
   en: string;
   fa: string;
+  helpFa: string;
+  helpEn: string;
 }[] = [
-  { key: "logo", en: "Logo", fa: "لوگو" },
-  { key: "openGraphImage", en: "Open Graph image", fa: "تصویر شبکه‌های اجتماعی" },
-  { key: "favicon", en: "Favicon", fa: "فاوآیکون" },
-  { key: "fallbackImage", en: "Fallback image", fa: "تصویر جایگزین" },
+  {
+    key: "logo",
+    en: "Logo",
+    fa: "لوگو",
+    helpFa: "لوگوی اصلی برند شما که در هدر بالای سایت و فوتر تمام صفحات نمایش داده می‌شود.",
+    helpEn: "Displayed in the top header and footer across all public pages.",
+  },
+  {
+    key: "openGraphImage",
+    en: "Open Graph image",
+    fa: "تصویر شبکه‌های اجتماعی",
+    helpFa: "وقتی لینک سایت را در تلگرام، واتساپ، لینکدین یا توییتر به اشتراک می‌گذارید، این تصویر در پیش‌نمایش لینک نمایش داده می‌شود.",
+    helpEn: "Used as the link preview banner when sharing your website on Telegram, WhatsApp, LinkedIn, or X.",
+  },
+  {
+    key: "favicon",
+    en: "Favicon",
+    fa: "فاوآیکون",
+    helpFa: "آیکون مربعی کوچکی که کنار نام سایت در تب مرورگر و بوکمارک‌ها نمایش داده می‌شود (فقط PNG مربعی).",
+    helpEn: "Small square icon shown next to your site title in browser tabs and bookmarks (square PNG).",
+  },
+  {
+    key: "fallbackImage",
+    en: "Fallback image",
+    fa: "تصویر جایگزین",
+    helpFa: "اگر برای بخش معرفی (Hero) تصویری آپلود نشده باشد یا لود نشود، این تصویر به‌عنوان جایگزین نمایش داده می‌شود.",
+    helpEn: "Shown in the Hero portrait slot whenever no Hero image is set or if it fails to load.",
+  },
 ];
 
 function SiteSettingsView({
@@ -2089,8 +2425,16 @@ function SiteSettingsView({
 }) {
   const fa = locale === "fa";
   const [settings, setSettings] = useState<Item>({});
-  const [draft, setDraft] = useState({ title: emptyLocalized(), description: emptyLocalized() });
+  const [draft, setDraft] = useState({
+    siteName: emptyLocalized(),
+    title: emptyLocalized(),
+    description: emptyLocalized(),
+    keywords: emptyLocalized(),
+    robotsIndex: true,
+    robotsFollow: true,
+  });
   const [changed, setChanged] = useState<Record<string, Set<"fa" | "en">>>({});
+  const [robotsChanged, setRobotsChanged] = useState(false);
   const [files, setFiles] = useState<Partial<Record<SiteSettingsMediaField, File>>>({});
   const [removePending, setRemovePending] = useState<Partial<Record<SiteSettingsMediaField, boolean>>>({});
   const [mediaErrors, setMediaErrors] = useState<Partial<Record<SiteSettingsMediaField, string>>>({});
@@ -2099,6 +2443,14 @@ function SiteSettingsView({
   const [mediaBusy, setMediaBusy] = useState<SiteSettingsMediaField | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const keywordsToLocalized = (value: unknown): Localized => {
+    const raw = (value as { fa?: unknown; en?: unknown } | undefined) || {};
+    return {
+      fa: Array.isArray(raw.fa) ? raw.fa.join(", ") : "",
+      en: Array.isArray(raw.en) ? raw.en.join(", ") : "",
+    };
+  };
+
   useEffect(() => {
     let active = true;
     void api("/api/admin/site-settings")
@@ -2106,7 +2458,14 @@ function SiteSettingsView({
         if (!active) return;
         const data = result.data || {};
         setSettings(data);
-        setDraft({ title: localized(data.title), description: localized(data.description) });
+        setDraft({
+          siteName: localized(data.siteName),
+          title: localized(data.title),
+          description: localized(data.description),
+          keywords: keywordsToLocalized(data.keywords),
+          robotsIndex: data.robots?.index !== false,
+          robotsFollow: data.robots?.follow !== false,
+        });
       })
       .catch((error) => notify(localizedError(error, locale), true))
       .finally(() => {
@@ -2117,7 +2476,10 @@ function SiteSettingsView({
     };
   }, [locale, notify]);
 
-  const updateLocalized = (field: "title" | "description", next: Localized) => {
+  const updateLocalized = (
+    field: "siteName" | "title" | "description" | "keywords",
+    next: Localized,
+  ) => {
     setDraft((current) => ({ ...current, [field]: next }));
     setChanged((current) => {
       const locales = new Set(current[field] || []);
@@ -2133,7 +2495,7 @@ function SiteSettingsView({
     if (saving) return;
     const nextErrors: Record<string, string> = {};
     const patch: Record<string, unknown> = {};
-    for (const field of ["title", "description"] as const) {
+    for (const field of ["siteName", "title", "description"] as const) {
       const locales = changed[field];
       if (!locales?.size) continue;
       const value: Partial<Localized> = {};
@@ -2143,6 +2505,23 @@ function SiteSettingsView({
         else value[language] = draft[field][language];
       }
       patch[field] = value;
+    }
+    const keywordLocales = changed.keywords;
+    if (keywordLocales?.size) {
+      const keywordsPatch: { fa?: string[]; en?: string[] } = {};
+      for (const language of keywordLocales) {
+        keywordsPatch[language] = draft.keywords[language]
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+      patch.keywords = keywordsPatch;
+    }
+    if (robotsChanged) {
+      patch.robots = {
+        index: draft.robotsIndex,
+        follow: draft.robotsFollow,
+      };
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
@@ -2161,8 +2540,16 @@ function SiteSettingsView({
         });
         const next = result.data || {};
         setSettings(next);
-        setDraft({ title: localized(next.title), description: localized(next.description) });
+        setDraft({
+          siteName: localized(next.siteName),
+          title: localized(next.title),
+          description: localized(next.description),
+          keywords: keywordsToLocalized(next.keywords),
+          robotsIndex: next.robots?.index !== false,
+          robotsFollow: next.robots?.follow !== false,
+        });
         setChanged({});
+        setRobotsChanged(false);
       }
 
       for (const { key } of siteSettingsMediaFields) {
@@ -2205,31 +2592,141 @@ function SiteSettingsView({
 
   return (
     <form onSubmit={save} className="mx-auto max-w-5xl space-y-6">
+      <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-5 dark:border-emerald-400/20 dark:bg-emerald-400/[0.05]">
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-black">{fa ? "تنظیمات عمومی، سئو و ظاهر سایت" : "Global Website, SEO & Brand Settings"}</h1>
+          <HelpTip text={sectionHelp["site-settings"][fa ? "fa" : "en"]} />
+        </div>
+        <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
+          {fa
+            ? "این بخش فقط برای تنظیمات کلی سایت (سئو، عنوان تب مرورگر، لوگو و آیکون) است. اطلاعات شخصی خودتان مثل معرفی، پروفایل، رزومه و راه‌های ارتباطی در منوی «اطلاعات شخصی من» قرار دارد."
+            : "This page is only for global website settings (SEO, browser tab title, logo, favicon). Your personal info (Hero, Profile, Resume, Contact methods) is separated under 'My Personal Info'."}
+        </p>
+      </div>
+
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#101820] sm:p-7">
-        <div className="mb-6">
-          <h2 className="text-lg font-black">{fa ? "تنظیمات وب‌سایت" : "Website settings"}</h2>
-          <p className="mt-1 text-sm text-slate-500">{fa ? "عنوان و توضیحات سایت را به هر دو زبان مدیریت کنید." : "Manage the website title and description in both languages."}</p>
+        <div className="mb-6 flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-black">{fa ? "هویت و سئو سایت (SEO)" : "Website Identity & SEO"}</h2>
+              <HelpTip
+                text={
+                  fa
+                    ? "این تنظیمات مستقیماً در متاتگ‌های صفحه (title, description, keywords, robots) و نتایج گوگل اعمال می‌شوند."
+                    : "These fields directly populate your HTML meta tags (title, description, keywords, robots) for Google and social media."
+                }
+              />
+            </div>
+            <p className="mt-1 text-sm text-slate-500">{fa ? "روی آیکون علامت سوال کنار هر گزینه کلیک کنید یا موس را ببرید تا ببینید دقیقاً چه چیزی را تغییر می‌دهد." : "Hover or tap the ? icon beside each field to see what it changes on your website."}</p>
+          </div>
         </div>
         <div className="space-y-5">
-          <LocalizedField label={fa ? "عنوان سایت" : "Site title"} name="site-title" value={draft.title} onChange={(value) => updateLocalized("title", value)} error={errors.title} />
-          <LocalizedField label={fa ? "توضیحات سایت" : "Site description"} name="site-description" value={draft.description} onChange={(value) => updateLocalized("description", value)} multiline error={errors.description} />
+          <LocalizedField
+            label={fa ? "نام سایت (Site Name)" : "Site name"}
+            help={
+              fa
+                ? "نام کوتاه برند یا نام شما؛ در عنوان صفحات داخلی (مثلاً «نمونه‌کارها | نام سایت») و تگ OpenGraph شبکه‌های اجتماعی نمایش داده می‌شود."
+                : "Your short brand name used in sub-page title templates and OpenGraph siteName tags."
+            }
+            name="site-name"
+            value={draft.siteName}
+            onChange={(value) => updateLocalized("siteName", value)}
+            error={errors.siteName}
+          />
+          <LocalizedField
+            label={fa ? "عنوان سئو صفحه اول (Title)" : "Site title"}
+            help={
+              fa
+                ? "عنوان اصلی که در تب مرورگر و به عنوان تیتر آبی‌رنگ در نتایج جستجوی گوگل نمایش داده می‌شود."
+                : "Main title shown in browser tabs and as the primary headline in Google search results."
+            }
+            name="site-title"
+            value={draft.title}
+            onChange={(value) => updateLocalized("title", value)}
+            error={errors.title}
+          />
+          <LocalizedField
+            label={fa ? "توضیحات سئو (Meta Description)" : "Site description"}
+            help={
+              fa
+                ? "توضیح ۱ تا ۲ خطی که زیر لینک سایت شما در نتایج گوگل و هنگام اشتراک‌گذاری در تلگرام/لینکدین نمایش داده می‌شود."
+                : "Short summary shown below your link in Google search results and link previews."
+            }
+            name="site-description"
+            value={draft.description}
+            onChange={(value) => updateLocalized("description", value)}
+            multiline
+            error={errors.description}
+          />
+          <LocalizedField
+            label={fa ? "کلمات کلیدی سئو (با کاما جدا کنید)" : "Keywords (comma-separated)"}
+            help={
+              fa
+                ? "عبارات کلیدی تخصص شما (مثلاً: برنامه‌نویس Next.js, طراحی سایت) که در متاتگ keywords سایت قرار می‌گیرد."
+                : "Comma-separated keywords added to your page metadata for search engines."
+            }
+            name="site-keywords"
+            value={draft.keywords}
+            onChange={(value) => updateLocalized("keywords", value)}
+            error={errors.keywords}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Toggle
+              label={fa ? "ایندکس توسط گوگل (robots.index)" : "Allow indexing (robots.index)"}
+              help={
+                fa
+                  ? "اگر روشن باشد، گوگل اجازه دارد صفحات سایت شما را در نتایج جستجو ثبت کند. خاموش کردن آن سایت را از گوگل مخفی می‌کند."
+                  : "When enabled, search engines like Google can index your site. Turn off only for private/staging sites."
+              }
+              value={draft.robotsIndex}
+              onChange={(value) => {
+                setDraft((current) => ({ ...current, robotsIndex: value }));
+                setRobotsChanged(true);
+              }}
+            />
+            <Toggle
+              label={fa ? "دنبال کردن لینک‌ها (robots.follow)" : "Follow links (robots.follow)"}
+              help={
+                fa
+                  ? "به ربات‌های گوگل اجازه می‌دهد لینک‌های داخل صفحات سایت شما را بخزند و اعتبار سئو منتقل کنند."
+                  : "Allows search engine crawlers to follow links across your pages."
+              }
+              value={draft.robotsFollow}
+              onChange={(value) => {
+                setDraft((current) => ({ ...current, robotsFollow: value }));
+                setRobotsChanged(true);
+              }}
+            />
+          </div>
         </div>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#101820] sm:p-7">
         <div className="mb-6">
-          <h2 className="text-lg font-black">{fa ? "رسانه‌های سایت" : "Site media"}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-black">{fa ? "رسانه‌ها و برندینگ سایت" : "Site Media & Branding"}</h2>
+            <HelpTip
+              text={
+                fa
+                  ? "تصاویر برندینگ کل سایت که در ImageKit ذخیره شده و در هدر، فوتر، تب مرورگر و اشتراک‌گذاری‌ها استفاده می‌شوند."
+                  : "Global branding assets stored in ImageKit and displayed in header, footer, browser tab, and link previews."
+              }
+            />
+          </div>
           <p className="mt-1 text-sm text-slate-500">{fa ? "تصاویر در ImageKit ذخیره و از همین بخش مدیریت می‌شوند." : "Images are stored in ImageKit and managed here."}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          {siteSettingsMediaFields.map(({ key, en, fa: faLabel }) => {
+          {siteSettingsMediaFields.map(({ key, en, fa: faLabel, helpFa, helpEn }) => {
             const mediaItem = settings[key] as MediaItem | null | undefined;
             const selected = files[key];
             const removing = Boolean(removePending[key]);
             return (
               <div key={key} className="rounded-2xl border border-slate-200 p-4 dark:border-white/10">
                 <div className="mb-3 flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold">{fa ? faLabel : en}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-sm font-bold">{fa ? faLabel : en}</h3>
+                    <HelpTip text={fa ? helpFa : helpEn} />
+                  </div>
                   {mediaBusy === key && <span role="status" className="text-xs text-emerald-600">{fa ? "در حال ذخیره…" : "Saving…"}</span>}
                 </div>
                 <div className="mb-4 flex h-36 items-center justify-center overflow-hidden rounded-xl bg-slate-50 dark:bg-white/[0.04]">
@@ -2315,11 +2812,13 @@ function SingletonView({
   locale,
   notify,
   onHeroImageUpdated,
+  onNavigate,
 }: {
   type: "hero" | "profile" | "resume";
   locale: string;
   notify: (message: string, error?: boolean) => void;
   onHeroImageUpdated?: () => void;
+  onNavigate?: (section: Section) => void;
 }) {
   const fa = locale === "fa";
   const [data, setData] = useState<Item>({});
@@ -2500,15 +2999,27 @@ function SingletonView({
     );
   const image = data.image || data.file;
   return (
-    <section className="max-w-4xl space-y-5">
+    <section className={`${type === "resume" ? "max-w-7xl" : "max-w-4xl"} space-y-5`}>
       <div>
         <p className="mb-2 text-sm font-semibold text-emerald-500">
-          {fa ? "محتوای اصلی" : "Core content"}
+          {fa ? "اطلاعات شخصی من" : "My personal info"}
         </p>
-        <h1 className="text-3xl font-black">
-          {labels[type][fa ? "fa" : "en"]}
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-black">
+            {labels[type][fa ? "fa" : "en"]}
+          </h1>
+          {sectionHelp[type] && (
+            <HelpTip text={sectionHelp[type][fa ? "fa" : "en"]} />
+          )}
+        </div>
       </div>
+      {type === "resume" && (
+        <ResumeBuilder
+          locale={locale}
+          notify={notify}
+          onNavigate={onNavigate}
+        />
+      )}
       <form
         onSubmit={save}
         className="space-y-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.03] sm:p-7"
@@ -2517,6 +3028,11 @@ function SingletonView({
           <>
             <LocalizedField
               label={fa ? "عنوان شغلی" : "Job title"}
+              help={
+                fa
+                  ? "عنوان شغلی شما (زمانی که تیتر اصلی خالی باشد، به‌عنوان زیرتیتر در بخش اول صفحه اصلی نمایش داده می‌شود)."
+                  : "Your job title (used as fallback subtitle in the Home Hero section)."
+              }
               value={localized(data.jobTitle)}
               onChange={(v) => set("jobTitle", v)}
               name="jobTitle"
@@ -2524,6 +3040,11 @@ function SingletonView({
             />
             <LocalizedField
               label={fa ? "تیتر اصلی" : "Headline"}
+              help={
+                fa
+                  ? "زیرتیتر برجسته زیر نام شما در بخش اول (Hero) صفحه اصلی، مثل «توسعه‌دهنده بک‌اند و فول‌استک (Node.js & Next.js)»."
+                  : "Primary highlighted subtitle below your name in the Home page Hero."
+              }
               value={localized(data.headline)}
               onChange={(v) => set("headline", v)}
               name="headline"
@@ -2531,6 +3052,11 @@ function SingletonView({
             />
             <LocalizedField
               label={fa ? "توضیحات" : "Description"}
+              help={
+                fa
+                  ? "پاراگراف معرفی کوتاه شما در بخش اول صفحه اصلی که تخصص‌ها و ارزش پیشنهادی شما را توضیح می‌دهد."
+                  : "Introductory paragraph displayed in the Home page Hero section."
+              }
               value={localized(data.description)}
               onChange={(v) => set("description", v)}
               multiline
@@ -2539,14 +3065,24 @@ function SingletonView({
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <LocalizedField
-                label={fa ? "متن CTA" : "CTA label"}
+                label={fa ? "متن دکمه CTA" : "CTA label"}
+                help={
+                  fa
+                    ? "متن دکمه اصلی در بخش Hero (مثلاً «دانلود رزومه»)."
+                    : "Text shown on the main action button in the Home Hero (e.g. Download Resume)."
+                }
                 value={localized(data.primaryCta)}
                 onChange={(v) => set("primaryCta", v)}
                 name="primaryCta"
                 error={formErrors.primaryCta}
               />
               <Field
-                label={fa ? "لینک CTA" : "CTA URL"}
+                label={fa ? "لینک دکمه CTA" : "CTA URL"}
+                help={
+                  fa
+                    ? "آدرس مقصد دکمه اصلی زمانی که فایل رزومه PDF آپلود نشده باشد."
+                    : "Destination URL for the Hero action button when no PDF resume is uploaded."
+                }
                 value={data.primaryCtaUrl}
                 onChange={(v) => set("primaryCtaUrl", v)}
                 name="primaryCtaUrl"
@@ -2559,31 +3095,60 @@ function SingletonView({
               />
             </div>
             <Toggle
-              label={fa ? "نمایش بخش" : "Visible"}
+              label={fa ? "نمایش بخش معرفی (Hero)" : "Visible"}
+              help={
+                fa
+                  ? "با خاموش کردن این گزینه، محتوای سفارشی Hero مخفی شده و مقادیر پیش‌فرض نمایش داده می‌شوند."
+                  : "Toggle whether your custom Hero configuration is active on the Home page."
+              }
               value={data.isVisible !== false}
               onChange={(v) => set("isVisible", v)}
             />
-            <HeroTechnologyEcosystemEditor
-              value={(data.technologyEcosystem as HeroTechnologyEcosystemConfig) || {
-                isVisible: true,
-                items: [],
-              }}
-              locale={locale}
-              onChange={(value) => set("technologyEcosystem", value)}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {fa ? "اکوسیستم تکنولوژی‌های اطراف عکس" : "Hero Technology Ecosystem"}
+                </span>
+                <HelpTip
+                  text={
+                    fa
+                      ? "آیکون‌های شناور مهارت‌ها در اطراف تصویر پروفایل صفحه اول؛ می‌توانید جایگاه، رنگ، اندازه و انیمیشن هر کدام را تنظیم کنید."
+                      : "Floating technology badges around your Home portrait; configure visibility, position, color, size, and animation."
+                  }
+                />
+              </div>
+              <HeroTechnologyEcosystemEditor
+                value={(data.technologyEcosystem as HeroTechnologyEcosystemConfig) || {
+                  isVisible: true,
+                  items: [],
+                }}
+                locale={locale}
+                onChange={(value) => set("technologyEcosystem", value)}
+              />
+            </div>
           </>
         )}
         {type === "profile" && (
           <>
             <LocalizedField
-              label={fa ? "نام" : "Name"}
+              label={fa ? "نام کامل" : "Name"}
+              help={
+                fa
+                  ? "نام شما که با افکت گرادیان در تیتر صفحه اصلی (Hero) و صفحه «درباره من» (/profile) نمایش داده می‌شود."
+                  : "Your display name shown in the Home Hero heading and the /profile page."
+              }
               value={localized(data.name)}
               onChange={(v) => set("name", v)}
               name="name"
               error={formErrors.name}
             />
             <LocalizedField
-              label={fa ? "بیوگرافی" : "Bio"}
+              label={fa ? "بیوگرافی کامل" : "Bio"}
+              help={
+                fa
+                  ? "متن کامل «درباره من» در صفحه /profile (و جایگزین متن Hero در صورت خالی بودن توضیحات Hero)."
+                  : "Full biography shown on the /profile page (and fallback for Hero description)."
+              }
               value={localized(data.bio)}
               onChange={(v) => set("bio", v)}
               multiline
@@ -2592,7 +3157,12 @@ function SingletonView({
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <LocalizedField
-                label={fa ? "موقعیت" : "Location"}
+                label={fa ? "موقعیت مکانی" : "Location"}
+                help={
+                  fa
+                    ? "شهر یا کشور محل سکونت شما در کارت پروفایل (/profile)، مثلاً «تهران، ایران»."
+                    : "City/country displayed on your /profile card."
+                }
                 value={localized(data.location)}
                 onChange={(v) => set("location", v)}
                 name="location"
@@ -2600,6 +3170,11 @@ function SingletonView({
               />
               <LocalizedField
                 label={fa ? "وضعیت همکاری" : "Availability"}
+                help={
+                  fa
+                    ? "پیام وضعیت آمادگی همکاری شما در کارت پروفایل (/profile)، مثلاً «آماده همکاری پروژه‌ای و تمام‌وقت»."
+                    : "Your availability status shown in the /profile card."
+                }
                 value={localized(data.availability)}
                 onChange={(v) => set("availability", v)}
                 name="availability"
@@ -2607,6 +3182,11 @@ function SingletonView({
               />
               <Field
                 label="Email"
+                help={
+                  fa
+                    ? "ایمیل داخلی پروفایل (به صورت عمومی نمایش داده نمی‌شود؛ برای نمایش عمومی از بخش «راه‌های ارتباطی» استفاده کنید)."
+                    : "Internal profile email (kept private; use Contact methods for public links)."
+                }
                 value={data.email}
                 onChange={(v) => set("email", v)}
                 name="email"
@@ -2619,6 +3199,11 @@ function SingletonView({
           <>
             <LocalizedField
               label={fa ? "عنوان رزومه" : "Resume title"}
+              help={
+                fa
+                  ? "عنوان رزومه برای فایل و سوابق ثبت‌شده شما."
+                  : "Title associated with your stored resume."
+              }
               value={localized(data.title)}
               onChange={(v) => set("title", v)}
               name="title"
@@ -2636,7 +3221,24 @@ function SingletonView({
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-5 dark:border-white/15 dark:bg-white/[0.03] sm:p-7">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="font-bold">{fa ? "رسانه" : "Media"}</h2>
+            <div className="flex items-center gap-1.5">
+              <h2 className="font-bold">{fa ? "رسانه" : "Media"}</h2>
+              <HelpTip
+                text={
+                  type === "resume"
+                    ? fa
+                      ? "فایل PDF رزومه شما؛ پس از بارگذاری، دکمه «دانلود رزومه» در صفحه اصلی و صفحه /resume این فایل را دانلود می‌کند."
+                      : "Your downloadable PDF resume served by the Download Resume buttons."
+                    : type === "hero"
+                      ? fa
+                        ? "تصویر دایره‌ای اصلی که در صفحه نخست کنار معرفی شما نمایش داده می‌شود."
+                        : "Main circular portrait image displayed in the Home page Hero."
+                      : fa
+                        ? "تصویر شخصی شما که در کارت پروفایل صفحه «درباره من» (/profile) نمایش داده می‌شود."
+                        : "Personal portrait image displayed on the /profile page."
+                }
+              />
+            </div>
             <p className="mt-1 text-xs text-slate-500">
               {type === "resume" ? "PDF" : "PNG, JPG, WEBP"} ·{" "}
               {fa ? "حداکثر ۴ مگابایت" : "up to 4MB"}
@@ -2839,7 +3441,7 @@ function MessagesView({
                   {item.subject || item.message}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
-                  {item.email} ·{" "}
+                  {item.email || item.phone} ·{" "}
                   {item.createdAt
                     ? new Date(item.createdAt).toLocaleDateString(locale)
                     : ""}
@@ -2854,12 +3456,23 @@ function MessagesView({
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="font-bold">{selected.name}</h2>
-                  <a
-                    href={`mailto:${selected.email}`}
-                    className="text-sm text-emerald-500"
-                  >
-                    {selected.email}
-                  </a>
+                  {selected.email && (
+                    <a
+                      href={`mailto:${selected.email}`}
+                      className="block text-sm text-emerald-500"
+                    >
+                      {selected.email}
+                    </a>
+                  )}
+                  {selected.phone && (
+                    <a
+                      href={`tel:${selected.phone}`}
+                      dir="ltr"
+                      className="mt-1 inline-block text-sm font-medium text-cyan-500"
+                    >
+                      {selected.phone}
+                    </a>
+                  )}
                 </div>
                 <button
                   onClick={() => remove(selected)}
@@ -2868,6 +3481,25 @@ function MessagesView({
                   <Trash2 size={16} />
                 </button>
               </div>
+              {(selected.projectType || selected.budget || selected.timeline) && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {selected.projectType && (
+                    <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                      {selected.projectType}
+                    </span>
+                  )}
+                  {selected.budget && (
+                    <span className="rounded-full bg-cyan-400/15 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300">
+                      {selected.budget}
+                    </span>
+                  )}
+                  {selected.timeline && (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                      {selected.timeline}
+                    </span>
+                  )}
+                </div>
+              )}
               <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600 dark:text-slate-300">
                 {selected.message}
               </p>
@@ -2954,7 +3586,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
   }
   if (checking)
     return (
-      <main className="min-h-[78vh] bg-[#f7faf9] p-6 dark:bg-[#0b1118] over">
+      <main className="min-h-[78vh] bg-[#f7faf9] p-6 dark:bg-[#0b1118]">
         <div className="mx-auto max-w-7xl space-y-5">
           <div className="h-12 w-64 animate-pulse rounded-xl bg-slate-200 dark:bg-white/10" />
           <div className="h-72 animate-pulse rounded-3xl bg-slate-200 dark:bg-white/10" />
@@ -3023,19 +3655,70 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
             aria-label={fa ? "ناوبری مدیریت" : "Admin navigation"}
             className="mt-8 min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pb-5 pe-1"
           >
-            <p className="px-3 pb-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-400">
-              {fa ? "نمای کلی" : "Workspace"}
-            </p>
+            <div className="flex items-center justify-between px-3 pb-2">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">
+                {fa ? "میز کار و پیام‌ها" : "Workspace & Inbox"}
+              </p>
+              <HelpTip
+                placement="bottom"
+                align="end"
+                text={
+                  fa
+                    ? "خلاصه آمار پنل و صندوق پیام‌های دریافتی از فرم تماس و پنجره شروع همکاری."
+                    : "Dashboard overview and incoming contact & collaboration requests."
+                }
+              />
+            </div>
             {nav("overview")}
             {nav("messages")}
-            <p className="px-3 pb-2 pt-7 text-[10px] font-black uppercase tracking-[.2em] text-slate-400">
-              {fa ? "محتوا" : "Content"}
-            </p>
-            {resourceKeys.map(nav)}
-            <p className="px-3 pb-2 pt-7 text-[10px] font-black uppercase tracking-[.2em] text-slate-400">
-              {fa ? "تنظیمات سایت" : "Site settings"}
-            </p>
-            {["hero", "profile", "resume", "site-settings"].map(nav)}
+
+            <div className="flex items-center justify-between px-3 pb-2 pt-6">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-emerald-600 dark:text-emerald-400">
+                {fa ? "اطلاعات شخصی من" : "My Personal Info"}
+              </p>
+              <HelpTip
+                placement="bottom"
+                align="end"
+                text={
+                  fa
+                    ? "تنظیمات مربوط به هویت خودتان: تیتر معرفی صفحه اول، بیوگرافی پروفایل، فایل رزومه PDF و راه‌های ارتباطی."
+                    : "Your personal info: Hero intro, Profile bio, downloadable Resume PDF, and Contact methods."
+                }
+              />
+            </div>
+            {personalSections.map(nav)}
+
+            <div className="flex items-center justify-between px-3 pb-2 pt-6">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">
+                {fa ? "محتوای پورتفولیو" : "Portfolio Content"}
+              </p>
+              <HelpTip
+                placement="bottom"
+                align="end"
+                text={
+                  fa
+                    ? "مدیریت بخش‌های مختلف نمونه کار: پروژه‌ها، مهارت‌ها، خدمات، سوابق کاری، تحصیلات، زبان‌ها و آمارها."
+                    : "Manage your portfolio records: projects, skills, services, work experience, education, languages, and stats."
+                }
+              />
+            </div>
+            {portfolioResourceSections.map(nav)}
+
+            <div className="flex items-center justify-between px-3 pb-2 pt-6">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-cyan-600 dark:text-cyan-400">
+                {fa ? "تنظیمات سایت و سئو" : "Site & SEO Settings"}
+              </p>
+              <HelpTip
+                placement="top"
+                align="end"
+                text={
+                  fa
+                    ? "تنظیمات فنی و ظاهری کل سایت: عنوان و توضیحات گوگل (SEO)، کلمات کلیدی، ایندکس، لوگو، فاوآیکون و تصویر اشتراک‌گذاری."
+                    : "Global website & SEO settings: meta title, description, keywords, robots, logo, favicon, and OG image."
+                }
+              />
+            </div>
+            {nav("site-settings")}
           </nav>
           <div className="mt-3 shrink-0 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/[0.04]">
             <div className="flex items-center gap-3">
@@ -3101,9 +3784,17 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
                     {fa ? "داشبورد مدیریت" : "Admin dashboard"}
                   </p>
 
-                  <h1 className="truncate text-sm font-bold sm:text-xl">
-                    {title}
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="truncate text-sm font-bold sm:text-xl">
+                      {title}
+                    </h1>
+                    {sectionHelp[active] && (
+                      <HelpTip
+                        placement="bottom"
+                        text={sectionHelp[active][fa ? "fa" : "en"]}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -3114,7 +3805,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
                 <a
                   href={`/${locale}`}
                   className="
-           items-center gap-2
+          inline-flex items-center gap-2
           rounded-xl border border-slate-200
           px-3 py-2 text-xs font-semibold
           text-slate-500 transition-colors
@@ -3146,6 +3837,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
                 type={active as "hero" | "profile" | "resume"}
                 locale={locale}
                 notify={notify}
+                onNavigate={setActive}
               />
             ) : (
               <ResourceView
@@ -3183,11 +3875,13 @@ function Overview({
   useEffect(() => {
     Promise.all([
       ...resourceKeys.map(
-        async (key) =>
-          [
-            key,
-            (await api(`/api/admin/${key}?limit=1`)).meta?.total || 0,
-          ] as const,
+        async (key) => {
+          const res = await api(`/api/admin/${key}?limit=1`);
+          const count =
+            res.meta?.total ??
+            (Array.isArray(res.data) ? res.data.length : 0);
+          return [key, count] as const;
+        },
       ),
       api("/api/admin/contact-messages").then(
         (r) => ["messages", r.data?.length || 0] as const,

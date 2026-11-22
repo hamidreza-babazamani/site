@@ -1,13 +1,15 @@
 
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import CountUp from "react-countup";
+import type { PublicStat } from "@/lib/services/public-portfolio";
 
-function Stats() {
+function Stats({ items }: { items?: PublicStat[] }) {
   const t = useTranslations("HomePage");
+  const locale = useLocale();
 
-  const stats = [
+  const fallbackStats = [
     {
       num: 4,
       text: t("stats.text1"),
@@ -25,6 +27,18 @@ function Stats() {
       text: t("stats.text4"),
     },
   ];
+
+  const stats =
+    items && items.length > 0
+      ? items.map((item) => ({
+          num: item.value,
+          text:
+            (locale === "fa" ? item.label?.fa : item.label?.en)?.trim() ||
+            item.label?.en?.trim() ||
+            item.label?.fa?.trim() ||
+            "",
+        }))
+      : fallbackStats;
 
   return (
     <section
@@ -87,7 +101,7 @@ function Stats() {
                   dark:hover:bg-emerald-300/[0.035]
 
                   ${index % 2 === 0
-                    ? "border-r border-border/60 lg:border-r-0"
+                    ? "border-e border-border/60 lg:border-e-0"
                     : ""
                   }
 
@@ -97,7 +111,7 @@ function Stats() {
                   }
 
                   ${index < 3
-                    ? "lg:border-r lg:border-border/60"
+                    ? "lg:border-e lg:border-border/60"
                     : ""
                   }
                 `}
