@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PublicTechnology } from "@/lib/services/public-portfolio";
 
 const text = (
@@ -65,7 +68,52 @@ export default function SkillsCircle({
   skills: PublicTechnology[];
   locale: string;
 }) {
-  if (skills.length === 0) return null;
+  const uniqueSkills = useMemo(() => {
+    const seen = new Set<string>();
+    return skills.filter((skill) => {
+      if (!skill?._id || seen.has(skill._id)) return false;
+      seen.add(skill._id);
+      return true;
+    });
+  }, [skills]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldMarquee, setShouldMarquee] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || uniqueSkills.length === 0) return;
+
+    const CARD_GAP = 16;
+
+    const measure = () => {
+      const containerWidth = container.clientWidth;
+      if (containerWidth <= 0) return;
+
+      const isSmUp =
+        typeof window !== "undefined" &&
+        window.matchMedia("(min-width: 640px)").matches;
+      const cardWidth = isSmUp ? 148 : 128;
+      // Require copy length >= containerWidth + cardWidth so a duplicate card
+      // can never appear at both edges of the viewport simultaneously.
+      const singleCycleWidth = uniqueSkills.length * (cardWidth + CARD_GAP);
+      setShouldMarquee(singleCycleWidth >= containerWidth + cardWidth);
+    };
+
+    const rafId = requestAnimationFrame(measure);
+    if (typeof ResizeObserver === "undefined") {
+      return () => cancelAnimationFrame(rafId);
+    }
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+    };
+  }, [uniqueSkills.length]);
+
+  if (uniqueSkills.length === 0) return null;
 
   return (
     <section
@@ -83,30 +131,43 @@ export default function SkillsCircle({
           <div className="h-px flex-1 bg-gradient-to-r from-emerald-500/25 to-transparent" />
         </div>
 
-        <div
-          dir="ltr"
-          className="
-            group/marquee relative overflow-hidden
-            [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]
-          "
-        >
-          <div className="flex w-max items-stretch animate-skills-marquee motion-safe:group-hover/marquee:[animation-play-state:paused]">
-            {[0, 1].map((copy) => (
-              <div
-                key={copy}
-                aria-hidden={copy === 1}
-                className="flex shrink-0 gap-4 pr-4"
-              >
-                {skills.map((skill) => (
-                  <SkillCard
-                    key={`${copy}-${skill._id}`}
-                    skill={skill}
-                    locale={locale}
-                  />
+        <div ref={containerRef} className="w-full overflow-hidden">
+          {shouldMarquee ? (
+            <div
+              dir="ltr"
+              className="
+                group/marquee relative overflow-hidden
+                [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]
+              "
+            >
+              <div className="flex w-max items-stretch animate-skills-marquee motion-safe:group-hover/marquee:[animation-play-state:paused]">
+                {[0, 1].map((copy) => (
+                  <div
+                    key={copy}
+                    aria-hidden={copy === 1}
+                    className="flex shrink-0 gap-4 pr-4"
+                  >
+                    {uniqueSkills.map((skill) => (
+                      <SkillCard
+                        key={`${copy}-${skill._id}`}
+                        skill={skill}
+                        locale={locale}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div
+              dir={locale === "fa" ? "rtl" : "ltr"}
+              className="flex flex-wrap items-stretch justify-center gap-4"
+            >
+              {uniqueSkills.map((skill) => (
+                <SkillCard key={skill._id} skill={skill} locale={locale} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
