@@ -343,7 +343,8 @@ const localizedServerErrors = (error: unknown, locale: string) => {
 const localizedError = (error: unknown, locale: string, upload = false) => {
   const lang = locale === "fa" ? messages.fa : messages.en;
   const status = (error as AdminError)?.code;
-  if (status === 401 || (error as Error)?.message === "AUTH_REQUIRED")
+  const rawMessage = String((error as Error)?.message || "");
+  if (status === 401 || rawMessage === "AUTH_REQUIRED")
     return lang.auth;
   if (status === 403)
     return locale === "fa"
@@ -353,7 +354,7 @@ const localizedError = (error: unknown, locale: string, upload = false) => {
     return locale === "fa"
       ? "مورد درخواستی پیدا نشد."
       : "The requested item was not found.";
-  if (status === 408 || (error as Error)?.message === "REQUEST_TIMEOUT")
+  if (status === 408 || rawMessage === "REQUEST_TIMEOUT")
     return locale === "fa"
       ? "پاسخ‌گویی درخواست بیش از حد طول کشید. دوباره تلاش کنید."
       : "The request took too long. Please try again.";
@@ -361,12 +362,28 @@ const localizedError = (error: unknown, locale: string, upload = false) => {
     return locale === "fa"
       ? "تعداد تلاش‌ها زیاد است. کمی صبر و دوباره تلاش کنید."
       : "Too many attempts. Please wait and try again.";
+  if (status === 413)
+    return locale === "fa"
+      ? "حجم فایل برای سرور بیش از حد مجاز است (لطفاً فایل کوچک‌تری زیر ۴ مگابایت انتخاب کنید)."
+      : "File is too large for the server. Choose a smaller file under 4 MB.";
+  if (status === 503 && (upload || /storage|media/i.test(rawMessage)))
+    return locale === "fa"
+      ? "سرویس ذخیره‌سازی فایل (ImageKit) روی سرور پیکربندی نشده است."
+      : "Media storage service (ImageKit) is not configured on the server.";
+  if (status === 502 && (upload || /store|media|upload/i.test(rawMessage)))
+    return locale === "fa"
+      ? "ارسال فایل به سرویس ذخیره‌سازی (ImageKit) ناموفق بود. اتصال یا کلیدهای ImageKit را بررسی کنید."
+      : "Failed to store the file in ImageKit. Check storage settings or connection.";
   if (
     upload ||
-    status === 413 ||
-    /file|image|pdf|upload|media/i.test((error as Error)?.message || "")
-  )
+    /file|image|pdf|upload|media/i.test(rawMessage)
+  ) {
+    if (/mime|signature|format|unsupported/i.test(rawMessage))
+      return locale === "fa"
+        ? "فرمت یا ساختار واقعی فایل با فرمت‌های مجاز (JPEG، PNG، WebP، AVIF) همخوانی ندارد."
+        : "File format or content does not match any supported image type.";
     return lang.upload;
+  }
   if (status && status >= 500) return lang.server;
   if ((error as AdminError)?.errors || status === 400) return lang.validation;
   return lang.network;
@@ -385,6 +402,15 @@ const isHttpUrl = (value: string) => {
 };
 
 const imageTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
+const isAllowedImageFile = (file: File) => {
+  if (imageTypes.includes(file.type)) return true;
+  if (!file.type || file.type === "application/octet-stream") {
+    const lowerName = file.name.toLowerCase();
+    return imageExtensions.some((ext) => lowerName.endsWith(ext));
+  }
+  return false;
+};
 const maxImageSize = 4 * 1024 * 1024;
 
 /** Keep object URLs stable and release them when files change or unmount. */
@@ -434,7 +460,7 @@ function ImageDropzone({
     `${file.name}-${file.lastModified}-${file.size}`;
   const addFiles = (incoming: File[]) => {
     const invalid = incoming.find(
-      (file) => !imageTypes.includes(file.type) || file.size > maxImageSize,
+      (file) => !isAllowedImageFile(file) || file.size <= 0 || file.size > maxImageSize,
     );
     if (invalid) {
       setError(
@@ -1170,7 +1196,7 @@ function ResourceEditor({
                         const next = e.target.files?.[0];
                         if (!next) return;
                         if (
-                          !imageTypes.includes(next.type) ||
+                          !isAllowedImageFile(next) ||
                           next.size <= 0 ||
                           next.size > maxImageSize
                         ) {
@@ -1273,7 +1299,7 @@ function ResourceEditor({
                       event.currentTarget.value = "";
                       if (!next) return;
                       if (
-                        !imageTypes.includes(next.type) ||
+                        !isAllowedImageFile(next) ||
                         next.size <= 0 ||
                         next.size > maxImageSize
                       ) {
@@ -1457,7 +1483,7 @@ function ResourceEditor({
                       event.currentTarget.value = "";
                       if (!next) return;
                       if (
-                        !imageTypes.includes(next.type) ||
+                        !isAllowedImageFile(next) ||
                         next.size <= 0 ||
                         next.size > maxImageSize
                       ) {
@@ -2766,7 +2792,7 @@ function SiteSettingsView({
                             return;
                           }
                         }
-                        if (!imageTypes.includes(file.type) || file.size <= 0 || file.size > maxImageSize) {
+                        if (!isAllowedImageFile(file) || file.size <= 0 || file.size > maxImageSize) {
                           setMediaErrors((current) => ({ ...current, [key]: fa ? "فرمت یا حجم تصویر معتبر نیست. حداکثر حجم ۴ مگابایت است." : "Use JPEG, PNG, WebP, or AVIF images up to 4 MB." }));
                           return;
                         }
@@ -2937,7 +2963,7 @@ function SingletonView({
     const allowed =
       type === "resume"
         ? file.type === "application/pdf"
-        : imageTypes.includes(file.type);
+        : isAllowedImageFile(file);
     if (!allowed || file.size <= 0 || file.size > maxImageSize) {
       notify(
         type === "resume"
@@ -3276,7 +3302,7 @@ function SingletonView({
               const valid =
                 (type === "resume"
                   ? next.type === "application/pdf"
-                  : imageTypes.includes(next.type)) &&
+                  : isAllowedImageFile(next)) &&
                 next.size > 0 &&
                 next.size <= maxImageSize;
               if (!valid) {

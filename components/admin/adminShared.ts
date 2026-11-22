@@ -161,12 +161,31 @@ export const localizedServerErrors = (error: unknown, locale: string) => {
 export const localizedError = (error: unknown, locale: string, upload = false) => {
   const lang = locale === "fa" ? messages.fa : messages.en;
   const adminError = error as AdminError;
-  if (adminError.code === 401 || adminError.message === "AUTH_REQUIRED") return lang.auth;
+  const rawMessage = String(adminError.message || "");
+  if (adminError.code === 401 || rawMessage === "AUTH_REQUIRED") return lang.auth;
   if (adminError.code === 403) return lang.forbidden;
   if (adminError.code === 404) return lang.notFound;
-  if (adminError.code === 408 || adminError.message === "REQUEST_TIMEOUT") return lang.timeout;
+  if (adminError.code === 408 || rawMessage === "REQUEST_TIMEOUT") return lang.timeout;
   if (adminError.code === 429) return lang.rateLimit;
-  if (upload || adminError.code === 413 || /file|image|pdf|upload|media/i.test(adminError.message || "")) return lang.upload;
+  if (adminError.code === 413)
+    return locale === "fa"
+      ? "حجم فایل برای سرور بیش از حد مجاز است (لطفاً فایل کوچک‌تری زیر ۴ مگابایت انتخاب کنید)."
+      : "File is too large for the server. Choose a smaller file under 4 MB.";
+  if (adminError.code === 503 && (upload || /storage|media/i.test(rawMessage)))
+    return locale === "fa"
+      ? "سرویس ذخیره‌سازی فایل (ImageKit) روی سرور پیکربندی نشده است."
+      : "Media storage service (ImageKit) is not configured on the server.";
+  if (adminError.code === 502 && (upload || /store|media|upload/i.test(rawMessage)))
+    return locale === "fa"
+      ? "ارسال فایل به سرویس ذخیره‌سازی (ImageKit) ناموفق بود. اتصال یا کلیدهای ImageKit را بررسی کنید."
+      : "Failed to store the file in ImageKit. Check storage settings or connection.";
+  if (upload || /file|image|pdf|upload|media/i.test(rawMessage)) {
+    if (/mime|signature|format|unsupported/i.test(rawMessage))
+      return locale === "fa"
+        ? "فرمت یا ساختار واقعی فایل با فرمت‌های مجاز همخوانی ندارد."
+        : "File format or content does not match any supported format.";
+    return lang.upload;
+  }
   if (adminError.code && adminError.code >= 500) return lang.server;
   if (adminError.errors || adminError.code === 400) return lang.validation;
   return lang.network;

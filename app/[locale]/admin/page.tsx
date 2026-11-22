@@ -3,7 +3,10 @@ import { getAdminSession } from "@/lib/server/api";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: { absolute: "پنل مدیریت | حمیدرضا بابازمانی" },
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminPage() {
   // احراز هویت قبل از رندر انجام می‌شود تا محتوای محافظت‌شده چشمک نزند.

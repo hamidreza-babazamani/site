@@ -35,23 +35,37 @@ export async function requestAdmin<T = Record<string, unknown>>(
 ): Promise<T> {
   try {
     const headers = new Headers(init.headers);
-    if (init.body instanceof FormData) headers.delete("Content-Type");
+    const isFormData =
+      typeof FormData !== "undefined" && init.body instanceof FormData;
+    if (isFormData) headers.delete("Content-Type");
     const response = await apiClient.request<T>({
       url: path,
       method: init.method ?? "GET",
       headers: Object.fromEntries(headers.entries()),
       data: init.body,
       signal: init.signal ?? undefined,
+      ...(isFormData ? { timeout: 90_000 } : {}),
     });
     return response.data;
   } catch (error) {
     if (!axios.isAxiosError(error)) throw error;
     const payload = error.response?.data as Record<string, unknown> | undefined;
-    const status = error.response?.status ?? 0;
+    const isTimeout =
+      error.code === "ECONNABORTED" || error.code === "ETIMEDOUT";
+    const status = error.response?.status ?? (isTimeout ? 408 : 0);
     if (status === 401 && typeof window !== "undefined")
       window.dispatchEvent(new Event("admin:expired"));
     const normalized = Object.assign(
-      new Error(String(payload?.message || (status ? "REQUEST_FAILED" : "NETWORK_ERROR"))),
+      new Error(
+        String(
+          payload?.message ||
+            (isTimeout
+              ? "REQUEST_TIMEOUT"
+              : status
+                ? "REQUEST_FAILED"
+                : "NETWORK_ERROR"),
+        ),
+      ),
       { code: status, errors: payload?.errors },
     ) as AdminApiError;
     throw normalized;

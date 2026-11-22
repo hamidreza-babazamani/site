@@ -12,21 +12,51 @@ const client = hasImageKit
 
 const signatures: Record<string, (data: Buffer) => boolean> = {
   "application/pdf": (data) =>
-    data.subarray(0, 5).toString("ascii") === "%PDF-",
+    data.length >= 5 && data.subarray(0, 5).toString("ascii") === "%PDF-",
 
   "image/jpeg": (data) =>
-    data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff,
+    data.length >= 3 &&
+    data[0] === 0xff &&
+    data[1] === 0xd8 &&
+    data[2] === 0xff,
 
   "image/png": (data) =>
+    data.length >= 8 &&
     data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])),
 
   "image/webp": (data) =>
+    data.length >= 12 &&
     data.subarray(0, 4).toString("ascii") === "RIFF" &&
     data.subarray(8, 12).toString("ascii") === "WEBP",
 
   "image/avif": (data) =>
-    data.subarray(4, 12).toString("ascii").includes("ftyp") ||
-    data.subarray(8, 12).toString("ascii") === "avif",
+    data.length >= 12 &&
+    data.subarray(4, 8).toString("ascii") === "ftyp" &&
+    ["avif", "avis", "mif1", "miaf"].includes(
+      data.subarray(8, 12).toString("ascii"),
+    ),
+};
+
+const resolveAllowedMedia = (
+  declaredType: string,
+  data: Buffer,
+  allowed: Record<string, string>,
+) => {
+  if (declaredType && allowed[declaredType] && signatures[declaredType]?.(data)) {
+    return { mime: declaredType, ext: allowed[declaredType] };
+  }
+
+  for (const [mime, ext] of Object.entries(allowed)) {
+    if (signatures[mime]?.(data)) {
+      return { mime, ext };
+    }
+  }
+
+  if (declaredType && !allowed[declaredType] && declaredType !== "application/octet-stream") {
+    throw new ApiError(400, "Unsupported file type");
+  }
+
+  throw new ApiError(400, "File content does not match any supported format");
 };
 
 export const saveMedia = async (
@@ -37,22 +67,12 @@ export const saveMedia = async (
     throw new ApiError(400, "A file is required");
   }
 
-  const ext = allowed[file.type];
-
-  if (!ext) {
-    throw new ApiError(400, "Unsupported file type");
-  }
-
   if (file.size <= 0) {
     throw new ApiError(400, "File is empty");
   }
 
   if (file.size > MAX_MEDIA_BYTES) {
     throw new ApiError(400, "File exceeds the 4 MB limit");
-  }
-
-  if (!client) {
-    throw new ApiError(503, "Media storage is not configured");
   }
 
   let data: Buffer;
@@ -63,17 +83,17 @@ export const saveMedia = async (
     throw new ApiError(400, "Unable to read the uploaded file");
   }
 
-  const signature = signatures[file.type];
+  const detected = resolveAllowedMedia(file.type, data, allowed);
 
-  if (signature && !signature(data)) {
-    throw new ApiError(400, "File content does not match its MIME type");
+  if (!client) {
+    throw new ApiError(503, "Media storage is not configured");
   }
 
-  const key = `${randomUUID()}${ext}`;
+  const key = `${randomUUID()}${detected.ext}`;
 
   try {
     const uploaded = await client.files.upload({
-      file: await toFile(data, key, { type: file.type }),
+      file: await toFile(data, key, { type: detected.mime }),
       fileName: key,
       useUniqueFileName: false,
     });
