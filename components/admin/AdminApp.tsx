@@ -346,10 +346,15 @@ const localizedError = (error: unknown, locale: string, upload = false) => {
   const rawMessage = String((error as Error)?.message || "");
   if (status === 401 || rawMessage === "AUTH_REQUIRED")
     return lang.auth;
-  if (status === 403)
+  if (status === 403) {
+    if (/origin|referer|cross-site/i.test(rawMessage))
+      return locale === "fa"
+        ? `خطای اعتبارسنجی مبدا درخواست (403: ${rawMessage}).`
+        : `Origin validation failed (403: ${rawMessage}).`;
     return locale === "fa"
       ? "شما اجازه انجام این کار را ندارید."
       : "You do not have permission to perform this action.";
+  }
   if (status === 404)
     return locale === "fa"
       ? "مورد درخواستی پیدا نشد."

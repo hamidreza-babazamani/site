@@ -163,7 +163,13 @@ export const localizedError = (error: unknown, locale: string, upload = false) =
   const adminError = error as AdminError;
   const rawMessage = String(adminError.message || "");
   if (adminError.code === 401 || rawMessage === "AUTH_REQUIRED") return lang.auth;
-  if (adminError.code === 403) return lang.forbidden;
+  if (adminError.code === 403) {
+    if (/origin|referer|cross-site/i.test(rawMessage))
+      return locale === "fa"
+        ? `خطای اعتبارسنجی مبدا درخواست (403: ${rawMessage}).`
+        : `Origin validation failed (403: ${rawMessage}).`;
+    return lang.forbidden;
+  }
   if (adminError.code === 404) return lang.notFound;
   if (adminError.code === 408 || rawMessage === "REQUEST_TIMEOUT") return lang.timeout;
   if (adminError.code === 429) return lang.rateLimit;

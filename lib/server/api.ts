@@ -54,33 +54,130 @@ export const body = async (request: Request) => {
  * بنابراین مرورگر یا کلاینت داخلی باید صراحتاً همان origin را ارسال کند.
  * endpointهای عمومیِ بدون نشست می‌توانند این بررسی را اختیاری نگه دارند.
  */
+const addHostVariants = (
+  origins: Set<string>,
+  rawHost: string | null | undefined,
+  protocols: string[],
+) => {
+  const host = rawHost?.split(",")[0]?.trim();
+  if (!host) return;
+  for (const protocol of protocols) {
+    try {
+      const parsed = new URL(`${protocol}//${host}`);
+      origins.add(parsed.origin);
+      if (parsed.hostname.startsWith("www.")) {
+        const apexHost = parsed.port
+          ? `${parsed.hostname.slice(4)}:${parsed.port}`
+          : parsed.hostname.slice(4);
+        origins.add(new URL(`${protocol}//${apexHost}`).origin);
+      } else if (!["localhost", "127.0.0.1", "::1"].includes(parsed.hostname)) {
+        const wwwHost = parsed.port
+          ? `www.${parsed.hostname}:${parsed.port}`
+          : `www.${parsed.hostname}`;
+        origins.add(new URL(`${protocol}//${wwwHost}`).origin);
+      }
+    } catch {
+      // Ignore malformed proxy host headers.
+    }
+  }
+};
+
+const addConfiguredOrigin = (
+  origins: Set<string>,
+  rawUrl: string | undefined,
+) => {
+  const value = rawUrl?.trim();
+  if (!value) return;
+  try {
+    const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+    const parsed = new URL(withScheme);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return;
+    addHostVariants(origins, parsed.host, [parsed.protocol]);
+  } catch {
+    // Ignore malformed environment URLs.
+  }
+};
+
 export const validateSameOrigin = (
   request: Request,
   options: { requireOrigin?: boolean } = {},
 ) => {
+  const allowedOrigins = new Set<string>();
+  let requestUrl: URL | null = null;
+  try {
+    requestUrl = new URL(request.url);
+    allowedOrigins.add(requestUrl.origin);
+  } catch {
+    // Ignore malformed request URL.
+  }
+
+  const forwardedProto = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    ?.trim()
+    .toLowerCase();
+  const protocols = new Set<string>(["https:"]);
+  if (forwardedProto === "http" || forwardedProto === "https") {
+    protocols.add(`${forwardedProto}:`);
+  }
+  if (requestUrl?.protocol === "http:" || requestUrl?.protocol === "https:") {
+    protocols.add(requestUrl.protocol);
+  }
+
+  addHostVariants(
+    allowedOrigins,
+    request.headers.get("x-forwarded-host"),
+    [...protocols],
+  );
+  addHostVariants(allowedOrigins, request.headers.get("host"), [...protocols]);
+
+  const forwarded = request.headers.get("forwarded");
+  const forwardedHostMatch = forwarded?.match(/(?:^|[;,])\s*host=([^;,\s]+)/i);
+  if (forwardedHostMatch?.[1]) {
+    addHostVariants(
+      allowedOrigins,
+      forwardedHostMatch[1].replace(/^"|"$/g, ""),
+      [...protocols],
+    );
+  }
+
+  addConfiguredOrigin(allowedOrigins, process.env.NEXT_PUBLIC_SITE_URL);
+  addConfiguredOrigin(allowedOrigins, process.env.VERCEL_URL);
+  addConfiguredOrigin(
+    allowedOrigins,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  );
+
+  const secFetchSite = request.headers.get("sec-fetch-site")?.trim().toLowerCase();
+  if (secFetchSite === "cross-site") {
+    throw new ApiError(403, "Cross-site requests are forbidden");
+  }
+
   const origin = request.headers.get("origin");
   if (!origin) {
+    const referer = request.headers.get("referer");
+    if (referer) {
+      try {
+        if (allowedOrigins.has(new URL(referer).origin)) return;
+      } catch {
+        throw new ApiError(403, "Invalid referer");
+      }
+      throw new ApiError(403, "Invalid referer");
+    }
+    if (secFetchSite === "same-origin") return;
     if (options.requireOrigin) throw new ApiError(403, "Origin is required");
     return;
   }
 
-  let expected: string;
   let received: string;
   try {
-    const requestUrl = new URL(request.url);
-    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-    const host = forwardedHost || request.headers.get("host")?.split(",")[0]?.trim();
-    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-    const protocol =
-      forwardedProto === "http" || forwardedProto === "https"
-        ? `${forwardedProto}:`
-        : requestUrl.protocol;
-    expected = host ? new URL(`${protocol}//${host}`).origin : requestUrl.origin;
     received = new URL(origin).origin;
   } catch {
     throw new ApiError(403, "Invalid origin");
   }
-  if (received !== expected) throw new ApiError(403, "Invalid origin");
+  if (!allowedOrigins.has(received)) {
+    throw new ApiError(403, "Invalid origin");
+  }
 };
 export const safeAdmin = (admin: {
   _id: { toString(): string };
