@@ -1347,6 +1347,18 @@ async function mediaWrite(parts: string[], request: Request, method: string) {
   }
 }
 
+const ADMIN_OVERRIDABLE_METHODS = new Set(["PUT", "PATCH", "DELETE"]);
+
+const resolveAdminMethod = (request: Request, parts: string[]) => {
+  if (request.method === "POST" && parts[0] === "admin") {
+    const override = request.headers.get("x-admin-method")?.trim().toUpperCase();
+    if (override && ADMIN_OVERRIDABLE_METHODS.has(override)) {
+      return override;
+    }
+  }
+  return request.method;
+};
+
 async function handler(
   request: Request,
   context: { params: Promise<{ path: string[] }> },
@@ -1416,14 +1428,15 @@ async function handler(
         : Promise.reject(new ApiError(405, "Method not allowed"));
   if (parts[0] === "admin") {
     const sub = parts.slice(1);
+    const effectiveMethod = resolveAdminMethod(request, parts);
     if (
       isMediaRoute(sub) &&
-      ["POST", "PATCH", "DELETE", "PUT"].includes(request.method)
+      ["POST", "PATCH", "DELETE", "PUT"].includes(effectiveMethod)
     )
-      return mediaWrite(sub, request, request.method);
+      return mediaWrite(sub, request, effectiveMethod);
     if (request.method === "GET") return adminGet(sub, url);
-    if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method))
-      return adminWrite(sub, request, request.method);
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(effectiveMethod))
+      return adminWrite(sub, request, effectiveMethod);
   }
   throw new ApiError(404, `Route not found: ${request.method} ${url.pathname}`);
 }

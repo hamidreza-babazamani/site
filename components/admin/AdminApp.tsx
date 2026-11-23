@@ -347,13 +347,20 @@ const localizedError = (error: unknown, locale: string, upload = false) => {
   if (status === 401 || rawMessage === "AUTH_REQUIRED")
     return lang.auth;
   if (status === 403) {
+    const endpoint = (error as AdminError & { endpoint?: string })?.endpoint;
+    const suffix = [
+      rawMessage && rawMessage !== "REQUEST_FAILED" ? rawMessage : "",
+      endpoint ? `[${endpoint}]` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     if (/origin|referer|cross-site/i.test(rawMessage))
       return locale === "fa"
-        ? `خطای اعتبارسنجی مبدا درخواست (403: ${rawMessage}).`
-        : `Origin validation failed (403: ${rawMessage}).`;
+        ? `خطای اعتبارسنجی مبدا درخواست (403${suffix ? `: ${suffix}` : ""}).`
+        : `Origin validation failed (403${suffix ? `: ${suffix}` : ""}).`;
     return locale === "fa"
-      ? "شما اجازه انجام این کار را ندارید."
-      : "You do not have permission to perform this action.";
+      ? `درخواست توسط سرور یا فایروال مسدود شد (403${suffix ? `: ${suffix}` : ""}).`
+      : `Action blocked (403${suffix ? `: ${suffix}` : ""}).`;
   }
   if (status === 404)
     return locale === "fa"

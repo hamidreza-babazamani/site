@@ -29,18 +29,31 @@ export type AdminApiError = Error & {
  * Axios کوکی HttpOnly را برای same-origin ارسال می‌کند؛ JWT هرگز از cookie خوانده
  * نمی‌شود. بدنه JSON و FormData بدون تغییر قرارداد backend عبور داده می‌شوند.
  */
+const TUNNELED_METHODS = new Set(["PUT", "PATCH", "DELETE"]);
+
+const extractErrorSnippet = (raw: unknown): string | undefined => {
+  if (typeof raw !== "string") return undefined;
+  const plain = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return plain ? plain.slice(0, 140) : undefined;
+};
+
 export async function requestAdmin<T = Record<string, unknown>>(
   path: string,
   init: AdminRequestInit = {},
 ): Promise<T> {
+  const requestedMethod = (init.method ?? "GET").toUpperCase();
+  const shouldTunnel = TUNNELED_METHODS.has(requestedMethod);
+  const transportMethod = shouldTunnel ? "POST" : requestedMethod;
+
   try {
     const headers = new Headers(init.headers);
     const isFormData =
       typeof FormData !== "undefined" && init.body instanceof FormData;
     if (isFormData) headers.delete("Content-Type");
+    if (shouldTunnel) headers.set("x-admin-method", requestedMethod);
     const response = await apiClient.request<T>({
       url: path,
-      method: init.method ?? "GET",
+      method: transportMethod,
       headers: Object.fromEntries(headers.entries()),
       data: init.body,
       signal: init.signal ?? undefined,
@@ -49,7 +62,12 @@ export async function requestAdmin<T = Record<string, unknown>>(
     return response.data;
   } catch (error) {
     if (!axios.isAxiosError(error)) throw error;
-    const payload = error.response?.data as Record<string, unknown> | undefined;
+    const rawData = error.response?.data;
+    const payload =
+      rawData && typeof rawData === "object"
+        ? (rawData as Record<string, unknown>)
+        : undefined;
+    const textSnippet = payload ? undefined : extractErrorSnippet(rawData);
     const isTimeout =
       error.code === "ECONNABORTED" || error.code === "ETIMEDOUT";
     const status = error.response?.status ?? (isTimeout ? 408 : 0);
@@ -59,6 +77,7 @@ export async function requestAdmin<T = Record<string, unknown>>(
       new Error(
         String(
           payload?.message ||
+            textSnippet ||
             (isTimeout
               ? "REQUEST_TIMEOUT"
               : status
@@ -66,7 +85,11 @@ export async function requestAdmin<T = Record<string, unknown>>(
                 : "NETWORK_ERROR"),
         ),
       ),
-      { code: status, errors: payload?.errors },
+      {
+        code: status,
+        errors: payload?.errors,
+        endpoint: `${requestedMethod} ${path}`,
+      },
     ) as AdminApiError;
     throw normalized;
   }

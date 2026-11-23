@@ -164,11 +164,20 @@ export const localizedError = (error: unknown, locale: string, upload = false) =
   const rawMessage = String(adminError.message || "");
   if (adminError.code === 401 || rawMessage === "AUTH_REQUIRED") return lang.auth;
   if (adminError.code === 403) {
+    const endpoint = (adminError as AdminError & { endpoint?: string })?.endpoint;
+    const suffix = [
+      rawMessage && rawMessage !== "REQUEST_FAILED" ? rawMessage : "",
+      endpoint ? `[${endpoint}]` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     if (/origin|referer|cross-site/i.test(rawMessage))
       return locale === "fa"
-        ? `خطای اعتبارسنجی مبدا درخواست (403: ${rawMessage}).`
-        : `Origin validation failed (403: ${rawMessage}).`;
-    return lang.forbidden;
+        ? `خطای اعتبارسنجی مبدا درخواست (403${suffix ? `: ${suffix}` : ""}).`
+        : `Origin validation failed (403${suffix ? `: ${suffix}` : ""}).`;
+    return locale === "fa"
+      ? `درخواست توسط سرور یا فایروال مسدود شد (403${suffix ? `: ${suffix}` : ""}).`
+      : `Action blocked (403${suffix ? `: ${suffix}` : ""}).`;
   }
   if (adminError.code === 404) return lang.notFound;
   if (adminError.code === 408 || rawMessage === "REQUEST_TIMEOUT") return lang.timeout;
