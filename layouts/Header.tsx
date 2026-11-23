@@ -19,21 +19,21 @@ function Header({ siteLogo }: { siteLogo?: PublicMedia }) {
       dir={locale === "fa" ? "rtl" : "ltr"}
       className="relative z-40 w-full"
     >
-      <div
-        className="
-          container mx-auto
-          grid min-h-20 w-full
-          grid-cols-[auto_minmax(0,1fr)_auto]
-          items-center gap-2
-          px-3 py-3
-          sm:gap-4 sm:px-6
-          xl:flex xl:min-h-24
-          xl:justify-between xl:gap-6
-          xl:py-4
-        "
-      >
+        <div
+          className="
+            container mx-auto
+            grid min-h-16 w-full
+            grid-cols-[auto_minmax(0,1fr)_auto]
+            items-center gap-1.5
+            px-3 py-2.5
+            sm:min-h-20 sm:gap-4 sm:px-6 sm:py-3
+            xl:flex xl:min-h-24
+            xl:justify-between xl:gap-6
+            xl:py-4
+          "
+        >
         {/* Language & Theme */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
@@ -58,12 +58,12 @@ function Header({ siteLogo }: { siteLogo?: PublicMedia }) {
               width={220}
               height={110}
               priority
-              sizes="(max-width: 640px) 110px, (max-width: 1280px) 150px, 180px"
+              sizes="(max-width: 640px) 88px, (max-width: 1280px) 136px, 172px"
               className="
-                h-auto w-[105px]
+                h-auto w-[88px]
                 max-w-full object-contain
-                sm:w-[145px]
-                xl:w-[180px]
+                sm:w-[136px]
+                xl:w-[172px]
                 dark:brightness-110
               "
             />

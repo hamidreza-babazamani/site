@@ -211,10 +211,10 @@ function ExperienceList({
           : formatDate(item.endDate, locale);
         const description = text(item.description, locale);
         return (
-          <li key={item._id} className={cn(panel, "p-5 sm:p-6")}>
+          <li key={item._id} className={cn(panel, "min-w-0 p-4 sm:p-6")}>
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <div className="min-w-0">
+                <h3 className="break-words text-base font-bold text-slate-900 dark:text-white">
                   {text(item.role, locale)}
                 </h3>
                 <p className="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
@@ -262,10 +262,10 @@ function EducationList({
         const location = text(item.location, locale);
         const description = text(item.description, locale);
         return (
-          <li key={item._id} className={cn(panel, "p-5 sm:p-6")}>
+          <li key={item._id} className={cn(panel, "min-w-0 p-4 sm:p-6")}>
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <div className="min-w-0">
+                <h3 className="break-words text-base font-bold text-slate-900 dark:text-white">
                   {text(item.degree, locale)}
                   {field ? ` — ${field}` : ""}
                 </h3>
@@ -305,7 +305,7 @@ function LanguagesList({
       {items.map((item) => (
         <li
           key={item._id}
-          className={cn(panel, "flex items-center justify-between gap-3 rounded-2xl p-4")}
+          className={cn(panel, "flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-2xl p-4")}
         >
           <span className="font-semibold text-slate-900 dark:text-white">
             {text(item.name, locale)}
@@ -335,9 +335,9 @@ function ProjectsList({
           text(project.shortDescription, locale);
         const url = project.repositoryUrl || project.liveUrl;
         return (
-          <li key={project._id} className={cn(panel, "flex flex-col p-5 sm:p-6")}>
+          <li key={project._id} className={cn(panel, "flex min-w-0 flex-col p-4 sm:p-6")}>
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="min-w-0 break-words text-base font-bold text-slate-900 dark:text-white">
                 {title}
               </h3>
               {url && (
@@ -569,8 +569,8 @@ export default async function ResumehComponents() {
       dir={fa ? "rtl" : "ltr"}
       className={cn(
         "relative isolate min-h-[75vh]",
-        "overflow-hidden px-4 py-16",
-        "sm:px-6 sm:py-20 lg:py-24",
+        "overflow-x-clip px-4 py-12",
+        "sm:px-6 sm:py-16 lg:py-20",
       )}
     >
       <div
@@ -592,11 +592,11 @@ export default async function ResumehComponents() {
               {t("Resume.description")}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
             {published && (
               <Link
                 href="/resume/print"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 sm:w-auto"
               >
                 <FileText size={16} aria-hidden="true" />
                 <span>
@@ -609,7 +609,7 @@ export default async function ResumehComponents() {
                 href="/api/public/resume/download"
                 download
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition",
+                  "inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition sm:w-auto",
                   published
                     ? "border border-emerald-500/30 bg-white/80 text-emerald-700 hover:bg-emerald-50 dark:bg-white/[0.05] dark:text-emerald-300"
                     : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm hover:brightness-110",

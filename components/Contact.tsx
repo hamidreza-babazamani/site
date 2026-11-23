@@ -305,10 +305,10 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
     <section
       dir={isFa ? "rtl" : "ltr"}
       className="
-        relative isolate overflow-hidden
-        px-4 py-16
-        sm:px-6 sm:py-20
-        lg:py-24
+        relative isolate overflow-x-clip
+        px-4 py-12
+        sm:px-6 sm:py-16
+        lg:py-20
       "
     >
       {/* Aurora background */}
@@ -647,7 +647,7 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
                   type="submit"
                   disabled={isSubmitting}
                   className="
-                    inline-flex min-h-12
+                    inline-flex min-h-12 w-full
                     shrink-0 items-center justify-center gap-2
                     rounded-xl
                     bg-gradient-to-r
@@ -665,6 +665,7 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
                     disabled:cursor-not-allowed
                     disabled:opacity-60
                     motion-reduce:transform-none
+                    sm:w-auto
                   "
                 >
                   {isSubmitting ? (
@@ -686,7 +687,7 @@ export default function WorkComponent({ initialContactMethods = [] }: { initialC
           </form>
 
           {/* Contact information */}
-          <aside className="space-y-4">
+          <aside className="min-w-0 space-y-4">
             <div className={cn(panelClass, "p-5 sm:p-6")}>
               <div className="mb-6 flex items-center gap-3">
                 <span

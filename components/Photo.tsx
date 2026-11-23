@@ -23,9 +23,9 @@ export default async function Photo({
     <div
       className="
         relative mx-auto
-        h-[280px] w-[280px]
-        sm:h-[380px] sm:w-[380px]
-        xl:h-[498px] xl:w-[498px]
+        aspect-square w-[min(72vw,260px)] max-w-full
+        sm:h-[360px] sm:w-[360px]
+        xl:h-[480px] xl:w-[480px]
       "
     >
       <HeroImage

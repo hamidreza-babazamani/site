@@ -603,8 +603,8 @@ function HelpTip({
   const positionClass = [
     placement === "bottom" ? "top-full mt-2" : "bottom-full mb-2",
     align === "end"
-      ? "end-0 w-56"
-      : "start-1/2 w-64 -translate-x-1/2 rtl:translate-x-1/2",
+      ? "end-0 w-[min(14rem,calc(100vw-2rem))]"
+      : "start-1/2 w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 rtl:translate-x-1/2",
   ].join(" ");
 
   return (
@@ -2231,14 +2231,14 @@ function ResourceView({
         </div>
         <button
           onClick={() => setEditor(defaultFor(resource))}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-bold text-slate-950 transition hover:bg-emerald-300"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 sm:w-auto"
         >
           <Plus size={17} />
           {fa ? "افزودن مورد" : "Add item"}
         </button>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="relative max-w-md flex-1">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <div className="relative min-w-0 flex-1 sm:max-w-md">
           <Search
             size={16}
             className="absolute start-3 top-3.5 text-slate-400"
@@ -2255,7 +2255,7 @@ function ResourceView({
         </div>
         <button
           onClick={() => load()}
-          className="h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold dark:border-white/10"
+          className="h-11 shrink-0 rounded-xl border border-slate-200 px-4 text-sm font-semibold dark:border-white/10 sm:w-auto"
         >
           {fa ? "فیلتر" : "Refresh"}
         </button>
@@ -2286,9 +2286,9 @@ function ResourceView({
               key={item._id}
               className="grid gap-3 border-b border-slate-100 px-5 py-4 last:border-0 dark:border-white/[0.06] md:grid-cols-[1fr_150px_100px_100px] md:items-center"
             >
-              <div>
-                <p className="font-semibold">{display(item) || "—"}</p>
-                <p className="mt-1 text-xs text-slate-400">
+              <div className="min-w-0">
+                <p className="break-words font-semibold">{display(item) || "—"}</p>
+                <p className="mt-1 break-all text-xs text-slate-400">
                   {item.slug ||
                     item.category ||
                     item.value ||
@@ -2830,7 +2830,7 @@ function SiteSettingsView({
       </section>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={saving} className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-wait disabled:opacity-60">
+        <button type="submit" disabled={saving} className="w-full rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-wait disabled:opacity-60 sm:w-auto">
           {saving ? (fa ? "در حال ذخیره…" : "Saving…") : (fa ? "ذخیره تنظیمات" : "Save settings")}
         </button>
       </div>
@@ -3244,14 +3244,14 @@ function SingletonView({
         )}
         <button
           disabled={busy}
-          className="rounded-xl bg-emerald-400 px-5 py-2.5 text-sm font-bold text-slate-950 disabled:opacity-50"
+          className="w-full rounded-xl bg-emerald-400 px-5 py-2.5 text-sm font-bold text-slate-950 disabled:opacity-50 sm:w-auto"
         >
           {fa ? "ذخیره محتوا" : "Save content"}
         </button>
       </form>
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-5 dark:border-white/15 dark:bg-white/[0.03] sm:p-7">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <h2 className="font-bold">{fa ? "رسانه" : "Media"}</h2>
               <HelpTip
@@ -3280,7 +3280,7 @@ function SingletonView({
               href={image.url}
               target="_blank"
               rel="noreferrer"
-              className="text-emerald-500"
+              className="shrink-0 text-emerald-500"
             >
               <ExternalLink size={17} />
             </a>
@@ -3290,10 +3290,10 @@ function SingletonView({
           <img
             src={image.url}
             alt={text(image.alt, locale)}
-            className="mb-4 h-36 w-full rounded-2xl object-cover"
+            className="mb-4 max-h-56 w-auto max-w-full rounded-2xl border border-slate-200 object-contain p-2 dark:border-white/10"
           />
         )}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <input
             type="file"
             accept={
@@ -3322,13 +3322,13 @@ function SingletonView({
               }
               setFile(next);
             }}
-            className="block flex-1 text-sm"
+            className="block w-full min-w-0 flex-1 text-xs sm:text-sm"
           />
           <button
             type="button"
             disabled={!file}
             onClick={upload}
-            className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-40 dark:bg-white dark:text-slate-950"
+            className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40 dark:bg-white dark:text-slate-950 sm:w-auto"
           >
             <Upload size={16} />
             {fa ? "بارگذاری" : "Upload"}
@@ -3337,7 +3337,7 @@ function SingletonView({
             <button
               type="button"
               onClick={removeMediaFile}
-              className="rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-500 dark:border-red-400/30"
+              className="w-full shrink-0 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-bold text-red-500 dark:border-red-400/30 sm:w-auto"
             >
               {fa ? "حذف" : "Remove"}
             </button>
@@ -3447,8 +3447,8 @@ function MessagesView({
           <option value="archived">{fa ? "بایگانی" : "Archived"}</option>
         </select>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
           {items.length === 0 ? (
             <div className="p-12 text-center text-sm text-slate-500">
               {fa ? "پیامی وجود ندارد" : "No messages"}
@@ -3481,16 +3481,16 @@ function MessagesView({
             ))
           )}
         </div>
-        <div className="min-h-80 rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.03]">
+        <div className="min-h-80 min-w-0 rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03] sm:p-5">
           {selected ? (
             <>
               <div className="mb-5 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-bold">{selected.name}</h2>
+                <div className="min-w-0 flex-1">
+                  <h2 className="break-words font-bold">{selected.name}</h2>
                   {selected.email && (
                     <a
                       href={`mailto:${selected.email}`}
-                      className="block text-sm text-emerald-500"
+                      className="block break-all text-sm text-emerald-500"
                     >
                       {selected.email}
                     </a>
@@ -3499,7 +3499,7 @@ function MessagesView({
                     <a
                       href={`tel:${selected.phone}`}
                       dir="ltr"
-                      className="mt-1 inline-block text-sm font-medium text-cyan-500"
+                      className="mt-1 inline-block break-all text-sm font-medium text-cyan-500"
                     >
                       {selected.phone}
                     </a>
@@ -3507,7 +3507,7 @@ function MessagesView({
                 </div>
                 <button
                   onClick={() => remove(selected)}
-                  className="rounded-lg p-2 text-red-400 hover:bg-red-400/10"
+                  className="shrink-0 rounded-lg p-2 text-red-400 hover:bg-red-400/10"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -3531,7 +3531,7 @@ function MessagesView({
                   )}
                 </div>
               )}
-              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600 dark:text-slate-300">
+              <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-600 dark:text-slate-300">
                 {selected.message}
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
@@ -3648,7 +3648,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
   return (
     <main
       dir={fa ? "rtl" : "ltr"}
-      className="min-h-screen bg-[#f7faf9] text-slate-900 dark:bg-[#0b1118] dark:text-white"
+      className="min-h-screen overflow-x-clip bg-[#f7faf9] text-slate-900 dark:bg-[#0b1118] dark:text-white"
     >
       <Toaster
         position={fa ? "bottom-left" : "bottom-right"}
@@ -3660,7 +3660,7 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
       />
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside
-          className={`fixed inset-y-0 z-40 flex w-72 flex-col border-slate-200 bg-white p-5 shadow-2xl transition-transform duration-300 motion-reduce:transition-none dark:border-white/10 dark:bg-[#101820] lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:border-e lg:shadow-none ${mobileOpen ? "translate-x-0" : fa ? "translate-x-full" : "-translate-x-full"}`}
+          className={`fixed inset-y-0 start-0 z-40 flex w-[min(82vw,18rem)] flex-col border-slate-200 bg-white p-5 shadow-2xl transition-transform duration-300 motion-reduce:transition-none dark:border-white/10 dark:bg-[#101820] lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:translate-x-0 lg:border-e lg:shadow-none ${mobileOpen ? "translate-x-0" : fa ? "translate-x-full" : "-translate-x-full"}`}
         >
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
@@ -3835,24 +3835,26 @@ export default function AdminApp({ initialAdmin }: { initialAdmin?: Item }) {
 
                 <a
                   href={`/${locale}`}
+                  aria-label={fa ? "مشاهده سایت" : "View site"}
                   className="
-          inline-flex items-center gap-2
+          inline-flex items-center gap-1.5
           rounded-xl border border-slate-200
-          px-3 py-2 text-xs font-semibold
+          px-2.5 py-2 text-xs font-semibold
           text-slate-500 transition-colors
           hover:border-emerald-400
           hover:text-emerald-500
           dark:border-white/10
+          sm:gap-2 sm:px-3
         "
                 >
-                  <ExternalLink className="hidden lg:flex" size={14} />
-                  {fa ? "مشاهده سایت" : "View site"}
+                  <ExternalLink size={14} aria-hidden="true" />
+                  <span className="hidden sm:inline">{fa ? "مشاهده سایت" : "View site"}</span>
                 </a>
               </div>
             </div>
           </header>
 
-          <div className="p-4 sm:p-8">
+          <div className="p-3 sm:p-6 lg:p-8">
             {active === "overview" ? (
               <Overview
                 locale={locale}

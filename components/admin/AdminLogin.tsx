@@ -435,16 +435,16 @@ export default function AdminLogin() {
       dir={fa ? "rtl" : "ltr"}
       className="
         relative isolate
-        flex min-h-[calc(100svh-80px)]
+        flex min-h-svh
         items-center justify-center
-        overflow-hidden
+        overflow-x-clip
         bg-[#f8fafc]
-        px-4 py-10
+        px-4 py-8
         text-slate-900
         transition-colors duration-300
         dark:bg-[#0c1118]
         dark:text-slate-100
-        sm:px-6 sm:py-14
+        sm:px-6 sm:py-12
         lg:py-16
       "
     >
@@ -653,7 +653,7 @@ export default function AdminLogin() {
             className="
               flex min-w-0 flex-col
               justify-center
-              px-6 py-9
+              px-4 py-7
               sm:px-10 sm:py-12
               xl:px-14 xl:py-16
             "

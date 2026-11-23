@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   [
-    "inline-flex shrink-0 items-center justify-center gap-2",
-    "whitespace-nowrap rounded-xl",
+    "inline-flex max-w-full shrink-0 items-center justify-center gap-2",
+    "whitespace-normal text-center leading-snug rounded-xl",
     "text-sm font-semibold",
     "select-none",
     "transition-[background-color,color,border-color,box-shadow,transform]",
@@ -120,10 +120,10 @@ const buttonVariants = cva(
       },
 
       size: {
-        default: "h-11 px-6 text-sm",
-        md: "h-12 px-6 text-sm",
-        lg: "h-14 px-8 text-sm tracking-wide",
-        sm: "h-9 px-4 text-xs",
+        default: "min-h-11 px-5 py-2.5 text-sm sm:px-6",
+        md: "min-h-12 px-5 py-2.5 text-sm sm:px-6",
+        lg: "min-h-12 px-5 py-3 text-sm tracking-wide sm:min-h-14 sm:px-8",
+        sm: "min-h-9 px-3.5 py-1.5 text-xs sm:px-4",
         icon: "size-10 p-0",
       },
 

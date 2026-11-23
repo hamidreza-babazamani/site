@@ -50,7 +50,7 @@ function Stats({ items }: { items?: PublicStat[] }) {
         <div
           className="
             relative isolate overflow-hidden
-            rounded-[28px]
+            rounded-[22px] sm:rounded-[28px]
             border border-emerald-900/10
             dark:border-emerald-300/10
             bg-white/65 dark:bg-white/[0.035]
@@ -91,10 +91,10 @@ function Stats({ items }: { items?: PublicStat[] }) {
                 key={index}
                 className={`
                   group relative
-                  flex flex-col items-center justify-center
-                  px-4 py-10
-                  sm:px-6 sm:py-12
-                  lg:py-14
+                  flex min-w-0 flex-col items-center justify-center
+                  px-3 py-6
+                  sm:px-6 sm:py-10
+                  lg:py-12
                   text-center
                   transition-colors duration-500
                   hover:bg-emerald-500/[0.035]
@@ -121,8 +121,8 @@ function Stats({ items }: { items?: PublicStat[] }) {
                   className="
                     flex items-baseline
                     gap-0.5
-                    text-[38px] sm:text-[48px]
-                    lg:text-[54px]
+                    text-[30px] sm:text-[44px]
+                    lg:text-[52px]
                     font-extrabold
                     tracking-tight
                     tabular-nums

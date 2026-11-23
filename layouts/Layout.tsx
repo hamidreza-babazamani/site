@@ -31,7 +31,7 @@ const Layout: FC<LayoutProps> = ({ children, siteLogo }) => {
       />
       <Header siteLogo={siteLogo} />
 
-      <main className="h-fit">{children}</main>
+      <main className="min-w-0 w-full flex-1">{children}</main>
 
       <Footer siteLogo={siteLogo} />
       <ContactButton />

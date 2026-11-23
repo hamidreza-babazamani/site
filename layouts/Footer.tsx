@@ -100,17 +100,17 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
         <div
           className="
             grid grid-cols-1
-            gap-10
-            py-12
-            sm:py-16
+            gap-8
+            py-10
+            sm:gap-10 sm:py-14
             md:grid-cols-2
             lg:grid-cols-[1.5fr_1fr_1fr]
             lg:gap-14
-            lg:py-20
+            lg:py-16
           "
         >
           {/* Brand */}
-          <div className="max-w-md">
+          <div className="min-w-0 max-w-md">
             <Link
               href="/"
               aria-label="Hamidreza Babazamani - Home"
@@ -297,8 +297,8 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
               target="_blank"
               rel="noopener noreferrer"
               className="
-                mt-6 inline-flex items-center
-                gap-2 text-xs font-medium
+                mt-6 inline-flex max-w-full items-center
+                gap-2 break-all text-xs font-medium
                 text-slate-500
                 transition-colors duration-300
                 hover:text-emerald-700
@@ -307,33 +307,9 @@ export default function Footer({ siteLogo }: { siteLogo?: PublicMedia }) {
               "
             >
               <span>github.com/hamidreza-babazamani</span>
-              <ArrowUpRight size={14} aria-hidden="true" />
+              <ArrowUpRight size={14} className="shrink-0" aria-hidden="true" />
             </a>
           </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div
-          className="
-            flex flex-col items-center
-            justify-center gap-4
-            border-t border-slate-200/80
-            py-6 text-center
-            dark:border-white/[0.08]
-            sm:flex-row
-            sm:text-start
-          "
-        >
-          <p
-            className="
-              text-xs leading-6
-              text-slate-500
-              dark:text-slate-500
-              sm:text-sm
-            "
-          >
-            {t("footer.end")}
-          </p>
         </div>
       </div>
     </footer>

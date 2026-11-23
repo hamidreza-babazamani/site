@@ -18,7 +18,7 @@ async function HomePageTemplate() {
   const isPersian = locale === "fa";
 
   return (
-    <section className="w-full">
+    <section className="w-full overflow-x-clip">
       {/* محدوده Hero: افکت ستاره‌ها فقط در این قسمت اجرا می‌شود */}
       <div className="relative isolate overflow-hidden">
         {/* لایه پس‌زمینه ستاره‌ها */}
@@ -26,12 +26,12 @@ async function HomePageTemplate() {
 
         {/* محتوای اصلی Hero بالاتر از لایه ستاره‌ها */}
         <div className="container relative z-10 mx-auto h-full px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col xl:flex-row items-center justify-between gap-8 pt-10 pb-16 xl:pt-16 xl:pb-24">
+          <div className="flex flex-col items-center justify-between gap-8 pt-8 pb-12 sm:pt-10 sm:pb-16 xl:flex-row xl:pt-16 xl:pb-24">
             {/* بخش متن‌های اصلی Hero */}
             <div
               className={`
                 order-2 xl:order-1
-                w-full max-w-2xl
+                w-full min-w-0 max-w-2xl
                 text-center
                 ${isPersian ? "xl:text-right" : "xl:text-left"}
               `}
@@ -39,8 +39,9 @@ async function HomePageTemplate() {
               {/* عنوان اصلی و نام */}
               <h1
                 className="
-                  text-[36px] sm:text-[46px]
-                  md:text-[56px] xl:text-[68px]
+                  break-words
+                  text-[30px] sm:text-[44px]
+                  md:text-[54px] xl:text-[64px]
                   leading-[1.2]
                   font-extrabold
                   tracking-tight
@@ -100,14 +101,15 @@ async function HomePageTemplate() {
               {/* عنوان شغلی */}
               <h2
                 className={`
-                  mt-6
-                  text-[19px] sm:text-[23px]
-                  md:text-[27px]
+                  mt-5 sm:mt-6
+                  text-[17px] sm:text-[22px]
+                  md:text-[26px]
                   font-semibold
                   leading-relaxed
                   text-slate-800
                   dark:text-slate-100
-                  ${isPersian ? "text-right" : "text-left"}
+                  text-center
+                  ${isPersian ? "xl:text-right" : "xl:text-left"}
                 `}
               >
                 <span
@@ -148,9 +150,9 @@ async function HomePageTemplate() {
                 <p
                   className="
     relative
-    px-5 sm:px-6
-    text-[15px] sm:text-[18px] md:text-[19px]
-    leading-[2] md:leading-[2.1]
+    px-4 sm:px-6
+    text-[14.5px] sm:text-[17px] md:text-[18.5px]
+    leading-[1.95] md:leading-[2.05]
     font-normal
     tracking-normal
     text-justify
@@ -173,17 +175,15 @@ async function HomePageTemplate() {
               {/* دکمه دانلود، شروع همکاری و شبکه‌های اجتماعی */}
               <div
                 className="
-                  flex flex-col
-                  xl:flex-row
-                  flex-wrap
-                  items-center
-                  gap-4 sm:gap-6
-                  mt-8
+                  mt-8 flex w-full flex-col
+                  items-center justify-center gap-5
+                  xl:flex-row xl:flex-wrap xl:justify-start xl:gap-6
                 "
               >
-                <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                   <StartCollaborationButton
                     size="lg"
+                    className="w-full sm:w-auto"
                     variant={portfolio.resumeAvailable || portfolio.hero?.primaryCtaUrl ? "outline" : "default"}
                   />
 
@@ -192,31 +192,32 @@ async function HomePageTemplate() {
                       <a
                         href="/api/public/resume/download"
                         download
+                        className="w-full sm:w-auto"
                       >
                         <Button
                           variant="default"
                           size="lg"
-                          className="uppercase flex items-center gap-2"
+                          className="w-full uppercase flex items-center justify-center gap-2 sm:w-auto"
                         >
                           <span>
                             {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
                               t("me.download")}
                           </span>
-                          <TfiDownload className="text-xl" />
+                          <TfiDownload className="text-xl shrink-0" />
                         </Button>
                       </a>
                     ) : portfolio.publishedResume ? (
-                      <Link href="/resume/print?autoprint=1">
+                      <Link href="/resume/print?autoprint=1" className="w-full sm:w-auto">
                         <Button
                           variant="default"
                           size="lg"
-                          className="uppercase flex items-center gap-2"
+                          className="w-full uppercase flex items-center justify-center gap-2 sm:w-auto"
                         >
                           <span>
                             {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
                               t("me.download")}
                           </span>
-                          <TfiDownload className="text-xl" />
+                          <TfiDownload className="text-xl shrink-0" />
                         </Button>
                       </Link>
                     ) : (
@@ -224,26 +225,27 @@ async function HomePageTemplate() {
                         href={portfolio.hero?.primaryCtaUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        className="w-full sm:w-auto"
                       >
                         <Button
                           variant="default"
                           size="lg"
-                          className="uppercase flex items-center gap-2"
+                          className="w-full uppercase flex items-center justify-center gap-2 sm:w-auto"
                         >
                           <span>
                             {portfolio.hero?.primaryCta?.[locale as "fa" | "en"] ||
                               t("me.download")}
                           </span>
-                          <TfiDownload className="text-xl" />
+                          <TfiDownload className="text-xl shrink-0" />
                         </Button>
                       </a>
                     )
                   )}
                 </div>
 
-                <div className="mb-8 xl:mb-0 flex">
+                <div className="mb-2 flex w-full justify-center xl:mb-0 xl:w-auto">
                   <Sochial
-                    containerStyle="flex gap-6 items-center"
+                    containerStyle="flex flex-wrap justify-center gap-2.5 sm:gap-4 items-center"
                     iconStyle="w-9 h-9 border-[1px] border-green-600 rounded-full flex justify-center items-center hover:bg-green-600 text-center text-base p-2 transition-all duration-500"
                   />
                 </div>

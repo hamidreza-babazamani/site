@@ -321,8 +321,8 @@ function FeaturedProject({
         <div
           className="
             flex min-w-0 flex-col
-            justify-center gap-5
-            p-6 sm:p-8 lg:p-10
+            justify-center gap-4
+            p-5 sm:gap-5 sm:p-8 lg:p-10
           "
         >
           <div
@@ -340,7 +340,8 @@ function FeaturedProject({
 
           <h2
             className="
-              text-2xl font-bold leading-snug
+              break-words
+              text-xl font-bold leading-snug
               tracking-tight text-slate-900
               dark:text-white
               sm:text-3xl
@@ -392,8 +393,8 @@ function ProjectCard({
   return (
     <article
       className="
-        group flex h-full flex-col
-        overflow-hidden rounded-[24px]
+        group flex h-full min-w-0 flex-col
+        overflow-hidden rounded-[22px] sm:rounded-[24px]
         border border-emerald-900/[0.08]
         bg-white/65
         shadow-[0_8px_35px_rgba(15,23,42,0.035)]
@@ -415,7 +416,7 @@ function ProjectCard({
         project={project}
       />
 
-      <div className="flex flex-1 flex-col gap-4 p-5 sm:p-6">
+      <div className="flex min-w-0 flex-1 flex-col gap-3.5 p-4 sm:gap-4 sm:p-6">
         <span
           className="
             text-xs font-semibold tracking-widest
@@ -428,6 +429,7 @@ function ProjectCard({
 
         <h3
           className="
+            break-words
             text-lg font-bold leading-snug
             text-slate-900
             dark:text-slate-100
@@ -598,11 +600,8 @@ export default function WorkePage({
       dir={locale === "fa" ? "rtl" : "ltr"}
       className={`
         relative isolate min-h-[75vh]
-        overflow-hidden
-        px-4 py-16
-        sm:px-6 sm:py-20
-        lg:py-24
-      ${embedded ? "px-0 py-0" : ""}
+        overflow-x-clip
+        ${embedded ? "px-0 py-6" : "px-4 py-12 sm:px-6 sm:py-16 lg:py-20"}
       `}
     >
       {/* Subtle aurora background */}

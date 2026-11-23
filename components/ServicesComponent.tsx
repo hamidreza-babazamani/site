@@ -36,10 +36,10 @@ export default async function ServicesComponent() {
       id="services"
       className="
         relative isolate
-        overflow-hidden
-        px-4 py-16
-        sm:px-6 sm:py-20
-        lg:py-24
+        overflow-x-clip
+        px-4 py-12
+        sm:px-6 sm:py-16
+        lg:py-20
       "
     >
       {/* Ambient background */}
@@ -135,12 +135,12 @@ export default async function ServicesComponent() {
                   key={service._id}
                   className={`
                   group relative
-                  flex h-full flex-col
+                  flex h-full min-w-0 flex-col
                   overflow-hidden
-                  rounded-[26px]
+                  rounded-2xl
                   border border-emerald-900/[0.08]
                   bg-white/65
-                  p-6
+                  p-5
                   shadow-[0_8px_35px_rgba(15,23,42,0.035)]
                   backdrop-blur-xl
 
@@ -162,8 +162,8 @@ export default async function ServicesComponent() {
                   motion-reduce:transform-none
                   motion-reduce:transition-none
 
-                  sm:p-8
-                  lg:p-9
+                  sm:rounded-[26px] sm:p-7
+                  lg:p-8
 
                   ${
                     index === portfolio.services.length - 1 &&
@@ -191,9 +191,9 @@ export default async function ServicesComponent() {
                   {/* Top row */}
                   <div
                     className="
-                    relative mb-8
+                    relative mb-5
                     flex items-start justify-between
-                    gap-4
+                    gap-4 sm:mb-7
                   "
                   >
                     <div className="flex items-center gap-4">
@@ -288,8 +288,8 @@ export default async function ServicesComponent() {
                   <div className="relative flex flex-1 flex-col">
                     <h2
                       className="
-                      mb-4
-                      text-xl font-bold
+                      mb-3 min-w-0 break-words
+                      text-lg font-bold
                       leading-snug
                       tracking-tight
                       text-slate-900
@@ -297,7 +297,7 @@ export default async function ServicesComponent() {
                       group-hover:text-emerald-800
                       dark:text-slate-100
                       dark:group-hover:text-emerald-300
-                      sm:text-2xl
+                      sm:mb-4 sm:text-2xl
                       lg:text-[27px]
                     "
                     >

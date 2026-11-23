@@ -587,7 +587,7 @@ export default function ResumeBuilder({
       {/* Main Split Workspace: Controls + Live A4 Preview */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         {/* Controls Column */}
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           {/* Professional Summary */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#101820] sm:p-5">
             <h3 className="mb-3 text-sm font-bold">
@@ -778,7 +778,7 @@ export default function ResumeBuilder({
         </div>
 
         {/* Live A4 Preview Column */}
-        <div className="space-y-3 xl:sticky xl:top-24 xl:self-start">
+        <div className="min-w-0 space-y-3 xl:sticky xl:top-24 xl:self-start">
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-[#101820]">
             <div className="flex items-center gap-2 text-xs font-bold">
               <Globe size={15} className="text-emerald-500" />
@@ -810,7 +810,7 @@ export default function ResumeBuilder({
             </div>
           </div>
 
-          <div className="max-h-[82vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-slate-900/50">
+          <div className="max-h-[82vh] overflow-x-auto overflow-y-auto rounded-2xl border border-slate-200 bg-slate-100 p-2 dark:border-white/10 dark:bg-slate-900/50 sm:p-3">
             <ResumeDocument
               locale={previewLocale}
               compact

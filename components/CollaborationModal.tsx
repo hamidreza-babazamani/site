@@ -589,16 +589,16 @@ export default function CollaborationModal() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex w-full flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
                 <Link
                   href="/contact"
                   onClick={() => setOpen(false)}
-                  className="px-3 py-2 text-xs font-semibold text-slate-500 underline-offset-4 hover:text-emerald-700 hover:underline dark:text-slate-400 dark:hover:text-emerald-300"
+                  className="px-3 py-2 text-center text-xs font-semibold text-slate-500 underline-offset-4 hover:text-emerald-700 hover:underline dark:text-slate-400 dark:hover:text-emerald-300"
                 >
                   {isFa ? "صفحه تماس کامل" : "Full contact page"}
                 </Link>
 
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                   {isSubmitting ? (
                     <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />
                   ) : (

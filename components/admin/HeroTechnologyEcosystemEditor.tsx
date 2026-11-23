@@ -321,7 +321,7 @@ export default function HeroTechnologyEcosystemEditor({
                       className="mt-1 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm text-slate-900 dark:border-white/10 dark:bg-[#101820] dark:text-white"
                     />
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {(["light", "dark"] as const).map((theme) => (
                       <label key={theme} className="text-xs font-semibold text-slate-500">
                         {theme === "light" ? text("Light color", "رنگ روشن") : text("Dark color", "رنگ تیره")}

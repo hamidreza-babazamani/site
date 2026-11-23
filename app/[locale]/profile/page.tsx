@@ -64,7 +64,7 @@ export default async function ProfilePage() {
   return (
     <main
       dir={fa ? "rtl" : "ltr"}
-      className="relative isolate min-h-[80vh] overflow-hidden px-4 py-16 sm:px-6 sm:py-24"
+      className="relative isolate min-h-[80vh] overflow-x-clip px-4 py-12 sm:px-6 sm:py-20"
     >
       {/* Background */}
       <div
@@ -83,7 +83,7 @@ export default async function ProfilePage() {
             {fa ? "بیشتر درباره من" : "Get to know me"}
           </span>
 
-          <h1 className="mt-5 text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+          <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:mt-5 sm:text-4xl lg:text-5xl">
             {fa ? "داستان من" : "My Story"}
           </h1>
 
@@ -97,13 +97,15 @@ export default async function ProfilePage() {
         {/* Main Content */}
         <div className="grid items-start gap-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
           {/* Profile Card */}
-          <aside className="relative overflow-hidden rounded-[32px] border border-emerald-500/10 bg-gradient-to-b from-emerald-50 via-cyan-50/50 to-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)] dark:border-white/10 dark:from-emerald-500/[0.08] dark:via-cyan-500/[0.03] dark:to-white/[0.03] sm:p-8">
-            <div className="absolute start-5 top-5 z-10 rounded-full border border-emerald-500/15 bg-white/90 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-900/90 dark:text-emerald-300">
-              {fa ? "توسعه‌دهنده بک‌اند و فول‌استک" : "Backend Developer"}
+          <aside className="relative min-w-0 overflow-hidden rounded-[26px] border border-emerald-500/10 bg-gradient-to-b from-emerald-50 via-cyan-50/50 to-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.04)] dark:border-white/10 dark:from-emerald-500/[0.08] dark:via-cyan-500/[0.03] dark:to-white/[0.03] sm:rounded-[32px] sm:p-8">
+            <div className="mb-4 flex justify-center sm:justify-start">
+              <span className="inline-flex rounded-full border border-emerald-500/15 bg-white/90 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-900/90 dark:text-emerald-300">
+                {fa ? "توسعه‌دهنده بک‌اند و فول‌استک" : "Backend & Full-Stack"}
+              </span>
             </div>
 
             {/* Profile Image */}
-            <div className="relative mx-auto mt-4 aspect-[4/4.5] w-full max-w-[260px] overflow-hidden rounded-[28px] border-4 border-white bg-slate-100 shadow-xl shadow-emerald-900/5 dark:border-white/10 dark:bg-slate-800">
+            <div className="relative mx-auto aspect-[4/4.5] w-full max-w-[240px] overflow-hidden rounded-[24px] border-4 border-white bg-slate-100 shadow-xl shadow-emerald-900/5 dark:border-white/10 dark:bg-slate-800 sm:max-w-[260px] sm:rounded-[28px]">
               {imageUrl ? (
                 <Image
                   src={imageUrl}
@@ -157,7 +159,7 @@ export default async function ProfilePage() {
           </aside>
 
           {/* Biography Card */}
-          <article className="relative overflow-hidden rounded-[32px] border border-emerald-500/10 bg-white/75 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] sm:p-9 lg:p-11">
+          <article className="relative min-w-0 overflow-hidden rounded-[26px] border border-emerald-500/10 bg-white/75 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035] sm:rounded-[32px] sm:p-8 lg:p-10">
             <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-transparent" />
 
             <div className="flex items-center justify-between gap-4">
