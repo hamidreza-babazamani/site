@@ -421,9 +421,11 @@ export default function ResumeBuilder({
                     type="checkbox"
                     checked
                     onChange={() => toggleId(field, item._id)}
-                    className="size-4 accent-emerald-500"
+                    className="size-4 shrink-0 accent-emerald-500"
                   />
-                  <span className="truncate">{getLabel(item)}</span>
+                  <span className="min-w-0 truncate text-start" dir="auto">
+                    {getLabel(item)}
+                  </span>
                 </label>
                 <div className="flex shrink-0 items-center gap-1">
                   <button
@@ -451,15 +453,17 @@ export default function ResumeBuilder({
             {unselected.map((item) => (
               <label
                 key={item._id}
-                className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200/80 px-3 py-2 text-xs text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.04]"
+                className="flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border border-slate-200/80 px-3 py-2 text-xs text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.04]"
               >
                 <input
                   type="checkbox"
                   checked={false}
                   onChange={() => toggleId(field, item._id)}
-                  className="size-4 accent-emerald-500"
+                  className="size-4 shrink-0 accent-emerald-500"
                 />
-                <span className="truncate">{getLabel(item)}</span>
+                <span className="min-w-0 truncate text-start" dir="auto">
+                  {getLabel(item)}
+                </span>
               </label>
             ))}
           </div>
@@ -469,7 +473,7 @@ export default function ResumeBuilder({
   };
 
   return (
-    <div className="space-y-6">
+    <div dir={fa ? "rtl" : "ltr"} className={`space-y-6 ${fa ? "text-right" : "text-left"}`}>
       {/* Top Toolbar */}
       <div className="rounded-3xl border border-emerald-500/20 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#101820] sm:p-6">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -722,7 +726,10 @@ export default function ResumeBuilder({
               "Header Contact Info",
               "contactMethodIds",
               contactMethods,
-              (item) => `${item.label?.[fa ? "fa" : "en"] || item.type}: ${item.value}`,
+              (item) => {
+                const label = item.label?.[fa ? "fa" : "en"]?.trim() || item.type;
+                return `${label}: \u2066${item.value}\u2069`;
+              },
               "contact-methods",
             )}
 

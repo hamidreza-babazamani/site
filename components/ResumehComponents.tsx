@@ -71,7 +71,7 @@ function Heading({
   description: string;
 }) {
   return (
-    <div className="mb-7 space-y-3 sm:mb-9">
+    <div className="mb-7 space-y-3 text-start sm:mb-9">
       {eyebrow && (
         <span className="inline-flex items-center rounded-full border border-emerald-500/15 bg-emerald-500/[0.06] px-3.5 py-1.5 text-xs font-semibold tracking-wide text-emerald-700 dark:text-emerald-300">
           {eyebrow}
@@ -79,13 +79,13 @@ function Heading({
       )}
 
       {title && (
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+        <h2 className="text-start text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
           {title}
         </h2>
       )}
 
       {description && (
-        <p className="max-w-3xl whitespace-pre-line text-sm leading-7 text-slate-500 dark:text-slate-400">
+        <p className="max-w-3xl whitespace-pre-line text-start text-sm leading-7 text-slate-500 dark:text-slate-400">
           {description}
         </p>
       )}
@@ -571,6 +571,7 @@ export default async function ResumehComponents() {
         "relative isolate min-h-[75vh]",
         "overflow-x-clip px-4 py-12",
         "sm:px-6 sm:py-16 lg:py-20",
+        fa ? "text-right" : "text-left",
       )}
     >
       <div

@@ -62,6 +62,31 @@ const formatYearOrRange = (
   return end || start;
 };
 
+const CONTACT_LABELS_FA: Record<string, string> = {
+  email: "ایمیل",
+  phone: "تلفن",
+  github: "گیت‌هاب",
+  linkedin: "لینکدین",
+  telegram: "تلگرام",
+  whatsapp: "واتساپ",
+  instagram: "اینستاگرام",
+  website: "وب‌سایت",
+};
+
+const resolveContactLabel = (
+  contact: PublicContactMethod,
+  locale: "fa" | "en",
+) => {
+  if (locale === "fa") {
+    const faLabel = contact.label?.fa?.trim();
+    if (faLabel) return faLabel;
+    const mapped = CONTACT_LABELS_FA[contact.type.trim().toLowerCase()];
+    if (mapped) return mapped;
+    return contact.label?.en?.trim() || contact.type;
+  }
+  return contact.label?.en?.trim() || contact.label?.fa?.trim() || contact.type;
+};
+
 const toLines = (raw: string) =>
   raw
     .split(/\r?\n/)
@@ -148,17 +173,21 @@ export default function ResumeDocument({
     groupedSkills.set(cat, list);
   }
 
+  const sectionHeadingClass = `mb-2.5 border-b border-slate-800 pb-1 text-start text-[13px] font-bold text-slate-900 ${
+    isFa ? "tracking-normal" : "tracking-[0.14em]"
+  }`;
+
   const renderSection = (key: string) => {
     if (visibility[key] === false) return null;
 
     if (key === "summary") {
       if (!summaryText) return null;
       return (
-        <section key={key} className="mb-5 break-inside-avoid">
-          <h2 className="mb-2 border-b border-slate-800 pb-1 text-[13px] font-bold tracking-[0.14em] text-slate-900">
+        <section key={key} className="mb-5 break-inside-avoid text-start">
+          <h2 className={sectionHeadingClass}>
             {SECTION_TITLES.summary[locale]}
           </h2>
-          <p className="whitespace-pre-line text-[12.5px] leading-[1.75] text-slate-800">
+          <p className="whitespace-pre-line text-start text-[12.5px] leading-[1.85] text-slate-800">
             {summaryText}
           </p>
         </section>
@@ -168,8 +197,8 @@ export default function ResumeDocument({
     if (key === "projects") {
       if (selectedProjects.length === 0) return null;
       return (
-        <section key={key} className="mb-5">
-          <h2 className="mb-2.5 border-b border-slate-800 pb-1 text-[13px] font-bold tracking-[0.14em] text-slate-900">
+        <section key={key} className="mb-5 text-start">
+          <h2 className={sectionHeadingClass}>
             {SECTION_TITLES.projects[locale]}
           </h2>
           <div className="space-y-3.5">
@@ -181,32 +210,38 @@ export default function ResumeDocument({
               const lines = toLines(desc);
               const url = project.repositoryUrl || project.liveUrl;
               return (
-                <article key={project._id} className="break-inside-avoid">
-                  <div className="text-[13px] leading-snug text-slate-900">
+                <article key={project._id} className="break-inside-avoid text-start">
+                  <div className="text-start text-[13px] leading-snug text-slate-900">
                     <span className="font-bold">{title}</span>
                     {project.technologies.length > 0 && (
                       <span className="text-slate-700">
                         {" "}
-                        | {project.technologies.join(", ")}
+                        | <bdi dir="ltr">{project.technologies.join(", ")}</bdi>
                       </span>
                     )}
                   </div>
                   {url && (
-                    <div className="mt-0.5 text-[11.5px] text-blue-700 underline underline-offset-2" dir="ltr">
-                      <a href={url} target="_blank" rel="noopener noreferrer">
+                    <div className="mt-0.5 text-start text-[11.5px]">
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        dir="ltr"
+                        className="inline-block break-all text-blue-700 underline underline-offset-2"
+                      >
                         {url}
                       </a>
                     </div>
                   )}
                   {lines.length > 1 ? (
-                    <ul className="mt-1.5 list-disc space-y-0.5 ps-5 text-[12px] leading-[1.65] text-slate-800">
+                    <ul className="mt-1.5 list-disc space-y-0.5 ps-5 text-start text-[12px] leading-[1.7] text-slate-800">
                       {lines.map((line, idx) => (
                         <li key={idx}>{line}</li>
                       ))}
                     </ul>
                   ) : (
                     lines[0] && (
-                      <p className="mt-1 text-[12px] leading-[1.65] text-slate-800">
+                      <p className="mt-1 text-start text-[12px] leading-[1.7] text-slate-800">
                         {lines[0]}
                       </p>
                     )
@@ -222,8 +257,8 @@ export default function ResumeDocument({
     if (key === "experience") {
       if (selectedExperiences.length === 0) return null;
       return (
-        <section key={key} className="mb-5">
-          <h2 className="mb-2.5 border-b border-slate-800 pb-1 text-[13px] font-bold tracking-[0.14em] text-slate-900">
+        <section key={key} className="mb-5 text-start">
+          <h2 className={sectionHeadingClass}>
             {SECTION_TITLES.experience[locale]}
           </h2>
           <div className="space-y-3">
@@ -237,8 +272,8 @@ export default function ResumeDocument({
               );
               const lines = toLines(localize(exp.description, locale));
               return (
-                <article key={exp._id} className="break-inside-avoid">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 text-[13px] text-slate-900">
+                <article key={exp._id} className="break-inside-avoid text-start">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2 text-start text-[13px] text-slate-900">
                     <div>
                       <span className="font-bold">{role}</span>
                       {exp.company && (
@@ -247,19 +282,19 @@ export default function ResumeDocument({
                     </div>
                     {range && (
                       <span className="text-[11.5px] text-slate-600">
-                        {range}
+                        <bdi dir={isFa ? "rtl" : "ltr"}>{range}</bdi>
                       </span>
                     )}
                   </div>
                   {lines.length > 1 ? (
-                    <ul className="mt-1 list-disc space-y-0.5 ps-5 text-[12px] leading-[1.65] text-slate-800">
+                    <ul className="mt-1 list-disc space-y-0.5 ps-5 text-start text-[12px] leading-[1.7] text-slate-800">
                       {lines.map((line, idx) => (
                         <li key={idx}>{line}</li>
                       ))}
                     </ul>
                   ) : (
                     lines[0] && (
-                      <p className="mt-1 text-[12px] leading-[1.65] text-slate-800">
+                      <p className="mt-1 text-start text-[12px] leading-[1.7] text-slate-800">
                         {lines[0]}
                       </p>
                     )
@@ -275,8 +310,8 @@ export default function ResumeDocument({
     if (key === "education") {
       if (selectedEducation.length === 0) return null;
       return (
-        <section key={key} className="mb-5 break-inside-avoid">
-          <h2 className="mb-2.5 border-b border-slate-800 pb-1 text-[13px] font-bold tracking-[0.14em] text-slate-900">
+        <section key={key} className="mb-5 break-inside-avoid text-start">
+          <h2 className={sectionHeadingClass}>
             {SECTION_TITLES.education[locale]}
           </h2>
           <div className="space-y-2.5">
@@ -294,7 +329,7 @@ export default function ResumeDocument({
                   : "";
               const desc = localize(edu.description, locale);
               return (
-                <div key={edu._id} className="text-[12.5px] leading-[1.65] text-slate-900">
+                <div key={edu._id} className="text-start text-[12.5px] leading-[1.7] text-slate-900">
                   <div>
                     <span className="font-bold">{institution}</span>
                     {eduLocation && (
@@ -319,15 +354,15 @@ export default function ResumeDocument({
       if (groupedSkills.size === 0 && selectedLanguages.length === 0) return null;
       if (groupedSkills.size === 0) return null;
       return (
-        <section key={key} className="mb-4 break-inside-avoid">
-          <h2 className="mb-2 border-b border-slate-800 pb-1 text-[13px] font-bold tracking-[0.14em] text-slate-900">
+        <section key={key} className="mb-4 break-inside-avoid text-start">
+          <h2 className={sectionHeadingClass}>
             {SECTION_TITLES.skills[locale]}
           </h2>
-          <div className="space-y-1 text-[12.5px] leading-[1.7] text-slate-800">
+          <div className="space-y-1 text-start text-[12.5px] leading-[1.75] text-slate-800">
             {Array.from(groupedSkills.entries()).map(([category, names]) => (
               <div key={category}>
                 <span className="font-bold text-slate-900">{category}: </span>
-                <span>{names.join(isFa ? "، " : ", ")}</span>
+                <bdi dir="auto">{names.join(isFa ? "، " : ", ")}</bdi>
               </div>
             ))}
             {visibility.languages !== false && selectedLanguages.length > 0 && (
@@ -355,11 +390,11 @@ export default function ResumeDocument({
       if (visibility.skills !== false && groupedSkills.size > 0) return null;
       if (selectedLanguages.length === 0) return null;
       return (
-        <section key={key} className="mb-4 break-inside-avoid">
-          <h2 className="mb-2 border-b border-slate-800 pb-1 text-[13px] font-bold tracking-[0.14em] text-slate-900">
+        <section key={key} className="mb-4 break-inside-avoid text-start">
+          <h2 className={sectionHeadingClass}>
             {SECTION_TITLES.languages[locale]}
           </h2>
-          <p className="text-[12.5px] text-slate-800">
+          <p className="text-start text-[12.5px] text-slate-800">
             {selectedLanguages
               .map(
                 (lang) =>
@@ -377,9 +412,9 @@ export default function ResumeDocument({
   return (
     <div
       dir={isFa ? "rtl" : "ltr"}
-      className={`resume-a4-sheet mx-auto bg-white text-slate-900 shadow-lg ring-1 ring-slate-200 print:m-0 print:w-full print:max-w-none print:p-0 print:shadow-none print:ring-0 ${
-        compact ? "p-6 text-[12px]" : "w-full max-w-[210mm] p-8 sm:p-12"
-      } ${isFa ? "" : "font-serif"}`}
+      className={`resume-a4-sheet mx-auto w-full bg-white text-slate-900 shadow-lg ring-1 ring-slate-200 print:m-0 print:w-full print:max-w-none print:p-0 print:shadow-none print:ring-0 ${
+        compact ? "p-5 text-[12px] sm:p-6" : "max-w-[210mm] p-6 sm:p-12"
+      } ${isFa ? "text-right" : "font-serif text-left"}`}
     >
       {/* Header matching the user's PDF */}
       <header className="mb-5">
@@ -392,16 +427,25 @@ export default function ResumeDocument({
         </h1>
 
         {(location || phoneContact) && (
-          <p className="mt-1.5 text-center text-[12px] text-slate-700">
-            {[location, phoneContact?.value].filter(Boolean).join(" | ")}
+          <p className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2 text-center text-[12px] text-slate-700">
+            {location && <span>{location}</span>}
+            {location && phoneContact?.value && (
+              <span aria-hidden="true">|</span>
+            )}
+            {phoneContact?.value && (
+              <bdi dir="ltr">{phoneContact.value}</bdi>
+            )}
           </p>
         )}
 
         {otherContacts.length > 0 && (
-          <div className="mt-2.5 space-y-0.5 text-[12px] leading-[1.6] text-slate-800">
+          <div
+            className={`mt-2.5 space-y-0.5 text-[12px] leading-[1.6] text-slate-800 ${
+              isFa ? "text-right" : "text-left"
+            }`}
+          >
             {otherContacts.map((contact) => {
-              const label =
-                localize(contact.label, locale) || contact.type;
+              const label = resolveContactLabel(contact, locale);
               const displayValue = contact.url || contact.value;
               const href =
                 contact.url ||
@@ -409,8 +453,13 @@ export default function ResumeDocument({
                   ? `mailto:${contact.value}`
                   : undefined);
               return (
-                <div key={contact._id}>
-                  <span className="font-bold text-slate-900">{label}: </span>
+                <div
+                  key={contact._id}
+                  className="flex flex-wrap items-baseline justify-start gap-x-1.5"
+                >
+                  <span className="shrink-0 font-bold text-slate-900">
+                    {label}:
+                  </span>
                   {href ? (
                     <a
                       href={href}
@@ -421,12 +470,14 @@ export default function ResumeDocument({
                           : undefined
                       }
                       dir="ltr"
-                      className="text-blue-700 underline underline-offset-2"
+                      className="inline-block break-all text-left text-blue-700 underline underline-offset-2"
                     >
                       {displayValue.replace(/^https?:\/\/(www\.)?/, "")}
                     </a>
                   ) : (
-                    <span>{displayValue}</span>
+                    <bdi dir="ltr" className="break-all">
+                      {displayValue}
+                    </bdi>
                   )}
                 </div>
               );
@@ -436,7 +487,9 @@ export default function ResumeDocument({
       </header>
 
       {/* Dynamic Ordered Sections */}
-      <div>{sectionOrder.map(renderSection)}</div>
+      <div className={isFa ? "text-right" : "text-left"}>
+        {sectionOrder.map(renderSection)}
+      </div>
     </div>
   );
 }

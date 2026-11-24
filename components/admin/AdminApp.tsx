@@ -672,10 +672,13 @@ function LocalizedField({
         </label>
         {help && <HelpTip text={help} />}
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <label className="relative">
-          <span className="absolute end-3 top-3 text-[10px] font-bold uppercase text-slate-400">
-            FA
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block min-w-0 space-y-1.5">
+          <span className="flex items-center justify-between gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <span>فارسی</span>
+            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-slate-500 dark:bg-white/10 dark:text-slate-300">
+              FA
+            </span>
           </span>
           <Control
             id={`${name || label}-fa`}
@@ -685,12 +688,15 @@ function LocalizedField({
             aria-describedby={error ? `${name || label}-error` : undefined}
             dir="rtl"
             rows={multiline ? 3 : undefined}
-            className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 pe-10 text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 dark:border-white/10 dark:bg-white/[0.04]"
+            className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-right text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 dark:border-white/10 dark:bg-white/[0.04]"
           />
         </label>
-        <label className="relative">
-          <span className="absolute end-3 top-3 text-[10px] font-bold uppercase text-slate-400">
-            EN
+        <label className="block min-w-0 space-y-1.5">
+          <span className="flex items-center justify-between gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <span>English</span>
+            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-slate-500 dark:bg-white/10 dark:text-slate-300">
+              EN
+            </span>
           </span>
           <Control
             id={`${name || label}-en`}
@@ -700,7 +706,7 @@ function LocalizedField({
             aria-describedby={error ? `${name || label}-error` : undefined}
             dir="ltr"
             rows={multiline ? 3 : undefined}
-            className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 pe-10 text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 dark:border-white/10 dark:bg-white/[0.04]"
+            className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-left text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 dark:border-white/10 dark:bg-white/[0.04]"
           />
         </label>
       </div>
